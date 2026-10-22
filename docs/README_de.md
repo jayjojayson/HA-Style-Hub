@@ -29,7 +29,7 @@ Reihenfolge, Namen, Icons, Sichtbarkeit, ein **mehrspaltiges Grid-Layout** und
 das komplette Aussehen — inklusive *Einstellungen*, *Benachrichtigungen* und
 *Benutzereintrag*, die Home Assistant sonst fest am unteren Rand verankert.
 
-📖 **Dokumentation: <https://jayjojayson.github.io/ha_style_hub/>** · 🇬🇧 **English guide: [README.md](../README.md)**
+📖 **Dokumentation: <https://jayjojayson.github.io/HA-Style-Hub/>** · 🇬🇧 **English guide: [README.md](../README.md)**
 
 ## Funktionen
 
