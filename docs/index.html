@@ -663,8 +663,7 @@
         </div>
 
         <details open>
-          <summary data-en>Layout</summary>
-          <summary data-de>Layout</summary>
+          <summary><span data-en>Layout</span><span data-de>Layout</span></summary>
           <div class="dbody">
             <ul>
               <li data-en>Columns, gap and sidebar width, tile and row height</li>
@@ -682,8 +681,7 @@
         </details>
 
         <details>
-          <summary data-en>Entries</summary>
-          <summary data-de>Einträge</summary>
+          <summary><span data-en>Entries</span><span data-de>Einträge</span></summary>
           <div class="dbody">
             <ul>
               <li data-en>A click on an entry in the model selects it, dragging it there reorders it.</li>
@@ -711,8 +709,7 @@
         </details>
 
         <details>
-          <summary data-en>Appearance</summary>
-          <summary data-de>Aussehen</summary>
+          <summary><span data-en>Appearance</span><span data-de>Aussehen</span></summary>
           <div class="dbody">
             <ul>
               <li data-en>Background and gradients, text and icon colors</li>
@@ -751,8 +748,7 @@
           <figcaption data-de>Header: die Kopfzeile eines Dashboards.</figcaption>
         </figure>
         <details>
-          <summary data-en>What can be set</summary>
-          <summary data-de>Was sich einstellen lässt</summary>
+          <summary><span data-en>What can be set</span><span data-de>Was sich einstellen lässt</span></summary>
           <div class="dbody">
             <ul>
               <li data-en>Colors and gradient, opacity and blur, height, border and corners</li>
@@ -802,8 +798,7 @@
         <p data-de>Das Bild zeigt die Einstellungsseite, Geräte &amp; Dienste oder eine Tabelle (oben in der Feldspalte gewählt). Ein Klick auf Menüpunkte, Favoriten-Leiste oder Systemmonitor öffnet ihre Felder.</p>
 
         <details>
-          <summary data-en>Menu entries of the Settings page</summary>
-          <summary data-de>Menüpunkte der Einstellungsseite</summary>
+          <summary><span data-en>Menu entries of the Settings page</span><span data-de>Menüpunkte der Einstellungsseite</span></summary>
           <div class="dbody">
             <p data-en>Home Assistant draws a colored circle behind every icon. With <em>Menu entries as rounded boxes</em> it becomes a box:</p>
             <p data-de>Home Assistant zeichnet hinter jedes Symbol einen farbigen Kreis. Mit <em>Menüpunkte als abgerundete Boxen</em> wird daraus eine Box:</p>
@@ -821,8 +816,7 @@
         </details>
 
         <details>
-          <summary data-en>Devices &amp; services as a list, tables</summary>
-          <summary data-de>Geräte &amp; Dienste als Liste, Tabellen</summary>
+          <summary><span data-en>Devices &amp; services as a list, tables</span><span data-de>Geräte &amp; Dienste als Liste, Tabellen</span></summary>
           <div class="dbody">
             <p data-en>The integrations are shown as slim rows instead of a grid of cards — name on the left, count and symbols on the right.</p>
             <p data-de>Die Integrationen erscheinen als schmale Zeilen statt als Kartenraster — Name links, Anzahl und Symbole rechts.</p>
@@ -850,8 +844,7 @@
         </details>
 
         <details>
-          <summary data-en>Settings page: order, favourites, monitor</summary>
-          <summary data-de>Einstellungsseite: Reihenfolge, Favoriten, Monitor</summary>
+          <summary><span data-en>Settings page: order, favourites, monitor</span><span data-de>Einstellungsseite: Reihenfolge, Favoriten, Monitor</span></summary>
           <div class="dbody">
             <ul>
               <li data-en><strong>Order:</strong> menu entries can be moved inside their block and hidden (a block in which everything is hidden disappears).</li>
@@ -1022,8 +1015,7 @@
         </div>
 
         <details>
-          <summary data-en>Technical details</summary>
-          <summary data-de>Technische Details</summary>
+          <summary><span data-en>Technical details</span><span data-de>Technische Details</span></summary>
           <div class="dbody">
             <ul>
               <li data-en>Lengths may be entered as a plain number; the unit <code>px</code> is added where CSS needs one.</li>
@@ -1190,6 +1182,26 @@ ha-list-item-button { text-transform: uppercase; }
           <code>ha_style_hub_updated</code>, sodass jeder offene Browser die neue
           Konfiguration ohne Neuladen übernimmt.
         </p>
+        <div class="note">
+          <p data-en>
+            <strong>Thanks to UIX:</strong> the way the stylesheets get into the
+            shadow roots at the right moment — wait for
+            <code>customElements.whenDefined</code>, then hook the element's
+            <code>updated</code> method — follows the approach of
+            <a href="https://github.com/Lint-Free-Technology/uix">UIX</a>, the
+            successor of card-mod. Many thanks to its author for the groundwork.
+            UIX does not have to be installed.
+          </p>
+          <p data-de>
+            <strong>Danke an UIX:</strong> der Weg, wie die Stylesheets zum
+            richtigen Zeitpunkt in die Shadow Roots gelangen — warten auf
+            <code>customElements.whenDefined</code>, dann die Methode
+            <code>updated</code> des Elements einklinken — folgt dem Ansatz von
+            <a href="https://github.com/Lint-Free-Technology/uix">UIX</a>, dem
+            Nachfolger von card-mod. Vielen Dank an den Autor für die
+            Vorarbeit. UIX muss dafür nicht installiert sein.
+          </p>
+        </div>
       </section>
 
       <!-- --------------------------------------------------------- faq -->
@@ -1197,8 +1209,7 @@ ha-list-item-button { text-transform: uppercase; }
         <h2>FAQ</h2>
 
         <details>
-          <summary data-en>The sidebar does not change at all</summary>
-          <summary data-de>Die Seitenleiste ändert sich überhaupt nicht</summary>
+          <summary><span data-en>The sidebar does not change at all</span><span data-de>Die Seitenleiste ändert sich überhaupt nicht</span></summary>
           <div class="dbody">
             <p data-en>
               Reload the page with a hard refresh so the browser picks up the new
@@ -1220,8 +1231,7 @@ ha-list-item-button { text-transform: uppercase; }
         </details>
 
         <details>
-          <summary data-en>Settings and the user entry stay at the bottom</summary>
-          <summary data-de>Einstellungen und Profil bleiben unten</summary>
+          <summary><span data-en>Settings and the user entry stay at the bottom</span><span data-de>Einstellungen und Profil bleiben unten</span></summary>
           <div class="dbody">
             <p data-en>Switch on <em>“Move Settings, Notifications and the user entry into the grid”</em> in the <strong>Layout</strong> tab.</p>
             <p data-de>Im Reiter <strong>Layout</strong> die Option <em>„Einstellungen, Benachrichtigungen und Profil ins Raster übernehmen“</em> aktivieren.</p>
@@ -1229,8 +1239,7 @@ ha-list-item-button { text-transform: uppercase; }
         </details>
 
         <details>
-          <summary data-en>Is it per user?</summary>
-          <summary data-de>Gilt das pro Benutzer?</summary>
+          <summary><span data-en>Is it per user?</span><span data-de>Gilt das pro Benutzer?</span></summary>
           <div class="dbody">
             <p data-en>
               No. HA Style Hub stores one configuration for the whole
@@ -1247,8 +1256,7 @@ ha-list-item-button { text-transform: uppercase; }
         </details>
 
         <details>
-          <summary data-en>Does it collide with custom-sidebar?</summary>
-          <summary data-de>Kollidiert es mit custom-sidebar?</summary>
+          <summary><span data-en>Does it collide with custom-sidebar?</span><span data-de>Kollidiert es mit custom-sidebar?</span></summary>
           <div class="dbody">
             <p data-en>Both tools patch the same element. Use only one of them at a time.</p>
             <p data-de>Beide Werkzeuge greifen dasselbe Element an. Immer nur eines von beiden verwenden.</p>
@@ -1256,8 +1264,7 @@ ha-list-item-button { text-transform: uppercase; }
         </details>
 
         <details>
-          <summary data-en>How do I get back to the stock sidebar?</summary>
-          <summary data-de>Wie komme ich zur Originalseitenleiste zurück?</summary>
+          <summary><span data-en>How do I get back to the stock sidebar?</span><span data-de>Wie komme ich zur Originalseitenleiste zurück?</span></summary>
           <div class="dbody">
             <p data-en>
               Switch off <em>“HA Style Hub active”</em> on the <strong>Info</strong>
