@@ -1,19 +1,17 @@
-# Notizen und Arbeitsdateien, gehoeren nicht ins Repository
-plan.md
-.claude/
-.vscode/
-.idea/
-
 # Python
 __pycache__/
 *.py[cod]
 *.egg-info/
 .venv/
 
+# Notizen und Arbeitsdateien 
+plan.md
+.claude/
+.vscode/
+.idea/
+
 # System
 .DS_Store
 Thumbs.db
 *.log
 
-# Lokales Backup, nicht veroeffentlichen
-backup*/

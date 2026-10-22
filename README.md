@@ -70,7 +70,7 @@ through a real theme built in the same panel.
 * Home Assistant **2026.5 or newer** for the full tile look (icon above the label)
 
 The integration detects the sidebar generation at runtime and falls back
-gracefully on older versions.
+gracefully on older versions. Best is actual System 2026.10.
 
 ## Installation
 
