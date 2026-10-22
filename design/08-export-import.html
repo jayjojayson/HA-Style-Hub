@@ -1,0 +1,112 @@
+<!doctype html>
+<html lang="de">
+<head>
+<meta charset="utf-8">
+<title>HA Style Hub – Bühne, Export und Import</title>
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Schibsted+Grotesk:wght@400;500;600;700;800&family=IBM+Plex+Mono:wght@400;500&display=swap">
+<style>
+body{margin:0}
+a{color:#2440D0}a:hover{color:#182C99}
+button{font:inherit;color:inherit}
+</style>
+</head>
+<body>
+<div style="width: 1440px; height: 900px; box-sizing: border-box; display: flex; flex-direction: column; background: #E7EAEE; color: #14171C; font-family: 'Schibsted Grotesk', system-ui, sans-serif; font-size: 14px; line-height: 1.45; overflow: hidden">
+
+<header style="height: 60px; flex: 0 0 60px; box-sizing: border-box; display: flex; align-items: center; gap: 12px; padding: 0 20px; background: #FFFFFF; border-bottom: 1px solid #D3D8DF; line-height: 1.35">
+<span style="font-weight: 800; font-size: 18px; letter-spacing: -0.02em">HA Style Hub</span>
+<nav aria-label="Bereiche" style="display: flex; gap: 2px; padding: 3px; border-radius: 10px; background: #EEF0F3; margin-left: 8px">
+<a href="01-sidebar-eintraege.html" style="height: 34px; padding: 0 14px; border-radius: 7px; display: flex; align-items: center; color: #566070; font-weight: 500; text-decoration: none">Sidebar</a>
+<a href="05-theme.html" style="height: 34px; padding: 0 14px; border-radius: 7px; display: flex; align-items: center; color: #566070; font-weight: 500; text-decoration: none">Theme</a>
+<a href="04-header.html" style="height: 34px; padding: 0 14px; border-radius: 7px; display: flex; align-items: center; color: #566070; font-weight: 500; text-decoration: none">Header</a>
+<a href="07-ha-settings.html" style="height: 34px; padding: 0 14px; border-radius: 7px; display: flex; align-items: center; color: #566070; font-weight: 500; text-decoration: none">HA-Settings</a>
+</nav>
+<label style="display: flex; align-items: center; gap: 8px; height: 36px; width: 220px; box-sizing: border-box; padding: 0 10px; border: 1px solid #D3D8DF; border-radius: 9px; color: #566070">
+<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round"><circle cx="11" cy="11" r="7"></circle><path d="M21 21l-4.5-4.5"></path></svg>
+<input type="search" placeholder="Einstellung suchen" aria-label="Einstellung suchen" style="flex: 1; min-width: 0; border: 0; outline: 0; background: transparent; color: #14171C; font: inherit">
+</label>
+<span style="flex: 1"></span>
+<span style="font-size: 13px; color: #566070">Alles gespeichert</span>
+<button disabled style="height: 36px; padding: 0 14px; border: 1px solid #D3D8DF; border-radius: 9px; background: transparent; color: #566070">Verwerfen</button>
+<button disabled style="height: 36px; padding: 0 18px; border: 1px solid #D3D8DF; border-radius: 9px; background: #EEF0F3; color: #566070; font-weight: 600">Speichern</button>
+<button aria-label="Verlauf öffnen" style="width: 36px; height: 36px; border: 1px solid #B9C0CA; border-radius: 9px; background: transparent; display: flex; align-items: center; justify-content: center; cursor: pointer"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="9"></circle><path d="M12 7v5l3 2"></path></svg></button>
+<span style="width: 1px; height: 24px; background: #D3D8DF"></span>
+<a href="08-export-import.html" aria-current="page" aria-label="Export und Import" style="width: 36px; height: 36px; box-sizing: border-box; border: 1px solid #14171C; border-radius: 9px; background: #14171C; display: flex; align-items: center; justify-content: center; color: #FFFFFF; text-decoration: none"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round"><path d="M12 4v12M7 11l5 5 5-5M4 20h16"></path></svg></a>
+<a href="10-info.html" aria-label="Info, Hilfe und Support" style="width: 36px; height: 36px; box-sizing: border-box; border: 1px solid #B9C0CA; border-radius: 9px; display: flex; align-items: center; justify-content: center; color: #14171C; text-decoration: none"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="9"></circle><path d="M12 11v6M12 7.5h.01"></path></svg></a>
+</header>
+
+<div style="flex: 1; min-height: 0; box-sizing: border-box; width: 100%; max-width: 1180px; align-self: center; padding: 32px 28px 24px; display: flex; flex-direction: column; gap: 18px">
+<div style="display: flex; align-items: baseline; gap: 12px">
+<h1 style="margin: 0; font-weight: 800; font-size: 28px; letter-spacing: -0.025em; line-height: 1.1">Sichern und weitergeben.</h1>
+<span style="color: #566070">Alles auf einmal oder jede Rubrik für sich.</span>
+</div>
+
+<section style="border-radius: 14px; background: #14171C; color: #FFFFFF; padding: 22px 24px; display: flex; align-items: center; gap: 20px">
+<div style="display: flex; flex-direction: column; gap: 6px; flex: 1; min-width: 0">
+<div style="display: flex; align-items: center; gap: 10px">
+<h2 style="margin: 0; font-weight: 800; font-size: 20px; letter-spacing: -0.02em">Komplette Konfiguration</h2>
+<span style="font-family: 'IBM Plex Mono', monospace; font-size: 11px; border: 1px solid #5A6270; border-radius: 4px; padding: 1px 6px">.json</span>
+</div>
+<p style="margin: 0; color: #D5DAE0; max-width: 720px">Exportieren speichert die komplette Konfiguration - Seitenleiste, Theme, Header und HA-Settings - als .json-Datei. Importieren liest so eine Datei wieder ein.</p>
+</div>
+<button style="height: 42px; padding: 0 18px; border: 1px solid #8A93A0; border-radius: 10px; background: transparent; color: #FFFFFF; cursor: pointer">Importieren</button>
+<button style="height: 42px; padding: 0 18px; border: 0; border-radius: 10px; background: #FFFFFF; color: #14171C; font-weight: 700; cursor: pointer">Exportieren</button>
+</section>
+
+<div style="display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 16px">
+
+<section style="border-radius: 14px; background: #FFFFFF; border: 1px solid #D3D8DF; padding: 20px 22px; display: flex; flex-direction: column; gap: 10px">
+<div style="display: flex; align-items: center; gap: 10px">
+<h2 style="margin: 0; flex: 1; font-weight: 800; font-size: 18px; letter-spacing: -0.015em">Sidebar</h2>
+<span style="font-family: 'IBM Plex Mono', monospace; font-size: 11px; color: #566070; border: 1px solid #B9C0CA; border-radius: 4px; padding: 1px 6px">.json</span>
+</div>
+<p style="margin: 0; flex: 1; color: #3A424E">Exportieren speichert Layout, Einträge und Aussehen der Seitenleiste als .json-Datei. Importieren liest so eine Datei wieder ein. Betroffen ist nur die Seitenleiste, Theme, Header und HA-Settings bleiben unberührt.</p>
+<div style="display: flex; gap: 10px">
+<button style="height: 38px; padding: 0 16px; border: 0; border-radius: 9px; background: #2440D0; color: #FFFFFF; font-weight: 600; cursor: pointer">Exportieren</button>
+<button style="height: 38px; padding: 0 16px; border: 1px solid #B9C0CA; border-radius: 9px; background: transparent; cursor: pointer">Importieren</button>
+</div>
+</section>
+
+<section style="border-radius: 14px; background: #FFFFFF; border: 1px solid #D3D8DF; padding: 20px 22px; display: flex; flex-direction: column; gap: 10px">
+<div style="display: flex; align-items: center; gap: 10px">
+<h2 style="margin: 0; flex: 1; font-weight: 800; font-size: 18px; letter-spacing: -0.015em">Theme</h2>
+<span style="font-family: 'IBM Plex Mono', monospace; font-size: 11px; color: #566070; border: 1px solid #B9C0CA; border-radius: 4px; padding: 1px 6px">.yaml</span>
+</div>
+<p style="margin: 0; flex: 1; color: #3A424E">Exportieren speichert das Theme als .yaml-Datei - praktisch als Sicherung oder um es von Hand in die configuration.yaml zu übernehmen. Importieren liest so eine Datei wieder ein und füllt damit die Felder dieser Seite; Variablen, die diese Seite nicht kennt, bleiben liegen.</p>
+<div style="display: flex; gap: 10px">
+<button style="height: 38px; padding: 0 16px; border: 0; border-radius: 9px; background: #2440D0; color: #FFFFFF; font-weight: 600; cursor: pointer">Exportieren</button>
+<a href="09-import-dialog.html" style="height: 38px; box-sizing: border-box; padding: 0 16px; border: 1px solid #B9C0CA; border-radius: 9px; display: flex; align-items: center; color: #14171C; text-decoration: none">Importieren</a>
+</div>
+</section>
+
+<section style="border-radius: 14px; background: #FFFFFF; border: 1px solid #D3D8DF; padding: 20px 22px; display: flex; flex-direction: column; gap: 10px">
+<div style="display: flex; align-items: center; gap: 10px">
+<h2 style="margin: 0; flex: 1; font-weight: 800; font-size: 18px; letter-spacing: -0.015em">Header</h2>
+<span style="font-family: 'IBM Plex Mono', monospace; font-size: 11px; color: #566070; border: 1px solid #B9C0CA; border-radius: 4px; padding: 1px 6px">.json</span>
+</div>
+<p style="margin: 0; flex: 1; color: #3A424E">Exportieren speichert diese Einstellungen als .json-Datei - praktisch als Sicherung oder um ein Aussehen weiterzugeben. Importieren liest so eine Datei wieder ein. Betroffen ist nur die Kopfzeile, Seitenleiste und Theme bleiben unberührt.</p>
+<div style="display: flex; gap: 10px">
+<button style="height: 38px; padding: 0 16px; border: 0; border-radius: 9px; background: #2440D0; color: #FFFFFF; font-weight: 600; cursor: pointer">Exportieren</button>
+<button style="height: 38px; padding: 0 16px; border: 1px solid #B9C0CA; border-radius: 9px; background: transparent; cursor: pointer">Importieren</button>
+</div>
+</section>
+
+<section style="border-radius: 14px; background: #FFFFFF; border: 1px solid #D3D8DF; padding: 20px 22px; display: flex; flex-direction: column; gap: 10px">
+<div style="display: flex; align-items: center; gap: 10px">
+<h2 style="margin: 0; flex: 1; font-weight: 800; font-size: 18px; letter-spacing: -0.015em">HA-Settings</h2>
+<span style="font-family: 'IBM Plex Mono', monospace; font-size: 11px; color: #566070; border: 1px solid #B9C0CA; border-radius: 4px; padding: 1px 6px">.json</span>
+</div>
+<p style="margin: 0; flex: 1; color: #3A424E">Der Export speichert die HA-Settings als .json-Datei – praktisch als Sicherung oder zum Weitergeben. Der Import liest eine solche Datei wieder ein. Angefasst werden nur diese Einstellungen; Seitenleiste, Theme und Header bleiben, wie sie sind.</p>
+<div style="display: flex; gap: 10px">
+<button style="height: 38px; padding: 0 16px; border: 0; border-radius: 9px; background: #2440D0; color: #FFFFFF; font-weight: 600; cursor: pointer">Exportieren</button>
+<button style="height: 38px; padding: 0 16px; border: 1px solid #B9C0CA; border-radius: 9px; background: transparent; cursor: pointer">Importieren</button>
+</div>
+</section>
+
+</div>
+<p style="margin: 0; font-size: 13px; color: #566070">Ein Import wird sofort in die Seite übernommen und erst mit „Speichern“ abgelegt. Der Stand davor bleibt im Verlauf.</p>
+</div>
+</div>
+</body>
+</html>

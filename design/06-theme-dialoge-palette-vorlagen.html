@@ -1,0 +1,84 @@
+<!doctype html>
+<html lang="de">
+<head>
+<meta charset="utf-8">
+<title>HA Style Hub – Bühne, Theme-Dialoge</title>
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Schibsted+Grotesk:wght@400;500;600;700;800&family=IBM+Plex+Mono:wght@400;500&display=swap">
+<style>
+body{margin:0}
+a{color:#2440D0}a:hover{color:#182C99}
+button{font:inherit;color:inherit}
+</style>
+</head>
+<body>
+<div style="width: 1240px; height: 700px; box-sizing: border-box; display: flex; align-items: flex-start; justify-content: center; gap: 40px; background: #9AA1AC; color: #14171C; font-family: 'Schibsted Grotesk', system-ui, sans-serif; font-size: 14px; line-height: 1.45; padding: 40px">
+
+<div role="dialog" aria-modal="true" aria-labelledby="bpal-title" style="flex: 1; min-width: 0; box-sizing: border-box; border-radius: 16px; background: #FFFFFF; padding: 24px; display: flex; flex-direction: column; gap: 14px; box-shadow: 0 24px 60px -20px rgba(20, 23, 28, 0.6)">
+<h2 id="bpal-title" style="margin: 0; font-weight: 800; font-size: 22px; letter-spacing: -0.02em">Palette aus einer Farbe</h2>
+<p style="margin: 0; color: #3A424E">Wähle eine Hauptfarbe, und die Farben für beide Modi werden daraus abgeleitet: Primärfarbe, Hintergründe, Text, Kopfzeile, Icons, Regler und Badges. Die Texte werden so gewählt, dass sie lesbar bleiben. Rahmen, Schatten, Schrift und die Statusfarben (Fehler, Warnung, Erfolg, Hinweis) bleiben, wie sie sind. Gespeichert wird erst mit „Speichern“.</p>
+<div style="display: flex; flex-direction: column; gap: 6px">
+<label for="bpal-main" style="font-size: 12px; font-weight: 600; color: #566070">Hauptfarbe</label>
+<div style="display: flex; gap: 8px">
+<span style="width: 40px; height: 40px; box-sizing: border-box; border-radius: 9px; background: #4FC3F7; border: 1px solid #B9C0CA"></span>
+<input id="bpal-main" type="text" value="#4FC3F7" style="flex: 1; min-width: 0; height: 40px; box-sizing: border-box; padding: 0 12px; border: 1px solid #B9C0CA; border-radius: 9px; background: #FFFFFF; color: #14171C; font-family: 'IBM Plex Mono', monospace; font-size: 13px">
+</div>
+</div>
+<div style="display: flex; flex-direction: column; gap: 6px">
+<span style="font-size: 12px; font-weight: 600; color: #566070">Hintergründe</span>
+<div role="group" aria-label="Hintergründe" style="display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 2px; padding: 3px; border-radius: 10px; background: #EEF0F3">
+<button style="height: 36px; border: 0; border-radius: 7px; background: transparent; font-size: 13px; cursor: pointer">Neutral (fast grau)</button>
+<button aria-pressed="true" style="height: 36px; border: 0; border-radius: 7px; background: #2440D0; color: #FFFFFF; font-weight: 600; font-size: 13px; cursor: pointer">Leicht getönt</button>
+<button style="height: 36px; border: 0; border-radius: 7px; background: transparent; font-size: 13px; cursor: pointer">Kräftig getönt</button>
+</div>
+</div>
+<div style="display: flex; flex-direction: column; gap: 6px">
+<span style="font-size: 12px; font-weight: 600; color: #566070">Akzentfarbe</span>
+<div role="group" aria-label="Akzentfarbe" style="display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 2px; padding: 3px; border-radius: 10px; background: #EEF0F3">
+<button style="height: 36px; border: 0; border-radius: 7px; background: transparent; font-size: 13px; cursor: pointer">Wie die Hauptfarbe</button>
+<button style="height: 36px; border: 0; border-radius: 7px; background: transparent; font-size: 13px; cursor: pointer">Benachbarter Farbton</button>
+<button aria-pressed="true" style="height: 36px; border: 0; border-radius: 7px; background: #2440D0; color: #FFFFFF; font-weight: 600; font-size: 13px; cursor: pointer">Gegenfarbe</button>
+<button style="height: 36px; border: 0; border-radius: 7px; background: transparent; font-size: 13px; cursor: pointer">Dreiklang</button>
+</div>
+</div>
+<div style="display: flex; flex-direction: column; gap: 6px">
+<div style="display: flex; align-items: center; gap: 10px"><span style="width: 52px; font-size: 12px; color: #566070">Dunkel</span><span style="flex: 1; height: 22px; border-radius: 6px; background: #4FC3F7"></span><span style="flex: 1; height: 22px; border-radius: 6px; background: #F7A04F"></span><span style="flex: 1; height: 22px; border-radius: 6px; background: #10161A"></span><span style="flex: 1; height: 22px; border-radius: 6px; background: #19232A"></span><span style="flex: 1; height: 22px; border-radius: 6px; background: #E4EEF3; border: 1px solid #B9C0CA; box-sizing: border-box"></span></div>
+<div style="display: flex; align-items: center; gap: 10px"><span style="width: 52px; font-size: 12px; color: #566070">Hell</span><span style="flex: 1; height: 22px; border-radius: 6px; background: #0B7FB5"></span><span style="flex: 1; height: 22px; border-radius: 6px; background: #B5600B"></span><span style="flex: 1; height: 22px; border-radius: 6px; background: #F1F7FA; border: 1px solid #B9C0CA; box-sizing: border-box"></span><span style="flex: 1; height: 22px; border-radius: 6px; background: #FFFFFF; border: 1px solid #B9C0CA; box-sizing: border-box"></span><span style="flex: 1; height: 22px; border-radius: 6px; background: #16242B"></span></div>
+</div>
+<div style="display: flex; justify-content: flex-end; gap: 10px; margin-top: 4px">
+<button style="height: 40px; padding: 0 16px; border: 1px solid #B9C0CA; border-radius: 9px; background: transparent; cursor: pointer">Abbrechen</button>
+<button style="height: 40px; padding: 0 18px; border: 0; border-radius: 9px; background: #2440D0; color: #FFFFFF; font-weight: 600; cursor: pointer">Palette übernehmen</button>
+</div>
+</div>
+
+<div role="dialog" aria-modal="true" aria-labelledby="bpre-title" style="flex: 1; min-width: 0; box-sizing: border-box; border-radius: 16px; background: #FFFFFF; padding: 24px; display: flex; flex-direction: column; gap: 14px; box-shadow: 0 24px 60px -20px rgba(20, 23, 28, 0.6)">
+<h2 id="bpre-title" style="margin: 0; font-weight: 800; font-size: 22px; letter-spacing: -0.02em">Vorlagen</h2>
+<p style="margin: 0; color: #3A424E">Ein fertiges Aussehen für beide Modi mit einem Klick. Die Vorlage füllt nur die Felder dieser Seite - danach bleibt jeder Wert änderbar, und gespeichert wird erst mit „Speichern“.</p>
+<div style="display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 10px">
+<button aria-pressed="true" style="border: 2px solid #2440D0; border-radius: 12px; background: #FFFFFF; padding: 10px; display: flex; flex-direction: column; gap: 10px; text-align: left; cursor: pointer">
+<span style="height: 72px; border-radius: 8px; background: #101A22; display: flex; align-items: center; justify-content: center; gap: 8px"><span style="width: 62px; height: 40px; border-radius: 12px; background: rgba(255, 255, 255, 0.14); border: 1px solid rgba(255, 255, 255, 0.22); box-sizing: border-box"></span><span style="width: 62px; height: 40px; border-radius: 12px; background: rgba(255, 255, 255, 0.14); border: 1px solid rgba(255, 255, 255, 0.22); box-sizing: border-box"></span></span>
+<span style="display: flex; flex-direction: column; gap: 2px"><strong>Glas</strong><span style="font-size: 12px; color: #566070">Durchscheinende Karten, weiche Kanten</span></span>
+</button>
+<button style="border: 1px solid #D3D8DF; border-radius: 12px; background: #FFFFFF; padding: 11px; display: flex; flex-direction: column; gap: 10px; text-align: left; cursor: pointer">
+<span style="height: 72px; border-radius: 8px; background: #0A0A0A; display: flex; align-items: center; justify-content: center; gap: 8px"><span style="width: 62px; height: 40px; border-radius: 6px; background: #161616; border: 2px solid #F2F2F2; box-sizing: border-box"></span><span style="width: 62px; height: 40px; border-radius: 6px; background: #161616; border: 2px solid #F2F2F2; box-sizing: border-box"></span></span>
+<span style="display: flex; flex-direction: column; gap: 2px"><strong>Kontrast</strong><span style="font-size: 12px; color: #566070">Kräftige Kanten, gut lesbar</span></span>
+</button>
+<button style="border: 1px solid #D3D8DF; border-radius: 12px; background: #FFFFFF; padding: 11px; display: flex; flex-direction: column; gap: 10px; text-align: left; cursor: pointer">
+<span style="height: 72px; border-radius: 8px; background: #15181C; display: flex; align-items: center; justify-content: center; gap: 8px"><span style="width: 62px; height: 40px; background: #2A2F36"></span><span style="width: 62px; height: 40px; background: #2A2F36"></span></span>
+<span style="display: flex; flex-direction: column; gap: 2px"><strong>Flach</strong><span style="font-size: 12px; color: #566070">Ohne Schatten, ohne Rundungen</span></span>
+</button>
+<button style="border: 1px solid #D3D8DF; border-radius: 12px; background: #FFFFFF; padding: 11px; display: flex; flex-direction: column; gap: 10px; text-align: left; cursor: pointer">
+<span style="height: 72px; border-radius: 8px; background: #1F1814; display: flex; align-items: center; justify-content: center; gap: 8px"><span style="width: 62px; height: 40px; border-radius: 10px; background: #3A2C22"></span><span style="width: 62px; height: 40px; border-radius: 10px; background: #3A2C22"></span></span>
+<span style="display: flex; flex-direction: column; gap: 2px"><strong>Warm</strong><span style="font-size: 12px; color: #566070">Erdige Töne, weiches Licht</span></span>
+</button>
+</div>
+<p style="margin: 0; padding: 10px 12px; border-radius: 9px; background: #F3F5F7; font-size: 13px; color: #3A424E">Alle Felder beider Modi mit dieser Vorlage füllen? Was jetzt drinsteht, geht dabei verloren.</p>
+<div style="display: flex; justify-content: flex-end; gap: 10px; margin-top: 4px">
+<button style="height: 40px; padding: 0 16px; border: 1px solid #B9C0CA; border-radius: 9px; background: transparent; cursor: pointer">Abbrechen</button>
+<button style="height: 40px; padding: 0 18px; border: 0; border-radius: 9px; background: #2440D0; color: #FFFFFF; font-weight: 600; cursor: pointer">Vorlage Glas übernehmen</button>
+</div>
+</div>
+
+</div>
+</body>
+</html>

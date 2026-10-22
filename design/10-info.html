@@ -1,0 +1,117 @@
+<!doctype html>
+<html lang="de">
+<head>
+<meta charset="utf-8">
+<title>HA Style Hub – Bühne, Info</title>
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Schibsted+Grotesk:wght@400;500;600;700;800&family=IBM+Plex+Mono:wght@400;500&display=swap">
+<style>
+body{margin:0}
+a{color:#2440D0}a:hover{color:#182C99}
+button{font:inherit;color:inherit}
+</style>
+</head>
+<body>
+<div style="width: 1440px; height: 1120px; box-sizing: border-box; display: flex; flex-direction: column; background: #E7EAEE; color: #14171C; font-family: 'Schibsted Grotesk', system-ui, sans-serif; font-size: 14px; line-height: 1.5; overflow: hidden">
+
+<header style="height: 60px; flex: 0 0 60px; box-sizing: border-box; display: flex; align-items: center; gap: 12px; padding: 0 20px; background: #FFFFFF; border-bottom: 1px solid #D3D8DF; line-height: 1.35">
+<span style="font-weight: 800; font-size: 18px; letter-spacing: -0.02em">HA Style Hub</span>
+<nav aria-label="Bereiche" style="display: flex; gap: 2px; padding: 3px; border-radius: 10px; background: #EEF0F3; margin-left: 8px">
+<a href="01-sidebar-eintraege.html" style="height: 34px; padding: 0 14px; border-radius: 7px; display: flex; align-items: center; color: #566070; font-weight: 500; text-decoration: none">Sidebar</a>
+<a href="05-theme.html" style="height: 34px; padding: 0 14px; border-radius: 7px; display: flex; align-items: center; color: #566070; font-weight: 500; text-decoration: none">Theme</a>
+<a href="04-header.html" style="height: 34px; padding: 0 14px; border-radius: 7px; display: flex; align-items: center; color: #566070; font-weight: 500; text-decoration: none">Header</a>
+<a href="07-ha-settings.html" style="height: 34px; padding: 0 14px; border-radius: 7px; display: flex; align-items: center; color: #566070; font-weight: 500; text-decoration: none">HA-Settings</a>
+</nav>
+<label style="display: flex; align-items: center; gap: 8px; height: 36px; width: 220px; box-sizing: border-box; padding: 0 10px; border: 1px solid #D3D8DF; border-radius: 9px; color: #566070">
+<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round"><circle cx="11" cy="11" r="7"></circle><path d="M21 21l-4.5-4.5"></path></svg>
+<input type="search" placeholder="Einstellung suchen" aria-label="Einstellung suchen" style="flex: 1; min-width: 0; border: 0; outline: 0; background: transparent; color: #14171C; font: inherit">
+</label>
+<span style="flex: 1"></span>
+<button aria-label="Verlauf öffnen" style="width: 36px; height: 36px; border: 1px solid #B9C0CA; border-radius: 9px; background: transparent; display: flex; align-items: center; justify-content: center; cursor: pointer"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="9"></circle><path d="M12 7v5l3 2"></path></svg></button>
+<span style="width: 1px; height: 24px; background: #D3D8DF"></span>
+<a href="08-export-import.html" aria-label="Export und Import" style="width: 36px; height: 36px; box-sizing: border-box; border: 1px solid #B9C0CA; border-radius: 9px; display: flex; align-items: center; justify-content: center; color: #14171C; text-decoration: none"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round"><path d="M12 4v12M7 11l5 5 5-5M4 20h16"></path></svg></a>
+<a href="10-info.html" aria-current="page" aria-label="Info, Hilfe und Support" style="width: 36px; height: 36px; box-sizing: border-box; border: 1px solid #14171C; border-radius: 9px; background: #14171C; display: flex; align-items: center; justify-content: center; color: #FFFFFF; text-decoration: none"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="9"></circle><path d="M12 11v6M12 7.5h.01"></path></svg></a>
+</header>
+
+<div style="flex: 1; min-height: 0; display: flex; gap: 20px; padding: 28px">
+
+<section style="flex: 1; min-width: 0; border-radius: 14px; background: #FFFFFF; border: 1px solid #D3D8DF; padding: 28px 30px; display: flex; flex-direction: column; gap: 16px">
+<h1 style="margin: 0; font-weight: 800; font-size: 32px; letter-spacing: -0.03em; line-height: 1.1">Willkommen bei HA Style Hub</h1>
+<p style="margin: 0; font-size: 16px">Gestalte dein Home Assistant genau so, wie es dir gefällt! Mit dem HA Style Hub passt du die Benutzeroberfläche und deine Dashboards ganz ohne tiefes Coding individuell an.</p>
+<p style="margin: 0; color: #3A424E">Das Style Hub ist aktuell in vier Bereiche unterteilt und bietet dir die Möglichkeit, das Design für das System und deine Dashboards anzupassen:</p>
+
+<div style="display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 12px">
+<div style="border-radius: 12px; background: #F3F5F7; padding: 16px 18px; display: flex; flex-direction: column; gap: 6px">
+<strong style="font-size: 16px; font-weight: 800">Sidebar</strong>
+<span style="color: #3A424E">Hier konfigurierst du deine Seitenleiste bequem nach deinen Wünschen:</span>
+<span style="color: #3A424E"><strong style="color: #14171C">Layout</strong>: Lege Spalten, Abstand, Breite und die Größe der Einträge fest, dazu ein Neustart-Button und das Ausblenden der Sidebar (kiosk-mode).</span>
+<span style="color: #3A424E"><strong style="color: #14171C">Einträge</strong>: Sortiere, benenne oder verstecke Menüeinträge, füge Zwischenüberschriften und Links zu beliebigen Seiten von Home Assistant hinzu.</span>
+<span style="color: #3A424E"><strong style="color: #14171C">Aussehen</strong>: Bestimme Farben, Schriften und Rahmen.</span>
+</div>
+<div style="border-radius: 12px; background: #F3F5F7; padding: 16px 18px; display: flex; flex-direction: column; gap: 6px">
+<strong style="font-size: 16px; font-weight: 800">Theme</strong>
+<span style="color: #3A424E">Geht einen Schritt weiter und färbt Home Assistant selbst ein. Hier kannst du tiefgreifend deine Cards, Schriften, Icons und Farben für das gesamte System und deine Dashboards konfigurieren.</span>
+</div>
+<div style="border-radius: 12px; background: #F3F5F7; padding: 16px 18px; display: flex; flex-direction: column; gap: 6px">
+<strong style="font-size: 16px; font-weight: 800">Header</strong>
+<span style="color: #3A424E">Kümmert sich um das Headermenu der Dashboards, bis hin zum kompletten Ausblenden. Auch hier lassen sich Farben, Icons, Rahmen und grundlegende Einstellungen anpassen, und eigene Buttons kommen vor die von Home Assistant: Neustart, Links sowie CPU und RAM.</span>
+</div>
+<div style="border-radius: 12px; background: #F3F5F7; padding: 16px 18px; display: flex; flex-direction: column; gap: 6px">
+<strong style="font-size: 16px; font-weight: 800">HA-Settings</strong>
+<span style="color: #3A424E">Ist für Home Assistant selbst: die Menüpunkte der Einstellungsseite im eigenen Aussehen, in Spalten oder als Kacheln und in eigener Reihenfolge, eine Favoriten-Leiste, ein Systemmonitor mit Prozessor, Arbeitsspeicher, Speicher und letztem Backup, Geräte &amp; Dienste und Apps als schmale Liste sowie Tabellen mit eigenen Gruppenköpfen, Streifen und Maus-Hover.</span>
+</div>
+</div>
+
+<div style="display: flex; flex-direction: column; gap: 12px; padding-top: 4px">
+<p style="margin: 0; color: #3A424E"><strong style="color: #2440D0">Tipp:</strong> Auf der Theme-Seite erzeugt die <strong style="color: #14171C">Farbpalette</strong> aus einer einzigen Hauptfarbe einen kompletten Farbsatz. Das Uhr-Symbol oben rechts öffnet den <strong style="color: #14171C">Verlauf</strong> der letzten gespeicherten Stände – mit einem Klick holst du einen früheren Stand zurück in die Seite.</p>
+<p style="margin: 0; color: #3A424E"><strong style="color: #14171C">Wichtig:</strong> Zwei Schalter stehen dir auch als Entitäten in Home Assistant unter dem Gerät <strong style="color: #14171C">HA Style Hub</strong> zur Verfügung: das Ausblenden von Header und Sidebar (kiosk-mode). Damit kannst du diese Funktionen als Button auf ein Dashboard legen oder direkt in Automationen nutzen.</p>
+<p style="margin: 0; color: #3A424E"><strong style="color: #14171C">Info:</strong> Jede Änderung ist sofort in der Vorschau zu sehen – gespeichert wird sie erst mit klick auf <strong style="color: #14171C">Speichern</strong>. Mit <strong style="color: #14171C">Verwerfen</strong> holst du den zuletzt gespeicherten Stand zurück. Leere Felder bedeuten immer „Lass es, wie es ist“ – du füllst also nur aus, was du wirklich ändern willst. Sollte doch mal etwas schiefgehen, setzt <strong style="color: #14171C">Alles zurücksetzen</strong> rechts auf dieser Seite alles wieder auf den Standard zurück. Über das <strong style="color: #14171C">Export/Import-Symbol</strong> oben rechts sicherst du jeden Bereich einzeln oder alles zusammen.</p>
+</div>
+</section>
+
+<div style="width: 392px; flex: 0 0 392px; display: flex; flex-direction: column; gap: 16px">
+
+<section style="border-radius: 14px; background: #14171C; color: #FFFFFF; padding: 22px; display: flex; flex-direction: column; gap: 14px">
+<div style="display: flex; align-items: center; gap: 12px">
+<div style="width: 44px; height: 44px; border-radius: 50%; background: #2A2F38; display: flex; align-items: center; justify-content: center; font-weight: 800; font-size: 18px">J</div>
+<div style="display: flex; flex-direction: column; flex: 1; min-width: 0; line-height: 1.3">
+<span style="font-size: 12px; color: #B9C0CA">Entwickelt von</span>
+<span style="font-weight: 800; font-size: 20px; letter-spacing: -0.02em">jayjojayson</span>
+</div>
+<span style="font-family: 'IBM Plex Mono', monospace; font-size: 11px; border: 1px solid #5A6270; border-radius: 4px; padding: 1px 6px">v1.3.9 · MIT</span>
+</div>
+<div style="display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 8px">
+<a href="https://github.com/jayjojayson/ha_style_hub" style="height: 40px; box-sizing: border-box; border: 1px solid #5A6270; border-radius: 9px; display: flex; align-items: center; justify-content: center; color: #FFFFFF; text-decoration: none">GitHub</a>
+<a href="https://github.com/jayjojayson/ha_style_hub/issues" style="height: 40px; box-sizing: border-box; border: 1px solid #5A6270; border-radius: 9px; display: flex; align-items: center; justify-content: center; color: #FFFFFF; text-decoration: none">Problem melden</a>
+<a href="https://jayjojayson.github.io/ha_style_hub/" style="grid-column: span 2; height: 40px; box-sizing: border-box; border: 1px solid #5A6270; border-radius: 9px; display: flex; align-items: center; justify-content: center; color: #FFFFFF; text-decoration: none">Dokumentation öffnen</a>
+</div>
+<div style="display: flex; align-items: center; gap: 12px; margin-top: 2px">
+<span style="font-size: 12px; font-weight: 700; letter-spacing: 0.08em; text-transform: uppercase; color: #B9C0CA">Projekt unterstützen</span>
+<span style="flex: 1; height: 1px; background: #3A424E"></span>
+</div>
+<p style="margin: 0; color: #D5DAE0">[DEIN SUPPORT-TEXT]</p>
+<div style="display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 8px">
+<a href="https://ko-fi.com/jayjojayson" style="height: 44px; border-radius: 9px; background: #FFFFFF; color: #14171C; font-weight: 700; display: flex; align-items: center; justify-content: center; gap: 8px; text-decoration: none"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round"><path d="M5 9h11v6a4 4 0 0 1-4 4H9a4 4 0 0 1-4-4zM16 10h1.5a2.5 2.5 0 0 1 0 5H16M8 3v2M12 3v2"></path></svg><span>Ko-fi</span></a>
+<a href="https://www.paypal.me/quadFlyerFW" style="height: 44px; box-sizing: border-box; border: 1px solid #FFFFFF; border-radius: 9px; color: #FFFFFF; font-weight: 700; display: flex; align-items: center; justify-content: center; text-decoration: none">PayPal</a>
+</div>
+</section>
+
+<section style="border-radius: 14px; background: #FFFFFF; border: 1px solid #D3D8DF; padding: 20px 22px; display: flex; flex-direction: column; gap: 10px">
+<label style="display: flex; align-items: center; gap: 10px; cursor: pointer">
+<span style="flex: 1; font-weight: 800; font-size: 16px; letter-spacing: -0.01em; line-height: 1.25">Debug-Ausgaben in der Browser-Konsole</span>
+<input type="checkbox" style="width: 20px; height: 20px; accent-color: #2440D0">
+</label>
+<p style="margin: 0; color: #3A424E">Für Sidebar, Theme, Header und HA-Settings: Die Browser-Konsole (F12) zeigt, was die Integration auf der Seite gefunden und angewendet hat. Hilfreich, wenn etwas nicht so aussieht wie eingestellt.</p>
+</section>
+
+<section style="border-radius: 14px; background: #FFFFFF; border: 1px solid #C9534B; padding: 20px 22px; display: flex; flex-direction: column; gap: 10px">
+<h2 style="margin: 0; font-weight: 800; font-size: 16px; letter-spacing: -0.01em">Alles zurücksetzen</h2>
+<p style="margin: 0; color: #3A424E">Setzt die <strong style="color: #14171C">gesamte</strong> HA Style Hub-Konfiguration auf die Standardwerte zurück, nicht nur diese Seite: Sidebar (Layout, Einträge, Reihenfolge, Aussehen), Theme (samt dem in Home Assistant eingetragenen Theme), Header, HA-Settings und die beiden kiosk-mode-Schalter. Es wird sofort gespeichert. Der Stand davor bleibt im Verlauf (Uhr-Symbol) und lässt sich von dort wiederherstellen.</p>
+<button style="align-self: flex-start; height: 40px; padding: 0 16px; border: 1px solid #A8322A; border-radius: 9px; background: transparent; color: #A8322A; font-weight: 700; display: flex; align-items: center; gap: 8px; cursor: pointer"><svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round"><path d="M4 12a8 8 0 1 0 2.6-5.9M4 4v5h5"></path></svg><span>Alles zurücksetzen</span></button>
+</section>
+
+</div>
+</div>
+</div>
+</body>
+</html>

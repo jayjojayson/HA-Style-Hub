@@ -1,0 +1,82 @@
+<!doctype html>
+<html lang="de">
+<head>
+<meta charset="utf-8">
+<title>HA Style Hub – Bühne, Handy</title>
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Schibsted+Grotesk:wght@400;500;600;700;800&family=IBM+Plex+Mono:wght@400;500&display=swap">
+<style>
+body{margin:0}
+a{color:#2440D0}a:hover{color:#182C99}
+button{font:inherit;color:inherit}
+</style>
+</head>
+<body>
+<div style="width: 390px; height: 844px; box-sizing: border-box; display: flex; flex-direction: column; background: #E7EAEE; color: #14171C; font-family: 'Schibsted Grotesk', system-ui, sans-serif; font-size: 15px; line-height: 1.35; overflow: hidden">
+
+<header style="height: 56px; flex: 0 0 56px; box-sizing: border-box; display: flex; align-items: center; gap: 2px; padding: 0 6px 0 16px; background: #FFFFFF; border-bottom: 1px solid #D3D8DF">
+<span style="flex: 1; font-weight: 800; font-size: 18px; letter-spacing: -0.02em">Style Hub</span>
+<button aria-label="Einstellung suchen" style="width: 44px; height: 44px; border: 0; border-radius: 10px; background: transparent; display: flex; align-items: center; justify-content: center; cursor: pointer"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round"><circle cx="11" cy="11" r="7"></circle><path d="M21 21l-4.5-4.5"></path></svg></button>
+<a href="08-export-import.html" aria-label="Export und Import" style="width: 44px; height: 44px; border-radius: 10px; display: flex; align-items: center; justify-content: center; color: #14171C; text-decoration: none"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round"><path d="M12 4v12M7 11l5 5 5-5M4 20h16"></path></svg></a>
+<a href="10-info.html" aria-label="Info, Hilfe und Support" style="width: 44px; height: 44px; border-radius: 10px; display: flex; align-items: center; justify-content: center; color: #14171C; text-decoration: none"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="9"></circle><path d="M12 11v6M12 7.5h.01"></path></svg></a>
+</header>
+
+<!-- Bühne, klein -->
+<section aria-label="Vorschau zum Antippen" style="flex: 0 0 auto; padding: 14px 16px 12px">
+<div style="border-radius: 14px; background: #141B2D; color: #DCE3F2; padding: 16px 12px 12px; display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); gap: 8px">
+<div style="grid-column: span 2; height: 52px; border-radius: 10px; background: #22305A; display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 4px; font-size: 12px"><span style="width: 14px; height: 14px; box-sizing: border-box; border-radius: 4px; border: 1.5px solid #DCE3F2"></span><span>Übersicht</span></div>
+<div style="position: relative; height: 52px; border-radius: 10px; background: #1D2640; box-shadow: 0 0 0 2px #6F8BFF; display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 4px; font-size: 12px"><span style="width: 14px; height: 14px; box-sizing: border-box; border-radius: 4px; border: 1.5px solid #7FD1A8"></span><span>Energie</span><span style="position: absolute; left: 4px; top: -12px; height: 20px; padding: 0 6px; border-radius: 5px; background: #6F8BFF; color: #0B1030; font-size: 11px; font-weight: 700; display: flex; align-items: center">gewählt</span></div>
+<div style="height: 52px; border-radius: 10px; background: #1D2640; display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 4px; font-size: 12px"><span style="width: 14px; height: 14px; box-sizing: border-box; border-radius: 4px; border: 1.5px solid #A9B4CC"></span><span>Karte</span></div>
+<div style="grid-column: span 4; padding: 4px 4px 0; font-size: 11px; font-weight: 700; letter-spacing: 0.1em; text-transform: uppercase; color: #A9B4CC">Auswertung</div>
+<div style="grid-column: span 2; height: 52px; border-radius: 10px; background: #1D2640; display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 4px; font-size: 12px"><span style="width: 14px; height: 14px; box-sizing: border-box; border-radius: 4px; border: 1.5px solid #A9B4CC"></span><span>Logbuch</span></div>
+<div style="grid-column: span 2; height: 52px; border-radius: 10px; background: #1D2640; display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 4px; font-size: 12px"><span style="width: 14px; height: 14px; box-sizing: border-box; border-radius: 4px; border: 1.5px solid #A9B4CC"></span><span>Verlauf</span></div>
+</div>
+</section>
+
+<!-- Felder -->
+<section aria-label="Einstellungen für Sidebar" style="flex: 1; min-height: 0; box-sizing: border-box; background: #FFFFFF; border-top: 1px solid #D3D8DF; border-radius: 18px 18px 0 0; padding: 14px 16px; display: flex; flex-direction: column; gap: 12px; overflow: hidden">
+<div role="group" aria-label="Unterseiten von Sidebar" style="display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 2px; padding: 3px; border-radius: 11px; background: #EEF0F3">
+<button style="height: 44px; border: 0; border-radius: 8px; background: transparent; color: #566070; cursor: pointer">Layout</button>
+<button aria-pressed="true" style="height: 44px; border: 0; border-radius: 8px; background: #FFFFFF; font-weight: 600; cursor: pointer; box-shadow: 0 1px 2px rgba(20, 23, 28, 0.15)">Einträge</button>
+<button style="height: 44px; border: 0; border-radius: 8px; background: transparent; color: #566070; cursor: pointer">Aussehen</button>
+</div>
+<div style="display: flex; align-items: center; gap: 10px">
+<div style="display: flex; flex-direction: column; flex: 1; min-width: 0"><h1 style="margin: 0; font-weight: 800; font-size: 22px; letter-spacing: -0.02em">Energie</h1><span style="font-family: 'IBM Plex Mono', monospace; font-size: 12px; color: #566070">/energy</span></div>
+<button style="height: 44px; padding: 0 12px; border: 1px solid #B9C0CA; border-radius: 10px; background: transparent; cursor: pointer">Alle Einträge</button>
+</div>
+<div style="display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 10px">
+<div style="display: flex; flex-direction: column; gap: 4px"><label for="bp-n" style="font-size: 12px; font-weight: 600; color: #566070">Name</label><input id="bp-n" type="text" value="Energie" style="height: 46px; box-sizing: border-box; padding: 0 12px; border: 1px solid #B9C0CA; border-radius: 10px; background: #FFFFFF; color: #14171C; font: inherit; font-size: 16px"></div>
+<div style="display: flex; flex-direction: column; gap: 4px"><label for="bp-i" style="font-size: 12px; font-weight: 600; color: #566070">Icon</label><input id="bp-i" type="text" value="mdi:lightning-bolt" style="height: 46px; box-sizing: border-box; padding: 0 10px; border: 1px solid #B9C0CA; border-radius: 10px; background: #FFFFFF; color: #14171C; font-family: 'IBM Plex Mono', monospace; font-size: 13px"></div>
+</div>
+<div style="display: flex; flex-direction: column; gap: 4px">
+<div style="display: flex; align-items: center; gap: 8px"><span style="font-size: 12px; font-weight: 600; color: #566070">Spaltenbreite</span><span style="font-size: 12px; color: #2440D0">geändert, vorher 2</span></div>
+<div role="group" aria-label="Spaltenbreite" style="display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); gap: 2px; padding: 3px; border-radius: 11px; background: #EEF0F3">
+<button aria-pressed="true" style="height: 44px; border: 0; border-radius: 8px; background: #2440D0; color: #FFFFFF; font-family: 'IBM Plex Mono', monospace; font-weight: 500; cursor: pointer">1</button>
+<button style="height: 44px; border: 0; border-radius: 8px; background: transparent; font-family: 'IBM Plex Mono', monospace; cursor: pointer">2</button>
+<button style="height: 44px; border: 0; border-radius: 8px; background: transparent; font-family: 'IBM Plex Mono', monospace; cursor: pointer">3</button>
+<button style="height: 44px; border: 0; border-radius: 8px; background: transparent; font-family: 'IBM Plex Mono', monospace; cursor: pointer">4</button>
+</div>
+</div>
+<div style="display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 8px">
+<button style="height: 54px; border: 1px solid #D3D8DF; border-radius: 10px; background: transparent; display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 5px; font-size: 12px; cursor: pointer"><span style="width: 36px; height: 14px; border-radius: 4px; background: #2E9B6E"></span><span>Icon</span></button>
+<button style="height: 54px; border: 1px solid #D3D8DF; border-radius: 10px; background: transparent; display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 5px; font-size: 12px; cursor: pointer"><span style="width: 36px; height: 14px; box-sizing: border-box; border-radius: 4px; border: 1px dashed #8A93A0"></span><span>Text</span></button>
+<button style="height: 54px; border: 1px solid #D3D8DF; border-radius: 10px; background: transparent; display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 5px; font-size: 12px; cursor: pointer"><span style="width: 36px; height: 14px; box-sizing: border-box; border-radius: 4px; border: 1px dashed #8A93A0"></span><span>Hintergrund</span></button>
+</div>
+</section>
+
+<div style="height: 60px; flex: 0 0 60px; box-sizing: border-box; display: flex; align-items: center; gap: 10px; padding: 0 16px; background: #FFFFFF; border-top: 1px solid #D3D8DF">
+<span style="flex: 1; font-family: 'IBM Plex Mono', monospace; font-size: 13px; color: #2440D0; font-weight: 500">3 offen</span>
+<button style="height: 44px; padding: 0 12px; border: 1px solid #B9C0CA; border-radius: 10px; background: transparent; cursor: pointer">Verwerfen</button>
+<button style="height: 44px; padding: 0 18px; border: 0; border-radius: 10px; background: #2440D0; color: #FFFFFF; font-weight: 600; cursor: pointer">Speichern</button>
+<button aria-label="Verlauf öffnen" style="width: 44px; height: 44px; border: 1px solid #B9C0CA; border-radius: 10px; background: transparent; display: flex; align-items: center; justify-content: center; cursor: pointer"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="9"></circle><path d="M12 7v5l3 2"></path></svg></button>
+</div>
+
+<nav aria-label="Bereiche" style="height: 64px; flex: 0 0 64px; box-sizing: border-box; display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); gap: 2px; padding: 8px; background: #14171C">
+<a href="01-sidebar-eintraege.html" aria-current="page" style="border-radius: 9px; background: #FFFFFF; color: #14171C; font-weight: 700; font-size: 13px; display: flex; align-items: center; justify-content: center; text-decoration: none">Sidebar</a>
+<a href="05-theme.html" style="border-radius: 9px; color: #D5DAE0; font-size: 13px; display: flex; align-items: center; justify-content: center; text-decoration: none">Theme</a>
+<a href="04-header.html" style="border-radius: 9px; color: #D5DAE0; font-size: 13px; display: flex; align-items: center; justify-content: center; text-decoration: none">Header</a>
+<a href="07-ha-settings.html" style="border-radius: 9px; color: #D5DAE0; font-size: 13px; display: flex; align-items: center; justify-content: center; text-decoration: none">HA-Settings</a>
+</nav>
+</div>
+</body>
+</html>

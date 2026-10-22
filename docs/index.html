@@ -1,0 +1,831 @@
+<!doctype html>
+<html lang="en" data-lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>HA Style Hub – Documentation / Dokumentation</title>
+    <meta
+      name="description"
+      content="HA Style Hub - configure the Home Assistant sidebar from a GUI: grid layout, order, names, icons and styling."
+    />
+    <link
+      rel="icon"
+      href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24'><text y='18' font-size='18'>&#129517;</text></svg>"
+    />
+    <style>
+      :root {
+        --bg: #0f1720;
+        --bg-soft: #16212d;
+        --card: #1b2734;
+        --line: #2a3a4c;
+        --text: #e6edf3;
+        --muted: #93a4b5;
+        --accent: #41bdf5;
+        --accent-soft: rgba(65, 189, 245, 0.12);
+        --code-bg: #101a24;
+        --radius: 14px;
+      }
+      @media (prefers-color-scheme: light) {
+        :root {
+          --bg: #f4f7fa;
+          --bg-soft: #e9eff5;
+          --card: #ffffff;
+          --line: #d9e2ec;
+          --text: #16212d;
+          --muted: #5b6b7c;
+          --accent: #0a84c1;
+          --accent-soft: rgba(10, 132, 193, 0.1);
+          --code-bg: #f0f4f8;
+        }
+      }
+      * { box-sizing: border-box; }
+      body {
+        margin: 0;
+        background: var(--bg);
+        color: var(--text);
+        font: 16px/1.65 -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto,
+          Helvetica, Arial, sans-serif;
+      }
+      a { color: var(--accent); }
+      code, pre {
+        font-family: ui-monospace, SFMono-Regular, Menlo, Consolas, monospace;
+      }
+      code { background: var(--code-bg); padding: 2px 6px; border-radius: 6px; font-size: 0.9em; }
+      pre {
+        background: var(--code-bg);
+        border: 1px solid var(--line);
+        border-radius: var(--radius);
+        padding: 14px 16px;
+        overflow-x: auto;
+        font-size: 13px;
+      }
+      pre code { background: none; padding: 0; }
+
+      header.hero {
+        background: linear-gradient(160deg, var(--bg-soft), var(--bg) 70%);
+        border-bottom: 1px solid var(--line);
+      }
+      .wrap { max-width: 900px; margin: 0 auto; padding: 0 20px; }
+      .topbar {
+        display: flex; align-items: center; gap: 12px;
+        padding: 14px 0; font-size: 14px;
+      }
+      .topbar .grow { flex: 1; }
+      .langs { display: flex; gap: 4px; border: 1px solid var(--line); border-radius: 999px; padding: 3px; }
+      .langs button {
+        border: 0; background: transparent; color: var(--muted); cursor: pointer;
+        padding: 5px 14px; border-radius: 999px; font: inherit; font-size: 13px;
+      }
+      .langs button[aria-pressed="true"] { background: var(--accent); color: #04121c; font-weight: 600; }
+      .hero-body { padding: 26px 0 40px; }
+      .hero-body h1 { font-size: clamp(30px, 6vw, 44px); margin: 0 0 8px; letter-spacing: -0.02em; }
+      .hero-body p.lead { font-size: 18px; color: var(--muted); margin: 0 0 22px; max-width: 62ch; }
+      .badges { display: flex; flex-wrap: wrap; gap: 8px; }
+      .badge {
+        font-size: 12px; padding: 4px 10px; border-radius: 999px;
+        background: var(--accent-soft); color: var(--accent); border: 1px solid var(--line);
+      }
+      nav.toc {
+        position: sticky; top: 0; z-index: 5;
+        background: var(--bg); border-bottom: 1px solid var(--line);
+        overflow-x: auto;
+      }
+      nav.toc ul { display: flex; gap: 4px; list-style: none; margin: 0; padding: 8px 20px; max-width: 900px; margin: 0 auto; }
+      nav.toc a {
+        display: block; padding: 6px 12px; border-radius: 8px; font-size: 14px;
+        text-decoration: none; color: var(--muted); white-space: nowrap;
+      }
+      nav.toc a:hover { background: var(--accent-soft); color: var(--accent); }
+
+      main { padding: 32px 0 80px; }
+      section { margin-bottom: 40px; scroll-margin-top: 60px; }
+      h2 { font-size: 24px; margin: 0 0 12px; letter-spacing: -0.01em; }
+      h3 { font-size: 17px; margin: 24px 0 8px; }
+      .card {
+        background: var(--card); border: 1px solid var(--line);
+        border-radius: var(--radius); padding: 18px 20px; margin: 16px 0;
+      }
+      .features { display: grid; gap: 12px; grid-template-columns: repeat(auto-fit, minmax(240px, 1fr)); }
+      .feature { background: var(--card); border: 1px solid var(--line); border-radius: var(--radius); padding: 14px 16px; }
+      .feature strong { display: block; margin-bottom: 4px; }
+      .feature span { font-size: 14px; color: var(--muted); }
+      table { width: 100%; border-collapse: collapse; font-size: 14px; }
+      th, td { text-align: left; padding: 9px 10px; border-bottom: 1px solid var(--line); vertical-align: top; }
+      th { color: var(--muted); font-weight: 600; }
+      td code { white-space: nowrap; }
+      .note {
+        border-left: 3px solid var(--accent); background: var(--accent-soft);
+        padding: 12px 16px; border-radius: 0 var(--radius) var(--radius) 0; margin: 16px 0;
+      }
+      ol, ul { padding-left: 22px; }
+      li { margin: 5px 0; }
+      footer {
+        border-top: 1px solid var(--line); padding: 24px 0 40px;
+        color: var(--muted); font-size: 14px;
+      }
+      /* Only ever hide the inactive language, so the visible element keeps
+         whatever display it would normally have (block, list-item, table-row). */
+      html[data-lang="en"] [data-de],
+      html[data-lang="de"] [data-en] { display: none !important; }
+      html:not([data-lang]) [data-de] { display: none !important; }
+    </style>
+  </head>
+  <body>
+    <header class="hero">
+      <div class="wrap">
+        <div class="topbar">
+          <strong>🧩 HA Style Hub</strong>
+          <span class="grow"></span>
+          <a href="https://github.com/jayjojayson/ha_style_hub">GitHub</a>
+          <div class="langs" role="group" aria-label="Language">
+            <button type="button" data-set-lang="en" aria-pressed="true">English</button>
+            <button type="button" data-set-lang="de" aria-pressed="false">Deutsch</button>
+          </div>
+        </div>
+        <div class="hero-body">
+          <h1>HA Style Hub</h1>
+          <p class="lead" data-en>
+            Configure the Home Assistant sidebar from a graphical panel: order,
+            names, icons, visibility, a multi column grid layout and the
+            complete look — including Settings, Notifications and the user
+            entry, which Home Assistant normally keeps pinned to the bottom.
+          </p>
+          <p class="lead" data-de>
+            Die Seitenleiste von Home Assistant über eine grafische Oberfläche
+            einrichten: Reihenfolge, Namen, Icons, Sichtbarkeit, ein
+            mehrspaltiges Grid-Layout und das komplette Aussehen — inklusive
+            Einstellungen, Benachrichtigungen und Benutzereintrag, die Home
+            Assistant sonst fest am unteren Rand verankert.
+          </p>
+          <div class="badges">
+            <span class="badge">Version 1.5.6</span>
+            <span class="badge">Home Assistant 2025.3+</span>
+            <span class="badge">HACS</span>
+            <span class="badge">MIT</span>
+          </div>
+        </div>
+      </div>
+    </header>
+
+    <nav class="toc">
+      <ul>
+        <li><a href="#features" data-en>Features</a><a href="#features" data-de>Funktionen</a></li>
+        <li><a href="#install" data-en>Installation</a><a href="#install" data-de>Installation</a></li>
+        <li><a href="#usage" data-en>Usage</a><a href="#usage" data-de>Bedienung</a></li>
+        <li><a href="#theme" data-en>Theme</a><a href="#theme" data-de>Theme</a></li>
+        <li><a href="#options" data-en>Options</a><a href="#options" data-de>Optionen</a></li>
+        <li><a href="#css" data-en>Custom CSS</a><a href="#css" data-de>Eigenes CSS</a></li>
+        <li><a href="#how" data-en>How it works</a><a href="#how" data-de>Funktionsweise</a></li>
+        <li><a href="#faq" data-en>FAQ</a><a href="#faq" data-de>FAQ</a></li>
+      </ul>
+    </nav>
+
+    <main class="wrap">
+      <!-- ---------------------------------------------------- features -->
+      <section id="features">
+        <h2 data-en>Features</h2>
+        <h2 data-de>Funktionen</h2>
+        <div class="features">
+          <div class="feature">
+            <strong>🧱 <span data-en>Grid layout</span><span data-de>Grid-Layout</span></strong>
+            <span data-en>1 to 4 columns while expanded, 1 to 3 while collapsed.</span>
+            <span data-de>1 bis 4 Spalten ausgeklappt, 1 bis 3 eingeklappt.</span>
+          </div>
+          <div class="feature">
+            <strong>🏷️ <span data-en>Section headings</span><span data-de>Zwischenüberschriften</span></strong>
+            <span data-en>Own dividers with a name, an icon, a height and capital letters on or off, hidden while the sidebar is collapsed.</span>
+            <span data-de>Eigene Trenner mit Name, Icon, Höhe und wahlweise Großbuchstaben, im eingeklappten Zustand ausgeblendet.</span>
+          </div>
+          <div class="feature">
+            <strong>🪟 <span data-en>Popup links</span><span data-de>PopUp-Links</span></strong>
+            <span data-en>One sidebar entry that opens a window with several pages — dashboards, panels or settings pages — or with a Lovelace card from your dashboard (YAML), in a size of your choice.</span>
+            <span data-de>Ein Eintrag der Seitenleiste, der ein Fenster mit mehreren Seiten öffnet — Dashboards, Panels oder Einstellungsseiten — oder mit einer Lovelace-Karte aus deinem Dashboard (YAML), in wählbarer Größe.</span>
+          </div>
+          <div class="feature">
+            <strong>🔀 <span data-en>Free order</span><span data-de>Freie Reihenfolge</span></strong>
+            <span data-en>Drag and drop, including Settings, Notifications and the user entry.</span>
+            <span data-de>Per Drag and Drop, auch Einstellungen, Benachrichtigungen und Profil.</span>
+          </div>
+          <div class="feature">
+            <strong>✏️ <span data-en>Rename &amp; icons</span><span data-de>Umbenennen &amp; Icons</span></strong>
+            <span data-en>Own label and any mdi icon per entry.</span>
+            <span data-de>Eigene Beschriftung und beliebiges mdi-Icon je Eintrag.</span>
+          </div>
+          <div class="feature">
+            <strong>🌈 <span data-en>Appearance</span><span data-de>Aussehen</span></strong>
+            <span data-en>Gradients, colors, fonts, borders, radius — for the bar and per entry.</span>
+            <span data-de>Verläufe, Farben, Schrift, Rahmen, Radius — global und je Eintrag.</span>
+          </div>
+          <div class="feature">
+            <strong>⚡ <span data-en>Live preview</span><span data-de>Live-Vorschau</span></strong>
+            <span data-en>Changes show up immediately, saving is a separate step.</span>
+            <span data-de>Änderungen sind sofort sichtbar, gespeichert wird getrennt.</span>
+          </div>
+          <div class="feature">
+            <strong>👆 <span data-en>Click in the preview</span><span data-de>Im Bild anklicken</span></strong>
+            <span data-en>Every page shows a model of Home Assistant — click what you want to change; on the Theme page down to a single switch, table row or chart color.</span>
+            <span data-de>Jede Seite zeigt ein nachgebautes Home Assistant — anklicken, was du ändern willst; auf der Theme-Seite bis zum einzelnen Schalter, zur Tabellenzeile oder Diagrammfarbe.</span>
+          </div>
+          <div class="feature">
+            <strong>🔎 <span data-en>Search</span><span data-de>Suche</span></strong>
+            <span data-en>Finds every setting by its label or theme variable and jumps to it (<code>Ctrl K</code>). <code>Ctrl S</code> saves, <code>Ctrl Z</code> undoes a step.</span>
+            <span data-de>Findet jede Einstellung über ihre Beschriftung oder Theme-Variable und springt hin (<code>Strg K</code>). <code>Strg S</code> speichert, <code>Strg Z</code> nimmt einen Schritt zurück.</span>
+          </div>
+          <div class="feature">
+            <strong>🔢 <span data-en>Change counter</span><span data-de>Änderungszähler</span></strong>
+            <span data-en>Unsaved changes counted per area; changed fields show their previous value.</span>
+            <span data-de>Ungespeicherte Änderungen je Bereich; geänderte Felder zeigen den Wert von vorher.</span>
+          </div>
+          <div class="feature">
+            <strong>🖱️ <span data-en>Hover colors</span><span data-de>Hover-Farben</span></strong>
+            <span data-en>Background, text and icon while the mouse is over an entry.</span>
+            <span data-de>Hintergrund, Text und Icon, wenn die Maus darüber liegt.</span>
+          </div>
+          <div class="feature">
+            <strong>📐 <span data-en>Borders per side</span><span data-de>Rahmen je Seite</span></strong>
+            <span data-en>Border width per side, corner radius per corner.</span>
+            <span data-de>Rahmenbreite je Seite, Eckenradius je Ecke.</span>
+          </div>
+          <div class="feature">
+            <strong>🔔 <span data-en>Notification drawer</span><span data-de>Benachrichtigungsfenster</span></strong>
+            <span data-en>Optionally styled to match the sidebar.</span>
+            <span data-de>Auf Wunsch im gleichen Design wie die Seitenleiste.</span>
+          </div>
+          <div class="feature">
+            <strong>🌓 <span data-en>Theme editor</span><span data-de>Theme-Editor</span></strong>
+            <span data-en>A real Home Assistant theme from 309 variables, dark and light - with dashboard background and state colors per device type - and an anchored live preview. Existing themes can be imported.</span>
+            <span data-de>Ein echtes Home-Assistant-Theme aus 309 Variablen für Hell und Dunkel — mit Dashboard-Hintergrund und Zustandsfarben je Gerätetyp — und fest stehender Vorschau. Bestehende Themes lassen sich importieren.</span>
+          </div>
+          <div class="feature">
+            <strong>🏠 <span data-en>HA-Settings</span><span data-de>HA-Settings</span></strong>
+            <span data-en>Settings for Home Assistant itself: the menu entries of the Settings page as rounded boxes in your own colors and sizes, Devices &amp; services (and Apps) as a slim list instead of a grid, and the Settings page itself: order, hidden entries, own names and colors per entry, columns, tiles, a favourites bar, a system monitor with own entities, the last backup with <em>Create backup now</em> and an overview with counters — the profile page and the page of an integration follow along.</span>
+            <span data-de>Einstellungen für Home Assistant selbst: die Menüpunkte der Einstellungsseite als abgerundete Boxen in eigenen Farben und Größen, Geräte &amp; Dienste (und Apps) als schmale Liste statt als Raster und die Einstellungsseite selbst: Reihenfolge, ausgeblendete Menüpunkte, eigene Namen und Farben je Punkt, Spalten, Kacheln, eine Favoriten-Leiste, ein Systemmonitor mit eigenen Entitäten, das letzte Backup mit <em>Backup jetzt erstellen</em> und eine Übersicht mit Zählern — Profilseite und die Seite einer Integration ziehen mit.</span>
+          </div>
+          <div class="feature">
+            <strong>🎨 <span data-en>Choose a palette</span><span data-de>Farbpalette wählen</span></strong>
+            <span data-en>Pick a main color and both theme modes are worked out from it — with text that stays readable.</span>
+            <span data-de>Hauptfarbe wählen, und beide Theme-Modi werden daraus abgeleitet — mit gut lesbarem Text.</span>
+          </div>
+          <div class="feature">
+            <strong>🕘 <span data-en>History</span><span data-de>Verlauf</span></strong>
+            <span data-en>The last 10 saved states with what changed and who saved — one click loads an earlier state back into the page.</span>
+            <span data-de>Die letzten 10 gespeicherten Stände mit den Änderungen und dem Namen des Speichernden — ein Klick lädt einen früheren Stand zurück in die Seite.</span>
+          </div>
+          <div class="feature">
+            <strong>🎚️ <span data-en>Switch entities</span><span data-de>Schalter-Entitäten</span></strong>
+            <span data-en>Hiding the header and hiding the sidebar are real switch entities — for a dashboard button or an automation.</span>
+            <span data-de>Das Ausblenden der Kopfzeile und das der Seitenleiste gibt es als echte Schalter-Entitäten — für einen Knopf auf dem Dashboard oder eine Automation.</span>
+          </div>
+          <div class="feature">
+            <strong>🧭 <span data-en>Dashboard header</span><span data-de>Headermenu des Dashboards</span></strong>
+            <span data-en>Colours, opacity and blur, height, border, corners, a border around each button and tab, icon and title size, tab colours, the four buttons on the right, the bar at the top or at the bottom — or hidden completely with one switch.</span>
+            <span data-de>Farben, Deckkraft und Weichzeichner, Höhe, Rahmen, Ecken, ein Rahmen um jeden Button und Reiter, Icon- und Titelgröße, Farben der Reiter, die vier Button rechts, die Leiste oben oder unten — oder mit einem Schalter ganz ausgeblendet.</span>
+          </div>
+          <div class="feature">
+            <strong>🖌️ <span data-en>Theme templates</span><span data-de>Theme-Vorlagen</span></strong>
+            <span data-en>Four finished looks fill both modes with one click and stay editable afterwards.</span>
+            <span data-de>Vier fertige Looks füllen beide Modi mit einem Klick und bleiben danach änderbar.</span>
+          </div>
+          <div class="feature">
+            <strong>⏻ <span data-en>Restart button</span><span data-de>Neustart-Knopf</span></strong>
+            <span data-en>An optional entry in the grid that restarts Home Assistant — administrators only, asked in a window in your theme that checks the configuration first.</span>
+            <span data-de>Ein optionaler Eintrag im Raster, der Home Assistant neu startet — nur für Administratoren, mit Rückfrage in einem Fenster in deiner Theme-Optik, das vorher die Konfiguration prüft.</span>
+          </div>
+          <div class="feature">
+            <strong>🧩 <span data-en>No build step</span><span data-de>Kein Build-Schritt</span></strong>
+            <span data-en>Plain JavaScript, no npm and no bundler.</span>
+            <span data-de>Reines JavaScript, kein npm und kein Bundler.</span>
+          </div>
+        </div>
+      </section>
+
+      <!-- ------------------------------------------------- installation -->
+      <section id="install">
+        <h2 data-en>Installation</h2>
+        <h2 data-de>Installation</h2>
+
+        <div class="card">
+          <h3>HACS</h3>
+          <ol>
+            <li data-en>HACS → ⋮ → <em>Custom repositories</em></li>
+            <li data-de>HACS → ⋮ → <em>Benutzerdefinierte Repositories</em></li>
+            <li data-en>Add <code>https://github.com/jayjojayson/ha_style_hub</code>, category <em>Integration</em></li>
+            <li data-de><code>https://github.com/jayjojayson/ha_style_hub</code> als Kategorie <em>Integration</em> hinzufügen</li>
+            <li data-en>Install <strong>HA Style Hub</strong> and restart Home Assistant</li>
+            <li data-de><strong>HA Style Hub</strong> installieren und Home Assistant neu starten</li>
+            <li data-en><em>Settings → Devices &amp; services → Add integration → HA Style Hub</em></li>
+            <li data-de><em>Einstellungen → Geräte &amp; Dienste → Integration hinzufügen → HA Style Hub</em></li>
+          </ol>
+        </div>
+
+        <div class="card">
+          <h3 data-en>Manual</h3>
+          <h3 data-de>Manuell</h3>
+          <p data-en>
+            Copy the folder <code>custom_components/ha_style_hub</code> into your
+            Home Assistant configuration:
+          </p>
+          <p data-de>
+            Den Ordner <code>custom_components/ha_style_hub</code> in die
+            Home-Assistant-Konfiguration kopieren:
+          </p>
+          <pre><code>config/
+└── custom_components/
+    └── ha_style_hub/
+        ├── __init__.py
+        ├── card_yaml.py
+        ├── config_flow.py
+        ├── const.py
+        ├── manifest.json
+        ├── media.py
+        ├── runtime.py
+        ├── store.py
+        ├── switch.py
+        ├── theme.py
+        ├── websocket_api.py
+        ├── translations/
+        └── www/
+            ├── ha-style-hub.js
+            └── ha-style-hub-panel.js</code></pre>
+          <p data-en>Restart Home Assistant, then add the integration.</p>
+          <p data-de>Home Assistant neu starten, danach die Integration hinzufügen.</p>
+        </div>
+
+        <div class="note">
+          <span data-en>
+            <strong>Requirements:</strong> Home Assistant 2025.3 or newer.
+            The full tile look (icon above the label) needs 2026.5 or newer,
+            because only that sidebar generation exposes the required CSS parts.
+          </span>
+          <span data-de>
+            <strong>Voraussetzungen:</strong> Home Assistant 2025.3 oder neuer.
+            Die vollständige Kachelansicht (Icon über der Beschriftung) braucht
+            2026.5 oder neuer, weil erst diese Generation der Seitenleiste die
+            nötigen CSS-Parts bereitstellt.
+          </span>
+        </div>
+      </section>
+
+      <!-- -------------------------------------------------------- usage -->
+      <section id="usage">
+        <h2 data-en>Usage</h2>
+        <h2 data-de>Bedienung</h2>
+        <p data-en>
+          After the installation a <strong>HA Style Hub</strong> entry appears in
+          the sidebar and opens the configuration panel. Since 1.4.0 every page is
+          a <strong>stage</strong>: on the left a model of Home Assistant, on the
+          right the fields. A click in the model on what you want to change — an
+          entry of the sidebar, the header bar, a card, the menu entries of the
+          Settings page — opens its fields; the chosen part is outlined and
+          labelled. The bar at the top holds the four areas <strong>Sidebar</strong>,
+          <strong>Theme</strong>, <strong>Header</strong> and <strong>HA-Settings</strong>,
+          a search over all settings (<code>Ctrl K</code>), the counter of unsaved
+          changes, Discard, Save and the history, plus icons for
+          <strong>Export / Import</strong> and <strong>Info</strong>. A changed field
+          shows a dot and its previous value; <em>Before</em> below the preview
+          shows the saved state. On a phone the areas sit in a bar at the bottom.
+        </p>
+        <p data-de>
+          Nach der Installation erscheint der Eintrag <strong>HA Style Hub</strong>
+          in der Seitenleiste und öffnet das Konfigurationspanel. Seit 1.4.0 ist
+          jede Seite eine <strong>Bühne</strong>: links ein nachgebautes Home
+          Assistant, rechts die Felder. Ein Klick im Bild auf das, was du ändern
+          willst — einen Eintrag der Seitenleiste, die Kopfzeile, eine Karte, die
+          Menüpunkte der Einstellungsseite — öffnet seine Felder; das gewählte
+          Element ist umrandet und beschriftet. Die Kopfleiste trägt die vier
+          Bereiche <strong>Sidebar</strong>, <strong>Theme</strong>,
+          <strong>Header</strong> und <strong>HA-Settings</strong>, eine Suche über
+          alle Einstellungen (<code>Strg K</code>), den Zähler der ungespeicherten
+          Änderungen, Verwerfen, Speichern und den Verlauf, dazu die Symbole für
+          <strong>Export / Import</strong> und <strong>Info</strong>. Ein geändertes
+          Feld zeigt einen Punkt und den Wert von vorher; <em>Vorher</em> unter dem
+          Bild zeigt den gespeicherten Stand. Auf dem Handy stehen die Bereiche in
+          einer Leiste unten.
+        </p>
+        <table>
+          <tbody>
+            <tr data-en><th>Layout</th><td>Columns, gap, sidebar width, tile and row height, whether the fixed entries join the grid, the optional restart button and <em>Hide the sidebar completely (kiosk mode)</em> at the bottom of the column, shown right away in the model of the sidebar next to the fields.</td></tr>
+            <tr data-de><th>Layout</th><td>Spalten, Abstand, Breite der Seitenleiste, Kachel- und Zeilenhöhe, die Übernahme der festen Einträge ins Raster, der optionale Neustart-Knopf und <em>Sidebar ganz ausblenden (kiosk-mode)</em> unten in der Spalte, sofort sichtbar im Modell der Seitenleiste neben den Feldern.</td></tr>
+            <tr data-en><th>Entries</th><td>A click on an entry in the model of the sidebar selects it, dragging it there reorders it. In the list on the right (drag and drop, eye) the chosen entry folds open with its fields — name, icon, column span, the colors as tiles, hide, up / down, reset. Section headings are added with the <code>+</code> button. The plus adds a section heading, a <strong>link</strong> to a page of Home Assistant (automations, entities, tools, ... or an own path) as a normal sidebar entry, or a <strong>popup link</strong>: one entry that opens a window with several pages or with a card (YAML from the code editor of a dashboard card, at most 50 KB); width and height of the window can be set, 0 = automatic.</td></tr>
+            <tr data-de><th>Einträge</th><td>Ein Klick auf einen Eintrag im Bild der Seitenleiste wählt ihn aus, Ziehen dort sortiert um. In der Liste rechts (Drag and Drop, Auge) klappt der gewählte Eintrag mit seinen Feldern auf — Name, Icon, Spaltenbreite, die Farben als Kacheln, Ausblenden, nach oben / unten, Zurücksetzen. Zwischenüberschriften legt der <code>+</code>-Knopf an. Das Plus fügt eine Zwischenüberschrift, einen <strong>Link</strong> zu einer Seite von Home Assistant (Automatisierungen, Entitäten, Werkzeuge, … oder ein eigener Pfad) als normalen Eintrag der Seitenleiste oder einen <strong>PopUp-Link</strong> ein: ein Eintrag, der ein Fenster mit mehreren Seiten oder mit einer Karte öffnet (YAML aus dem Code-Editor einer Dashboard-Karte, höchstens 50 KB); Breite und Höhe des Fensters lassen sich einstellen, 0 = automatisch.</td></tr>
+            <tr data-en><th>Appearance</th><td>Background and gradients, text and icon colors, font size and weight, icon size, borders, radius, title and free CSS. A click on a part of the sidebar in the model opens its group.</td></tr>
+            <tr data-de><th>Aussehen</th><td>Hintergrund und Verläufe, Text- und Iconfarben, Schriftgröße und -stärke, Icongröße, Rahmen, Radius, Titel und eigenes CSS. Ein Klick auf einen Teil der Seitenleiste im Bild öffnet seine Gruppe.</td></tr>
+            <tr data-en><th>Header</th><td>The bar at the top of a dashboard: colors and gradient, opacity and blur, height, border and corners, a border around each button and view tab, icon and title / tab size, the colors of the view tabs — or hidden completely. The four buttons Home Assistant puts at the right end — add, search, Assist and edit — can be switched off one by one. The header bar is selected in the model; a click on the view tabs or the buttons opens their group, <em>Simple</em> expands only that group and <em>All fields</em> all of them, three templates are a starting point. The bar can sit at the top or at the bottom of the dashboard. Hiding it is also available as a switch entity for a dashboard button. The card <em>Buttons on the right side</em> can also put the <strong>restart button</strong> and <strong>own links</strong> to pages of Home Assistant and <strong>sensors</strong> (the state of any entity, a click opens its more-info dialog) in front of Home Assistant's buttons, as well as <strong>CPU and memory</strong> and the <strong>free and used storage space</strong> as small values; the view tabs have a hover background, and the right side of the header (buttons, links, CPU/RAM) can get a colour of its own.</td></tr>
+            <tr data-de><th>Header</th><td>Die Kopfzeile eines Dashboards: Farben und Verlauf, Deckkraft und Weichzeichner, Höhe, Rahmen und Ecken, ein Rahmen um jeden Button und Reiter, Icon- und Titel-/Reitergröße, die Farben der Ansichts-Reiter — oder ganz ausgeblendet. Die vier Button, die Home Assistant rechts hineinsetzt — Hinzufügen, Suche, Assist und Bearbeiten —, lassen sich einzeln abschalten. Die Kopfzeile ist im Bild ausgewählt; ein Klick auf die Reiter oder die Buttons öffnet ihre Gruppe, <em>Einfach</em> klappt nur diese Gruppe auf und <em>Alle Felder</em> alle, drei Vorlagen sind ein Ausgangspunkt. Die Leiste steht wahlweise oben oder unten im Dashboard. Das Ausblenden gibt es zusätzlich als Schalter-Entität für einen Button auf dem Dashboard. Die Karte <em>Buttons rechte Seite</em> setzt außerdem den <strong>Neustart-Button</strong> und <strong>eigene Links</strong> zu Seiten von Home Assistant und <strong>Sensoren</strong> (der Zustand einer beliebigen Entität, ein Klick öffnet ihren Mehr-Info-Dialog) vor die Buttons von Home Assistant, dazu <strong>CPU und RAM</strong> sowie den <strong>freien und belegten Speicherplatz</strong> als kleine Werte; die Reiter der Ansichten haben einen Maus-Hover, und die rechte Seite der Kopfzeile (Buttons, Links, CPU/RAM) bekommt auf Wunsch eine eigene Farbe.</td></tr>
+            <tr data-en><th>HA-Settings</th><td>Settings for Home Assistant itself: the model shows the Settings page, Devices &amp; services or a table (picked at the top of the field column); a click on the menu entries, the favourites bar or the system monitor opens its fields (<em>Before</em> shows the saved state). <strong>Menu entries of the Settings page:</strong> Home Assistant draws a colored circle behind every icon. Switch on <em>Menu entries as rounded boxes</em> and it becomes a box with an adjustable corner radius (0 is sharp, large values give the circle back). On top of that you can set one <em>box color</em> for all entries (empty: every entry keeps its own), the <em>icon color</em>, the <em>box size</em> and the <em>icon size</em> in px; 0 means "as Home Assistant draws it". <strong>Devices &amp; services as a list:</strong> the integrations are shown as slim rows instead of a grid of cards - name on the left, count and symbols on the right. Row height (56 px by default, at least 32), gap between rows and a maximum width of the list (0 is the full width) can be set, the list can run in two or three columns (fewer by itself on a narrow screen), as well as border width, corner radius (each side and corner separately if you like) and border color of the rows, a separate border color for integrations with a problem and a hover color with opacity. The menu entries get a border and corners of their own, too. Optionally the Apps page becomes a list as well, and the group headers of the tables (automations, entities, helpers, ...) get a background, text color, size and weight of their own; the rows of the tables can get a colour of their own and one for every second row, a hover colour with opacity and a font size (0 or 10 to 24 px). <strong>Settings page: order and favourites</strong> (columns and tiles are set in the card of the menu entries): the menu entries of Home Assistant's Settings page can be moved inside their block and hidden (a block in which everything is hidden disappears), shown in one, two or three columns (the page then gets 960 or 1040 px wide; <em>Settings › System</em> follows) and as tiles with the icon above the name; a <em>favourites bar</em> puts up to 12 own links as buttons, centred above the cards or in the header bar of the Settings page, each with its own look (colours, icon, height, border, corners, icon only). A <em>system monitor</em> shows processor, memory and storage on the Settings page, at the top or at the end, optionally with graphs of the last 5 minutes and a storage bar. A box of its own shows the <em>last backup</em> (when, size, name, location), a third one <em>counters</em> (devices, entities, integrations, apps, automations, scenes, scripts, custom cards, blueprints, users, tokens - you choose, most with a second line such as unreachable devices or the memory of the apps), and the menu entries get a mouse hover that also applies to the system monitor and the backup box; the tip line below the menu can be hidden. The list of entries shows what the Settings page had when it was last open in this browser. The whole page can be exported and imported as a JSON file (page <em>Export / Import</em>). These functions work on the structure of the pages as found in the Home Assistant source and only touch those elements on pages under <code>/config</code>; should a later version change it, the pages simply stay as Home Assistant draws them.</td></tr>
+            <tr data-de><th>HA-Settings</th><td>Einstellungen für Home Assistant selbst: das Bild zeigt die Einstellungsseite, Geräte &amp; Dienste oder eine Tabelle (gewählt oben in der Feldspalte); ein Klick auf die Menüpunkte, die Favoriten-Leiste oder den Systemmonitor öffnet ihre Felder (<em>Vorher</em> zeigt den gespeicherten Stand). <strong>Menüpunkte der Einstellungsseite:</strong> Home Assistant zeichnet hinter jedes Symbol einen farbigen Kreis. Mit <em>Menüpunkte als abgerundete Boxen</em> wird daraus eine Box mit einstellbarem Eckenradius (0 ist eckig, große Werte ergeben wieder den Kreis). Dazu lassen sich eine <em>Farbe der Box</em> für alle Menüpunkte (leer: jeder behält seine eigene), die <em>Farbe des Symbols</em>, die <em>Größe der Box</em> und die <em>Größe des Symbols</em> in px einstellen; 0 heißt „wie Home Assistant es zeichnet“. <strong>Geräte &amp; Dienste als Liste:</strong> die Integrationen erscheinen als schmale Zeilen statt als Raster aus Karten — der Name links, Anzahl und Symbole rechts. Zeilenhöhe (Standard 56 px, mindestens 32), Abstand zwischen den Zeilen und eine maximale Breite der Liste (0 ist die volle Breite) sind einstellbar, die Liste kann zwei- oder dreispaltig laufen (auf schmalen Bildschirmen von selbst weniger Spalten), ebenso Rahmenstärke, Eckenradius (auf Wunsch je Seite und je Ecke einzeln) und Rahmenfarbe der Zeilen, eine eigene Rahmenfarbe für Integrationen mit Problem sowie eine Hover-Farbe mit Deckkraft. Auch die Menüpunkte bekommen einen eigenen Rahmen und eigene Ecken. Auf Wunsch wird auch die Apps-Seite zur Liste, und die Gruppenköpfe der Tabellen (Automatisierungen, Entitäten, Helfer, …) bekommen eigenen Hintergrund, eigene Textfarbe, Größe und Stärke; die Zeilen der Tabellen können eine eigene Farbe und eine Farbe für jede zweite Zeile, eine Hover-Farbe mit Deckkraft und eine Schriftgröße (0 oder 10 bis 24 px) bekommen. <strong>Einstellungsseite: Reihenfolge und Favoriten</strong> (Spalten und Kacheln stehen in der Karte der Menüpunkte): Die Menüpunkte der Einstellungsseite von Home Assistant lassen sich innerhalb ihres Blocks verschieben und ausblenden (ein Block, in dem alles ausgeblendet ist, verschwindet), in einer, zwei oder drei Spalten anzeigen (die Seite wird dann 960 bzw. 1040 px breit; <em>Einstellungen › System</em> zieht mit) und als Kacheln mit dem Symbol über dem Namen; eine <em>Favoriten-Leiste</em> setzt bis zu 12 eigene Links als Buttons mittig über die Karten oder in die Kopfleiste der Einstellungsseite, jeweils mit eigenem Aussehen (Farben, Icon, Höhe, Rahmen, Ecken, nur Icon). Ein <em>Systemmonitor</em> zeigt Prozessor, Arbeitsspeicher und Speicher auf der Einstellungsseite, oben oder am Ende, auf Wunsch mit Verläufen der letzten 5 Minuten und einem Speicherbalken. Eine eigene Box zeigt das <em>letzte Backup</em> (wann, Größe, Name, Speicherort), eine dritte <em>Zähler</em> (Geräte, Entitäten, Integrationen, Apps, Automationen, Szenen, Skripte, Custom Cards, Blueprints, Benutzer, Token – nach Wahl, die meisten mit einer zweiten Zeile wie nicht erreichbare Geräte oder dem Speicher der Apps), und die Menüpunkte bekommen einen Maus-Hover, der auch für Systemmonitor und Backup-Box gilt; die Tipp-Zeile unter dem Menü lässt sich ausblenden. Die Liste der Menüpunkte zeigt, was die Einstellungsseite hatte, als sie zuletzt in diesem Browser geöffnet war. Die ganze Seite lässt sich als JSON-Datei exportieren und importieren (Seite <em>Export / Import</em>). Diese Funktionen arbeiten mit dem Aufbau der Seiten, wie er im Quelltext von Home Assistant steht, und fassen nur diese Elemente auf Seiten unter <code>/config</code> an; ändert eine spätere Version ihn, bleiben die Seiten einfach so, wie Home Assistant sie zeichnet.</td></tr>
+            <tr data-en><th>History</th><td>The clock icon next to Save and Discard opens the last 10 saved states, newest first, each with the time, the person who saved it and what changed (counted by area, e.g. <em>"Header: 3 values"</em>). <em>Restore</em> loads a state into the page — it is only stored when you press Save, and Discard takes it back. Hiding the header and the sidebar are switches and stay as they are; a save that changes nothing is not recorded, a reset is. Administrators only; the history lives in <code>.storage/ha_style_hub.history</code>.</td></tr>
+            <tr data-de><th>Verlauf</th><td>Das Uhr-Symbol neben Speichern und Verwerfen öffnet die letzten 10 gespeicherten Stände, der neueste oben, jeweils mit Zeit, dem Speichernden und den Änderungen (nach Bereichen gezählt, z. B. <em>„Header: 3 Werte“</em>). <em>Wiederherstellen</em> lädt einen Stand in die Seite — gespeichert wird erst mit Speichern, Verwerfen nimmt ihn zurück. Das Ausblenden von Kopfzeile und Seitenleiste sind Schalter und bleiben, wie sie sind; ein Speichern ohne Änderung wird nicht festgehalten, ein Zurücksetzen schon. Nur für Administratoren; der Verlauf liegt in <code>.storage/ha_style_hub.history</code>.</td></tr>
+            <tr data-en><th>Theme</th><td>The colors of Home Assistant itself — dashboards, dialogs and the settings pages — as a real theme. The model shows every colourable element; a click opens its groups. Templates and a palette from one color give you a finished look to start from, themes can be exported and imported as YAML. The card shadow can be designed with templates and sliders instead of CSS. The scale of the primary color for newer controls (<code>--ha-color-primary-05 … 95</code>) is computed automatically, like Home Assistant does for its default theme.</td></tr>
+            <tr data-en><th>Export / Import</th><td>One page for everything: the complete configuration as <code>.json</code>, and sidebar (new in 1.4.0), theme (<code>.yaml</code>), header and HA-Settings on their own. An import is taken into the page at once and only stored with Save; until then Discard brings back the saved state.</td></tr>
+            <tr data-en><th>Info</th><td>Welcome text, author and links, support, the master switch <em>HA Style Hub active</em>, debug output in the browser console and <em>Reset everything</em>.</td></tr>
+            <tr data-de><th>Theme</th><td>Die Farben von Home Assistant selbst — Dashboards, Dialoge und Einstellungsseiten — als echtes Theme. Das Bild zeigt alle färbbaren Elemente; ein Klick öffnet ihre Gruppen. Vorlagen und eine Farbpalette aus einer Hauptfarbe liefern einen fertigen Ausgangspunkt, Themes lassen sich als YAML exportieren und importieren. Den Schatten der Karten gestaltest du mit Vorlagen und Reglern statt mit CSS. Die Abstufungen der Primärfarbe für neuere Bedienelemente (<code>--ha-color-primary-05 … 95</code>) berechnet die Integration automatisch, wie Home Assistant beim Standard-Theme.</td></tr>
+            <tr data-de><th>Export / Import</th><td>Eine Seite für alles: die komplette Konfiguration als <code>.json</code> sowie Sidebar (neu in 1.4.0), Theme (<code>.yaml</code>), Header und HA-Settings einzeln. Ein Import wird sofort in die Seite übernommen und erst mit Speichern abgelegt; bis dahin holt Verwerfen den gespeicherten Stand zurück.</td></tr>
+            <tr data-de><th>Info</th><td>Willkommenstext, Autor und Links, Unterstützung, der Hauptschalter <em>HA Style Hub aktiv</em>, Debug-Ausgaben in der Browser-Konsole und <em>Alles zurücksetzen</em>.</td></tr>
+          </tbody>
+        </table>
+
+        <div class="note">
+          <span data-en>
+            Every change is applied to the sidebar <strong>immediately</strong>,
+            but only written to <code>.storage</code> when you press
+            <em>Save</em>. <em>Discard</em> returns to the stored state.
+          </span>
+          <span data-de>
+            Jede Änderung wirkt sich <strong>sofort</strong> auf die Seitenleiste
+            aus, gespeichert wird sie in <code>.storage</code> aber erst mit
+            <em>Speichern</em>. <em>Verwerfen</em> stellt den gespeicherten Stand
+            wieder her.
+          </span>
+        </div>
+
+        <h3 data-en>Moving Settings, Notifications and the user entry</h3>
+        <h3 data-de>Einstellungen, Benachrichtigungen und Profil verschieben</h3>
+        <p data-en>
+          Home Assistant renders those three in a separate block that is pinned
+          to the bottom of the sidebar. Switch on
+          <em>"Move Settings, Notifications and the user entry into the grid"</em>
+          in the <strong>Layout</strong> tab — only then do they become part of
+          the sortable grid.
+        </p>
+        <p data-de>
+          Home Assistant rendert diese drei in einem eigenen Block, der unten in
+          der Seitenleiste verankert ist. Im Reiter <strong>Layout</strong> die
+          Option <em>„Einstellungen, Benachrichtigungen und Profil ins Raster
+          übernehmen“</em> aktivieren — erst dann werden sie Teil des
+          sortierbaren Rasters.
+        </p>
+      </section>
+
+      <!-- ------------------------------------------------------ options -->
+      <div class="note">
+        <span data-en>
+          <strong>Section headings</strong> divide the sidebar into blocks. The
+          <code>+</code> in the <em>Entries</em> box adds one: it takes a name,
+          an icon and its own colors, runs across the full width and has no
+          target. While the sidebar is collapsed it is hidden — there is no room
+          for text there, and an icon on its own would look like another entry.
+          Drag it to the place it belongs, the bin icon removes it. Border and
+          corner radius work like they do for entries: one value, or one per
+          side and per corner.
+          <br><br>
+          Drag an entry a little to the <strong>right</strong> to file it under
+          the heading above it; dragging it back to the left takes it out. With
+          <em>“Can be collapsed”</em> switched on in the heading row, a click on
+          the heading in the sidebar folds the whole group away. Which headings
+          are folded is remembered per browser — it is a view, not a setting.
+        </span>
+        <span data-de>
+          <strong>Zwischenüberschriften</strong> unterteilen die Seitenleiste in
+          Blöcke. Der <code>+</code>-Knopf in der Box <em>Einträge</em> legt eine
+          an: sie bekommt Name, Icon und eigene Farben, läuft über die ganze
+          Breite und hat kein Ziel. Im eingeklappten Zustand ist sie ausgeblendet
+          — dort ist kein Platz für Text, und ein Icon allein sähe aus wie ein
+          weiterer Eintrag. Zieh sie an die gewünschte Stelle, der Papierkorb
+          entfernt sie wieder. Rahmen und Eckenradius lassen sich wie bei den
+          Einträgen als Gesamtwert oder je Seite und je Ecke festlegen.
+          <br><br>
+          Zieh einen Eintrag etwas <strong>nach rechts</strong>, um ihn unter der
+          Überschrift darüber einzusortieren; nach links löst die Zuordnung
+          wieder. Ist in der Überschriftenzeile <em>„Lässt sich
+          zusammenklappen“</em> aktiv, klappt ein Klick auf die Überschrift in
+          der Seitenleiste die ganze Gruppe weg. Welche Überschriften zugeklappt
+          sind, merkt sich jeder Browser selbst — es ist eine Ansicht, keine
+          Einstellung.
+        </span>
+      </div>
+
+      <!-- -------------------------------------------------------- theme -->
+      <section id="theme">
+        <h2 data-en>The theme</h2>
+        <h2 data-de>Das Theme</h2>
+        <p data-en>
+          The <strong>Theme</strong> tab does not style the sidebar, it styles
+          Home Assistant itself: dashboards, dialogs and the settings pages.
+          What is entered there is registered as a real Home Assistant theme,
+          exactly like a theme from <code>configuration.yaml</code> — it shows
+          up in the theme picker of every user profile.
+        </p>
+        <p data-de>
+          Der Reiter <strong>Theme</strong> gestaltet nicht die Seitenleiste,
+          sondern Home Assistant selbst: Dashboards, Dialoge und die
+          Einstellungsseiten. Was dort eingetragen wird, meldet die Integration
+          als echtes Home-Assistant-Theme an — genau wie ein Theme aus der
+          <code>configuration.yaml</code>. Es steht danach in der Theme-Auswahl
+          jedes Benutzerprofils.
+        </p>
+
+        <table>
+          <tbody>
+            <tr data-en><th>Layout</th><td>On the left the preview with every colourable element, below it dark / light, copy and clear. On the right <em>Choose a palette</em> and <em>Templates</em> (dialogs), the fourteen groups that fold open (the variables of the header are on the Header page, those of the sidebar on Sidebar › Appearance), and at the bottom the name and registering.</td></tr>
+            <tr data-de><th>Aufbau</th><td>Links das Vorschaubild mit allen färbbaren Elementen, darunter Dunkel / Hell, Kopieren und Leeren. Rechts <em>Farbpalette wählen</em> und <em>Vorlagen</em> (als Dialog), die vierzehn Gruppen zum Aufklappen (die Variablen der Kopfzeile stehen auf der Seite Header, die der Seitenleiste unter Sidebar › Aussehen) und unten Name und Eintragen.</td></tr>
+            <tr data-en><th>Choose a palette</th><td>The dialog <em>Choose a palette</em> builds both modes from a single main color: primary color, backgrounds, text, header, icons, sliders and badges. Choose how strongly the backgrounds are tinted and which accent color is used (same, neighbouring hue, opposite hue, triad). Text is checked against its background with the WCAG contrast rule (7:1 for the main text, 4.5:1 for secondary text and text on the primary color), so the main color may be nudged. Borders, shadows, fonts and the status colors stay. Nothing is saved until Save; Discard brings the old colors back.</td></tr>
+            <tr data-de><th>Farbpalette wählen</th><td>Der Dialog <em>Farbpalette wählen</em> erzeugt beide Modi aus einer einzigen Hauptfarbe: Primärfarbe, Hintergründe, Text, Kopfzeile, Icons, Regler und Badges. Gewählt werden kann, wie stark die Hintergründe getönt sind und welche Akzentfarbe gilt (gleiche, benachbarter Farbton, Gegenfarbe, Dreiklang). Die Texte werden mit der WCAG-Kontrastregel gegen den Hintergrund geprüft (7:1 für den Haupttext, 4,5:1 für Nebentext und Text auf der Primärfarbe), deshalb kann die Hauptfarbe leicht angepasst werden. Rahmen, Schatten, Schrift und Statusfarben bleiben. Gespeichert wird erst mit Speichern, Verwerfen holt die alten Farben zurück.</td></tr>
+            <tr data-en><th>309 variables</th><td>In 26 groups — base colors, backgrounds, dashboard background (color, gradient or image), text, header, sidebar, cards, states, state colors for devices, climate, security and weather, status colors, tables and inputs, dialogs, code editor, sliders and badges, typography, chart colors, energy, Home Assistant's design tokens (text, surfaces, borders, fills, corners, shadows) and switches. The CSS variable name is printed below every field.</td></tr>
+            <tr data-de><th>309 Variablen</th><td>In 26 Gruppen — Grundfarben, Hintergründe, Dashboard-Hintergrund (Farbe, Verlauf oder Bild), Text, Kopfzeile, Seitenleiste, Cards, Zustände, Zustandsfarben für Geräte, Klima, Sicherheit und Wetter, Statusfarben, Tabellen und Eingaben, Dialoge, Code-Editor, Regler und Badges, Schrift, Diagrammfarben, Energie, die Design-Tokens von Home Assistant (Text, Flächen, Rahmen, Füllungen, Ecken, Schatten) und Schalter. Unter jedem Feld steht der CSS-Variablenname.</td></tr>
+            <tr data-en><th>Dark and light</th><td>Both modes are stored separately. A switch decides which one is being edited; <em>"Copy to light / dark"</em> takes one over to the other, <em>"Clear this mode"</em> empties it.</td></tr>
+            <tr data-de><th>Dunkel und Hell</th><td>Beide Modi werden getrennt gespeichert. Ein Schalter bestimmt den bearbeiteten Modus, <em>„Nach Hell/Dunkel kopieren“</em> überträgt den einen in den anderen, <em>„Diesen Modus leeren“</em> löscht ihn.</td></tr>
+            <tr data-en><th>Empty = untouched</th><td>Only filled fields end up in the theme. Everything else keeps the value Home Assistant brings along.</td></tr>
+            <tr data-de><th>Leer = unverändert</th><td>Nur ausgefüllte Felder landen im Theme. Alles andere behält den Wert von Home Assistant.</td></tr>
+            <tr data-en><th>Preview</th><td>Three mock cards — a dashboard, a settings page and a dialog with a code editor — show the values of the mode being edited, font, scale and weight included. Empty fields are drawn the way Home Assistant itself would draw them. On a wide screen it stays anchored on the right while the fields scroll.</td></tr>
+            <tr data-de><th>Vorschau</th><td>Drei nachgebaute Karten — ein Dashboard, eine Einstellungsseite und ein Dialog mit Code-Editor — zeigen die Werte des bearbeiteten Modus, Schriftart, Skalierung und Stärke eingeschlossen. Leere Felder werden so dargestellt, wie Home Assistant sie darstellen würde. Auf breiten Bildschirmen bleibt sie rechts stehen, während links die Felder scrollen.</td></tr>
+            <tr data-en><th>Border and radius</th><td>The card border and the corner radius can be set per side and per corner, exactly like the sidebar entries on the appearance tab.</td></tr>
+            <tr data-de><th>Rahmen und Ecken</th><td>Rahmen und Eckenradius der Karten lassen sich je Seite und je Ecke festlegen, genau wie die Einträge der Seitenleiste unter Aussehen.</td></tr>
+            <tr data-en><th>Export</th><td>Writes the theme as a <code>.yaml</code> file, ready to be put into <code>configuration.yaml</code> by hand.</td></tr>
+            <tr data-de><th>Export</th><td>Speichert das Theme als <code>.yaml</code>-Datei, fertig zum Eintragen in die <code>configuration.yaml</code>.</td></tr>
+            <tr data-en><th>Import</th><td>Reads a theme file back in — an export from here, a file from the <code>themes</code> folder, or the <code>themes</code> block of a <code>configuration.yaml</code>. Only the variables above are taken over, the rest is left behind and counted. A four value border or radius is split back into its fields, and if the file holds several themes you pick one.</td></tr>
+            <tr data-de><th>Import</th><td>Liest eine Theme-Datei wieder ein — einen Export von hier, eine Datei aus dem <code>themes</code>-Ordner oder den <code>themes</code>-Block einer <code>configuration.yaml</code>. Übernommen wird nur, was oben aufgeführt ist, der Rest bleibt liegen und wird gezählt. Ein vierfacher Rahmen- oder Eckenwert wird wieder auf die Felder verteilt, und stecken mehrere Themes in der Datei, wählst du eines aus.</td></tr>
+          </tbody>
+        </table>
+
+        <div class="note">
+          <span data-en>
+            The theme is only published once <em>"Register the theme in Home
+            Assistant"</em> is switched on. <em>"Use it as the default theme
+            right away"</em> additionally sets it for everybody who follows the
+            theme selected by the server.
+          </span>
+          <span data-de>
+            Veröffentlicht wird das Theme erst mit
+            <em>„Theme in Home Assistant eintragen“</em>.
+            <em>„Gleich als Standard-Theme verwenden“</em> setzt es zusätzlich
+            für alle, die dem vom Server gewählten Theme folgen.
+          </span>
+        </div>
+
+        <p data-en>
+          Lengths may be entered as a plain number, the unit <code>px</code> is
+          added where CSS needs one. The <code>rgb-*</code> variables Home
+          Assistant needs for transparent colors do not appear in the theme at
+          all — Home Assistant derives them itself from every hex value. The
+          theme lives in <code>.storage</code>, not in
+          <code>configuration.yaml</code>; calling
+          <code>frontend.reload_themes</code> replaces the whole theme list with
+          what is in the YAML, and HA Style Hub notices that and registers its
+          theme again by itself.
+        </p>
+        <p data-de>
+          Längen dürfen als blanke Zahl eingetragen werden, die Einheit
+          <code>px</code> wird ergänzt, wo CSS eine braucht. Die
+          <code>rgb-*</code>-Variablen für transparente Farben stehen gar nicht
+          erst im Theme — die leitet Home Assistant selbst aus jedem Hex-Wert
+          ab. Das Theme liegt im
+          <code>.storage</code>, nicht in der <code>configuration.yaml</code>.
+          Ein Aufruf von <code>frontend.reload_themes</code> ersetzt die
+          komplette Theme-Liste durch den Inhalt der YAML; HA Style Hub merkt das
+          und trägt sein Theme selbstständig wieder ein.
+        </p>
+      </section>
+
+      <section id="options">
+        <h2 data-en>Options in detail</h2>
+        <h2 data-de>Optionen im Detail</h2>
+
+        <h3 data-en>Layout</h3>
+        <h3 data-de>Layout</h3>
+        <table>
+          <thead>
+            <tr data-en><th>Option</th><th>Default</th><th>Description</th></tr>
+            <tr data-de><th>Option</th><th>Standard</th><th>Beschreibung</th></tr>
+          </thead>
+          <tbody>
+            <tr data-en><td><code>columns</code></td><td>2</td><td>Columns while the sidebar is expanded (1–4).</td></tr>
+            <tr data-de><td><code>columns</code></td><td>2</td><td>Spalten im ausgeklappten Zustand (1–4).</td></tr>
+            <tr data-en><td><code>columns_collapsed</code></td><td>1</td><td>Columns while the sidebar is collapsed (1–3). Needs a wider collapsed sidebar for more than 1.</td></tr>
+            <tr data-de><td><code>columns_collapsed</code></td><td>1</td><td>Spalten im eingeklappten Zustand (1–3). Für mehr als 1 muss die eingeklappte Breite erhöht werden.</td></tr>
+            <tr data-en><td><code>item_style</code></td><td>auto</td><td><code>auto</code> uses tiles from 2 columns on, <code>tile</code> always, <code>row</code> never.</td></tr>
+            <tr data-de><td><code>item_style</code></td><td>auto</td><td><code>auto</code> nutzt Kacheln ab 2 Spalten, <code>tile</code> immer, <code>row</code> nie.</td></tr>
+            <tr data-en><td><code>gap</code></td><td>6</td><td>Gap between the cells in px.</td></tr>
+            <tr data-de><td><code>gap</code></td><td>6</td><td>Abstand zwischen den Zellen in px.</td></tr>
+            <tr data-en><td><code>width</code> / <code>width_collapsed</code></td><td>256 / 56</td><td>Sidebar width in px for both states.</td></tr>
+            <tr data-de><td><code>width</code> / <code>width_collapsed</code></td><td>256 / 56</td><td>Breite der Seitenleiste in px für beide Zustände.</td></tr>
+            <tr data-en><td><code>tile_height</code> / <code>row_height</code></td><td>74 / 40</td><td>Height of a cell in the tile and in the row look.</td></tr>
+            <tr data-de><td><code>tile_height</code> / <code>row_height</code></td><td>74 / 40</td><td>Höhe einer Zelle in der Kachel- bzw. Zeilenansicht.</td></tr>
+            <tr data-en><td><code>merge_fixed</code></td><td>on</td><td>Move Settings, Notifications and the user entry into the grid.</td></tr>
+            <tr data-de><td><code>merge_fixed</code></td><td>an</td><td>Einstellungen, Benachrichtigungen und Profil ins Raster übernehmen.</td></tr>
+          </tbody>
+        </table>
+
+        <h3 data-en>Per entry</h3>
+        <h3 data-de>Pro Eintrag</h3>
+        <p data-en>
+          Name and icon are empty by default, which means "keep whatever Home
+          Assistant uses". The column span can never exceed the number of
+          columns of the current state.
+        </p>
+        <p data-de>
+          Name und Icon sind standardmäßig leer, das bedeutet „übernehmen, was
+          Home Assistant vorgibt“. Die Spaltenbreite kann nie größer werden als
+          die Spaltenzahl des aktuellen Zustands.
+        </p>
+      </section>
+
+      <!-- ---------------------------------------------------------- css -->
+      <section id="css">
+        <h2 data-en>Custom CSS</h2>
+        <h2 data-de>Eigenes CSS</h2>
+        <p data-en>
+          The box <strong>Additional CSS</strong> (Sidebar › Appearance) takes free CSS that is inserted into
+          the shadow root of <code>ha-sidebar</code>. <code>:host</code> is the
+          sidebar itself, entries can be addressed by their key:
+        </p>
+        <p data-de>
+          Die Box <strong>Zusätzliches CSS</strong> (Sidebar › Aussehen) nimmt freies CSS auf, das in den
+          Shadow Root von <code>ha-sidebar</code> eingefügt wird.
+          <code>:host</code> ist die Seitenleiste selbst, Einträge lassen sich
+          über ihren Schlüssel ansprechen:
+        </p>
+        <pre><code>/* every entry */
+ha-list-item-button { text-transform: uppercase; }
+
+/* one dashboard */
+[data-sh-key="panel:lovelace"] {
+  outline: 2px solid var(--accent-color);
+}
+
+/* the user entry */
+[data-sh-key="profile"] ha-user-badge { filter: grayscale(1); }
+
+/* only while the sidebar is expanded */
+:host([expanded]) .panels-list { padding-top: 16px; }</code></pre>
+        <table>
+          <thead>
+            <tr data-en><th>Key</th><th>Entry</th></tr>
+            <tr data-de><th>Schlüssel</th><th>Eintrag</th></tr>
+          </thead>
+          <tbody>
+            <tr data-en><td><code>panel:&lt;url_path&gt;</code></td><td>a dashboard or panel, e.g. <code>panel:energy</code></td></tr>
+            <tr data-de><td><code>panel:&lt;url_path&gt;</code></td><td>ein Dashboard oder Panel, z. B. <code>panel:energy</code></td></tr>
+            <tr data-en><td><code>config</code></td><td>Settings</td></tr>
+            <tr data-de><td><code>config</code></td><td>Einstellungen</td></tr>
+            <tr data-en><td><code>notifications</code></td><td>Notifications</td></tr>
+            <tr data-de><td><code>notifications</code></td><td>Benachrichtigungen</td></tr>
+            <tr data-en><td><code>profile</code></td><td>the user entry</td></tr>
+            <tr data-de><td><code>profile</code></td><td>der Benutzereintrag</td></tr>
+          </tbody>
+        </table>
+      </section>
+
+      <!-- --------------------------------------------------------- how -->
+      <section id="how">
+        <h2 data-en>How it works</h2>
+        <h2 data-de>Funktionsweise</h2>
+        <p data-en>HA Style Hub has two halves:</p>
+        <p data-de>HA Style Hub besteht aus zwei Hälften:</p>
+        <ul>
+          <li data-en>a <strong>Python backend</strong> that keeps the configuration in <code>.storage</code>, serves it over the websocket API (<code>ha_style_hub/get</code>, <code>ha_style_hub/save</code>, <code>ha_style_hub/reset</code>) and delivers the two JavaScript files</li>
+          <li data-de>ein <strong>Python-Backend</strong>, das die Konfiguration in <code>.storage</code> hält, sie über die Websocket-API bereitstellt (<code>ha_style_hub/get</code>, <code>ha_style_hub/save</code>, <code>ha_style_hub/reset</code>) und die beiden JavaScript-Dateien ausliefert</li>
+          <li data-en>a <strong>frontend module</strong> that is loaded on every page, walks the shadow DOM down to <code>ha-sidebar</code> and adopts generated stylesheets into the relevant shadow roots</li>
+          <li data-de>ein <strong>Frontend-Modul</strong>, das auf jeder Seite geladen wird, sich durch den Shadow DOM bis zur <code>ha-sidebar</code> hangelt und generierte Stylesheets in die betroffenen Shadow Roots einhängt</li>
+        </ul>
+        <p data-en>
+          The order is <strong>not</strong> produced by moving DOM nodes. The
+          entries are laid out in a CSS grid and sorted with the
+          <code>order</code> property, so Home Assistant's own rendering stays
+          intact and survives every re-render without further work. The three
+          fixed entries join the grid because the containers between them and
+          the grid are set to <code>display: contents</code>.
+        </p>
+        <p data-de>
+          Die Reihenfolge entsteht <strong>nicht</strong> durch Verschieben von
+          DOM-Knoten. Die Einträge liegen in einem CSS-Grid und werden über die
+          Eigenschaft <code>order</code> sortiert. So bleibt das Rendering von
+          Home Assistant unangetastet und übersteht jedes Neuzeichnen von selbst.
+          Die drei festen Einträge landen im Raster, weil die Container dazwischen
+          auf <code>display: contents</code> gesetzt werden.
+        </p>
+        <p data-en>
+          After saving, the backend fires the event
+          <code>ha_style_hub_updated</code>, so every open browser picks up the
+          new configuration without a reload.
+        </p>
+        <p data-de>
+          Nach dem Speichern feuert das Backend das Ereignis
+          <code>ha_style_hub_updated</code>, sodass jeder offene Browser die neue
+          Konfiguration ohne Neuladen übernimmt.
+        </p>
+      </section>
+
+      <!-- --------------------------------------------------------- faq -->
+      <section id="faq">
+        <h2>FAQ</h2>
+
+        <h3 data-en>The sidebar does not change at all</h3>
+        <h3 data-de>Die Seitenleiste ändert sich überhaupt nicht</h3>
+        <p data-en>
+          Reload the page with a hard refresh so the browser picks up the new
+          module. Switch on the debug output under <strong>Sidebar › Layout › HA
+          Style Hub Settings</strong> and look for <code>[HA Style Hub]</code> in
+          the browser console - there is a line per area (<code>[sidebar]</code>,
+          <code>[theme]</code>, <code>[header]</code>, <code>[settings]</code>).
+        </p>
+        <p data-de>
+          Die Seite mit einem harten Neuladen aktualisieren, damit der Browser
+          das Modul neu holt. Unter <strong>Sidebar › Layout › HA Style Hub
+          Settings</strong> die Debug-Ausgaben aktivieren und in der
+          Browser-Konsole nach <code>[HA Style Hub]</code> schauen - je Bereich
+          gibt es eine Zeile (<code>[sidebar]</code>, <code>[theme]</code>,
+          <code>[header]</code>, <code>[settings]</code>).
+        </p>
+
+        <h3 data-en>Settings and the user entry stay at the bottom</h3>
+        <h3 data-de>Einstellungen und Profil bleiben unten</h3>
+        <p data-en>
+          Switch on <em>"Move Settings, Notifications and the user entry into
+          the grid"</em> in the <strong>Layout</strong> tab.
+        </p>
+        <p data-de>
+          Im Reiter <strong>Layout</strong> die Option <em>„Einstellungen,
+          Benachrichtigungen und Profil ins Raster übernehmen“</em> aktivieren.
+        </p>
+
+        <h3 data-en>Is it per user?</h3>
+        <h3 data-de>Gilt das pro Benutzer?</h3>
+        <p data-en>
+          No. Version 1.1.1 stores one configuration for the whole installation.
+          Hiding entries is a layout choice, not a permission — Home Assistant's
+          own admin rules still apply.
+        </p>
+        <p data-de>
+          Nein. Version 1.1.1 speichert eine Konfiguration für die gesamte
+          Installation. Das Ausblenden von Einträgen ist eine Layout-Entscheidung
+          und keine Berechtigung — die Admin-Regeln von Home Assistant gelten
+          weiterhin.
+        </p>
+
+        <h3 data-en>Does it collide with custom-sidebar?</h3>
+        <h3 data-de>Kollidiert es mit custom-sidebar?</h3>
+        <p data-en>
+          Both tools patch the same element. Use only one of them at a time.
+        </p>
+        <p data-de>
+          Beide Werkzeuge greifen dasselbe Element an. Immer nur eines von beiden
+          verwenden.
+        </p>
+
+        <h3 data-en>How do I get back to the stock sidebar?</h3>
+        <h3 data-de>Wie komme ich zur Originalseitenleiste zurück?</h3>
+        <p data-en>
+          Switch off <em>"HA Style Hub active"</em> on the
+          <strong>Info</strong> page (the <em>i</em> icon at the top right of the
+          panel), or remove the integration entirely.
+        </p>
+        <p data-de>
+          Auf der Seite <strong>Info</strong> (das <em>i</em>-Symbol oben rechts
+          im Panel) die Option <em>„HA Style Hub aktiv“</em> abschalten oder die
+          Integration ganz entfernen.
+        </p>
+      </section>
+    </main>
+
+    <footer class="wrap">
+      <p>
+        HA Style Hub 1.1.1 ·
+        <a href="https://github.com/jayjojayson/ha_style_hub">github.com/jayjojayson/ha_style_hub</a>
+        · MIT
+      </p>
+    </footer>
+
+    <script>
+      (function () {
+        var html = document.documentElement;
+        var buttons = document.querySelectorAll("[data-set-lang]");
+
+        function apply(lang) {
+          html.setAttribute("data-lang", lang);
+          html.setAttribute("lang", lang);
+          buttons.forEach(function (button) {
+            button.setAttribute(
+              "aria-pressed",
+              button.dataset.setLang === lang ? "true" : "false"
+            );
+          });
+          try {
+            localStorage.setItem("ha-style-hub-docs-lang", lang);
+          } catch (err) {
+            /* private mode */
+          }
+        }
+
+        buttons.forEach(function (button) {
+          button.addEventListener("click", function () {
+            apply(button.dataset.setLang);
+          });
+        });
+
+        var stored = null;
+        try {
+          stored = localStorage.getItem("ha-style-hub-docs-lang");
+        } catch (err) {
+          /* private mode */
+        }
+        apply(
+          stored ||
+            ((navigator.language || "en").toLowerCase().indexOf("de") === 0
+              ? "de"
+              : "en")
+        );
+      })();
+    </script>
+  </body>
+</html>

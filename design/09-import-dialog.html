@@ -1,0 +1,37 @@
+<!doctype html>
+<html lang="de">
+<head>
+<meta charset="utf-8">
+<title>HA Style Hub – Bühne, Import-Dialog</title>
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Schibsted+Grotesk:wght@400;500;600;700;800&family=IBM+Plex+Mono:wght@400;500&display=swap">
+<style>
+body{margin:0}
+a{color:#2440D0}a:hover{color:#182C99}
+button{font:inherit;color:inherit}
+</style>
+</head>
+<body>
+<div style="width: 720px; height: 620px; box-sizing: border-box; display: flex; align-items: center; justify-content: center; background: #9AA1AC; color: #14171C; font-family: 'Schibsted Grotesk', system-ui, sans-serif; font-size: 14px; line-height: 1.45; padding: 40px">
+<div role="dialog" aria-modal="true" aria-labelledby="bdlg-title" style="width: 100%; box-sizing: border-box; border-radius: 16px; background: #FFFFFF; padding: 24px; display: flex; flex-direction: column; gap: 16px; box-shadow: 0 24px 60px -20px rgba(20, 23, 28, 0.6)">
+<div style="display: flex; align-items: center; gap: 10px">
+<h2 id="bdlg-title" style="margin: 0; flex: 1; font-weight: 800; font-size: 22px; letter-spacing: -0.02em">Theme importieren</h2>
+<span style="font-family: 'IBM Plex Mono', monospace; font-size: 11px; color: #566070; border: 1px solid #B9C0CA; border-radius: 4px; padding: 1px 6px">.yaml</span>
+</div>
+<p style="margin: 0; color: #3A424E">Theme-Datei wählen oder ihren Inhalt einfügen - ein Export von hier, eine Datei aus deinem themes-Ordner oder der themes-Block der configuration.yaml. Übernommen wird nur, was diese Seite auch anbietet, alles andere bleibt liegen. Das aktuelle Theme wird ersetzt, der Name bleibt stehen, und gespeichert wird erst mit „Speichern“.</p>
+<button style="height: 44px; border: 1px dashed #8A93A0; border-radius: 10px; background: #F3F5F7; display: flex; align-items: center; justify-content: center; gap: 8px; cursor: pointer">
+<svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round"><path d="M12 20V8M7 13l5-5 5 5M4 4h16"></path></svg>
+<span>Datei wählen</span>
+</button>
+<div style="display: flex; flex-direction: column; gap: 6px">
+<label for="bdlg-text" style="font-size: 12px; font-weight: 600; color: #566070">oder Inhalt einfügen</label>
+<textarea id="bdlg-text" spellcheck="false" placeholder="Mein Theme:&#10;  primary-color: &quot;#03a9f4&quot;&#10;  modes:&#10;    dark:&#10;      card-background-color: &quot;#1c1c1c&quot;" style="height: 150px; box-sizing: border-box; resize: none; padding: 12px; border: 1px solid #B9C0CA; border-radius: 10px; background: #FFFFFF; color: #14171C; font-family: 'IBM Plex Mono', monospace; font-size: 13px; line-height: 1.5"></textarea>
+</div>
+<div style="display: flex; justify-content: flex-end; gap: 10px">
+<button style="height: 40px; padding: 0 16px; border: 1px solid #B9C0CA; border-radius: 9px; background: transparent; cursor: pointer">Abbrechen</button>
+<button style="height: 40px; padding: 0 18px; border: 0; border-radius: 9px; background: #2440D0; color: #FFFFFF; font-weight: 600; cursor: pointer">Importieren</button>
+</div>
+</div>
+</div>
+</body>
+</html>

@@ -1,0 +1,152 @@
+<!doctype html>
+<html lang="de">
+<head>
+<meta charset="utf-8">
+<title>HA Style Hub – Bühne, HA-Settings</title>
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Schibsted+Grotesk:wght@400;500;600;700;800&family=IBM+Plex+Mono:wght@400;500&display=swap">
+<style>
+body{margin:0}
+a{color:#2440D0}a:hover{color:#182C99}
+button{font:inherit;color:inherit}
+</style>
+</head>
+<body>
+<div style="width: 1440px; height: 980px; box-sizing: border-box; display: flex; flex-direction: column; background: #E7EAEE; color: #14171C; font-family: 'Schibsted Grotesk', system-ui, sans-serif; font-size: 14px; line-height: 1.35; overflow: hidden">
+
+<header style="height: 60px; flex: 0 0 60px; box-sizing: border-box; display: flex; align-items: center; gap: 12px; padding: 0 20px; background: #FFFFFF; border-bottom: 1px solid #D3D8DF">
+<span style="font-weight: 800; font-size: 18px; letter-spacing: -0.02em">HA Style Hub</span>
+<nav aria-label="Bereiche" style="display: flex; gap: 2px; padding: 3px; border-radius: 10px; background: #EEF0F3; margin-left: 8px">
+<a href="01-sidebar-eintraege.html" style="height: 34px; padding: 0 14px; border-radius: 7px; display: flex; align-items: center; color: #566070; font-weight: 500; text-decoration: none">Sidebar</a>
+<a href="05-theme.html" style="height: 34px; padding: 0 14px; border-radius: 7px; display: flex; align-items: center; color: #566070; font-weight: 500; text-decoration: none">Theme</a>
+<a href="04-header.html" style="height: 34px; padding: 0 14px; border-radius: 7px; display: flex; align-items: center; color: #566070; font-weight: 500; text-decoration: none">Header</a>
+<a href="07-ha-settings.html" aria-current="page" style="height: 34px; padding: 0 14px; border-radius: 7px; display: flex; align-items: center; background: #14171C; color: #FFFFFF; font-weight: 600; text-decoration: none">HA-Settings</a>
+</nav>
+<label style="display: flex; align-items: center; gap: 8px; height: 36px; width: 220px; box-sizing: border-box; padding: 0 10px; border: 1px solid #D3D8DF; border-radius: 9px; color: #566070">
+<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round"><circle cx="11" cy="11" r="7"></circle><path d="M21 21l-4.5-4.5"></path></svg>
+<input type="search" placeholder="Einstellung suchen" aria-label="Einstellung suchen" style="flex: 1; min-width: 0; border: 0; outline: 0; background: transparent; color: #14171C; font: inherit">
+</label>
+<span style="flex: 1"></span>
+<span style="font-family: 'IBM Plex Mono', monospace; font-size: 12px; color: #2440D0; font-weight: 500">1 ungespeichert</span>
+<button style="height: 36px; padding: 0 14px; border: 1px solid #B9C0CA; border-radius: 9px; background: transparent; cursor: pointer">Verwerfen</button>
+<button style="height: 36px; padding: 0 18px; border: 0; border-radius: 9px; background: #2440D0; color: #FFFFFF; font-weight: 600; cursor: pointer">Speichern</button>
+<button aria-label="Verlauf öffnen" style="width: 36px; height: 36px; border: 1px solid #B9C0CA; border-radius: 9px; background: transparent; display: flex; align-items: center; justify-content: center; cursor: pointer"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="9"></circle><path d="M12 7v5l3 2"></path></svg></button>
+<span style="width: 1px; height: 24px; background: #D3D8DF"></span>
+<a href="08-export-import.html" aria-label="Export und Import" style="width: 36px; height: 36px; box-sizing: border-box; border: 1px solid #B9C0CA; border-radius: 9px; display: flex; align-items: center; justify-content: center; color: #14171C; text-decoration: none"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round"><path d="M12 4v12M7 11l5 5 5-5M4 20h16"></path></svg></a>
+<a href="10-info.html" aria-label="Info, Hilfe und Support" style="width: 36px; height: 36px; box-sizing: border-box; border: 1px solid #B9C0CA; border-radius: 9px; display: flex; align-items: center; justify-content: center; color: #14171C; text-decoration: none"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="9"></circle><path d="M12 11v6M12 7.5h.01"></path></svg></a>
+</header>
+
+<div style="flex: 1; min-height: 0; display: flex">
+
+<section aria-label="Vorschau zum Anklicken" style="flex: 1; min-width: 0; display: flex; flex-direction: column; gap: 16px; padding: 24px 28px 18px">
+<div style="display: flex; align-items: baseline; gap: 12px">
+<h1 style="margin: 0; font-weight: 800; font-size: 28px; letter-spacing: -0.025em; line-height: 1.1">Die Seiten von Home Assistant.</h1>
+<span style="color: #566070">Seite unten wählen, dann anklicken, was du ändern willst.</span>
+</div>
+
+<div style="flex: 1; min-height: 0; border-radius: 14px; background: #0E1320; color: #DCE3F2; display: flex; overflow: hidden; box-shadow: 0 18px 40px -18px rgba(20, 23, 28, 0.45)">
+<div style="width: 200px; flex: 0 0 200px; box-sizing: border-box; background: #141B2D; padding: 14px 12px; display: flex; flex-direction: column; gap: 6px; opacity: 0.5">
+<div style="height: 34px; display: flex; align-items: center; padding: 0 8px; font-weight: 600">Home Assistant</div>
+<div style="height: 38px; border-radius: 9px; display: flex; align-items: center; padding: 0 10px; color: #A9B4CC">Übersicht</div>
+<div style="height: 38px; border-radius: 9px; display: flex; align-items: center; padding: 0 10px; color: #A9B4CC">Energie</div>
+<div style="flex: 1"></div>
+<div style="height: 38px; border-radius: 9px; background: #22305A; display: flex; align-items: center; padding: 0 10px">Einstellungen</div>
+</div>
+<div style="flex: 1; min-width: 0; display: flex; flex-direction: column">
+<div style="height: 56px; flex: 0 0 56px; box-sizing: border-box; background: #1B2540; display: flex; align-items: center; padding: 0 20px; font-weight: 600; font-size: 16px">Einstellungen</div>
+<div style="flex: 1; min-height: 0; padding: 22px 40px; display: flex; flex-direction: column; gap: 16px">
+<!-- Favoriten-Leiste -->
+<div style="display: flex; align-items: center; justify-content: center; gap: 8px">
+<span style="height: 34px; padding: 0 14px; border-radius: 10px; background: #182036; display: flex; align-items: center; font-size: 13px">Automatisierungen</span>
+<span style="height: 34px; padding: 0 14px; border-radius: 10px; background: #182036; display: flex; align-items: center; font-size: 13px">Zustände</span>
+<span style="height: 34px; padding: 0 14px; border-radius: 10px; background: #182036; display: flex; align-items: center; font-size: 13px">Backups</span>
+<button style="height: 28px; padding: 0 10px; border: 1px solid #5A6788; border-radius: 14px; background: #0E1320; color: #DCE3F2; font-size: 12px; font-weight: 600; cursor: pointer; margin-left: 8px">Favoriten-Leiste</button>
+</div>
+<!-- Systemmonitor, aus -->
+<button style="height: 52px; border: 1px dashed #5A6788; border-radius: 12px; background: transparent; color: #A9B4CC; cursor: pointer">Systemmonitor ist aus · anklicken zum Einrichten</button>
+<!-- Menüpunkte, ausgewählt -->
+<div style="position: relative; border-radius: 12px; background: #182036; box-shadow: 0 0 0 2px #6F8BFF; padding: 10px; display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 4px">
+<div style="display: flex; align-items: center; gap: 12px; height: 58px; padding: 0 8px"><span style="width: 40px; height: 40px; flex: 0 0 40px; border-radius: 10px; background: #2E6FD9"></span><span>Geräte &amp; Dienste</span></div>
+<div style="display: flex; align-items: center; gap: 12px; height: 58px; padding: 0 8px"><span style="width: 40px; height: 40px; flex: 0 0 40px; border-radius: 10px; background: #1E7D74"></span><span>Automatisierungen &amp; Szenen</span></div>
+<div style="display: flex; align-items: center; gap: 12px; height: 58px; padding: 0 8px"><span style="width: 40px; height: 40px; flex: 0 0 40px; border-radius: 10px; background: #B5651D"></span><span>Bereiche, Labels &amp; Zonen</span></div>
+<div style="display: flex; align-items: center; gap: 12px; height: 58px; padding: 0 8px"><span style="width: 40px; height: 40px; flex: 0 0 40px; border-radius: 10px; background: #6A4FC2"></span><span>Apps</span></div>
+<div style="display: flex; align-items: center; gap: 12px; height: 58px; padding: 0 8px"><span style="width: 40px; height: 40px; flex: 0 0 40px; border-radius: 10px; background: #A63D6B"></span><span>Dashboards</span></div>
+<div style="display: flex; align-items: center; gap: 12px; height: 58px; padding: 0 8px"><span style="width: 40px; height: 40px; flex: 0 0 40px; border-radius: 10px; background: #2B7FA8"></span><span>Sprachassistenten</span></div>
+<span style="position: absolute; left: 10px; top: -13px; height: 24px; padding: 0 9px; border-radius: 6px; background: #6F8BFF; color: #0B1030; font-size: 12px; font-weight: 700; display: flex; align-items: center">Menüpunkte · ausgewählt</span>
+</div>
+<div style="border-radius: 12px; background: #182036; padding: 10px; display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 4px">
+<div style="display: flex; align-items: center; gap: 12px; height: 58px; padding: 0 8px"><span style="width: 40px; height: 40px; flex: 0 0 40px; border-radius: 10px; background: #8A6A12"></span><span>Personen</span></div>
+<div style="display: flex; align-items: center; gap: 12px; height: 58px; padding: 0 8px"><span style="width: 40px; height: 40px; flex: 0 0 40px; border-radius: 10px; background: #4D5A6B"></span><span>System</span></div>
+</div>
+</div>
+</div>
+</div>
+
+<div style="display: flex; align-items: center; gap: 12px">
+<span style="color: #566070">Seite</span>
+<div role="group" aria-label="Gezeigte Seite von Home Assistant" style="display: flex; gap: 2px; padding: 3px; border-radius: 9px; background: #FFFFFF; border: 1px solid #D3D8DF">
+<button aria-pressed="true" style="height: 30px; padding: 0 12px; border: 0; border-radius: 6px; background: #14171C; color: #FFFFFF; font-weight: 600; cursor: pointer">Einstellungsseite</button>
+<button style="height: 30px; padding: 0 12px; border: 0; border-radius: 6px; background: transparent; color: #566070; cursor: pointer">Geräte &amp; Dienste</button>
+<button style="height: 30px; padding: 0 12px; border: 0; border-radius: 6px; background: transparent; color: #566070; cursor: pointer">Tabellen</button>
+</div>
+<span style="flex: 1"></span>
+<label style="display: flex; align-items: center; gap: 8px; color: #566070; cursor: pointer"><span>Vorher</span><input type="checkbox" aria-label="Gespeicherten Stand zum Vergleich zeigen" style="width: 18px; height: 18px; accent-color: #2440D0"></label>
+</div>
+</section>
+
+<aside aria-label="Einstellungen für Menüpunkte" style="width: 404px; flex: 0 0 404px; box-sizing: border-box; background: #FFFFFF; border-left: 1px solid #D3D8DF; padding: 22px 22px 18px; display: flex; flex-direction: column; gap: 12px">
+<div style="display: flex; flex-direction: column; gap: 2px">
+<span style="font-size: 12px; color: #566070">HA-Settings</span>
+<h2 style="margin: 0; font-weight: 800; font-size: 22px; letter-spacing: -0.02em">Menüpunkte</h2>
+</div>
+<label style="display: flex; align-items: center; gap: 10px; height: 40px; cursor: pointer"><span style="flex: 1; font-weight: 600">Als abgerundete Boxen zeigen</span><input type="checkbox" checked style="width: 18px; height: 18px; accent-color: #2440D0"></label>
+<div style="display: flex; flex-direction: column; gap: 4px">
+<div style="display: flex; align-items: center; gap: 8px"><label for="bh-r" style="flex: 1">Eckenradius</label><span style="font-family: 'IBM Plex Mono', monospace; font-size: 13px">10 px</span></div>
+<input id="bh-r" type="range" min="0" max="24" value="10" style="width: 100%; accent-color: #2440D0">
+</div>
+<div style="display: flex; align-items: center; gap: 10px; height: 36px">
+<span style="flex: 1">Farbe der Box</span><span style="font-size: 12px; color: #566070">leer · jede behält ihre Farbe</span><span style="width: 24px; height: 24px; box-sizing: border-box; border-radius: 6px; border: 1px dashed #8A93A0"></span>
+</div>
+<div style="display: flex; align-items: center; gap: 10px; height: 36px">
+<span style="flex: 1">Farbe des Symbols</span><span style="font-family: 'IBM Plex Mono', monospace; font-size: 13px">#FFFFFF</span><span style="width: 24px; height: 24px; box-sizing: border-box; border-radius: 6px; background: #FFFFFF; border: 1px solid #B9C0CA"></span>
+</div>
+<div style="display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 12px">
+<div style="display: flex; flex-direction: column; gap: 4px"><label for="bh-b" style="font-size: 12px; font-weight: 600; color: #566070">Größe der Box (px)</label><input id="bh-b" type="number" value="40" style="height: 36px; box-sizing: border-box; padding: 0 10px; border: 1px solid #B9C0CA; border-radius: 8px; background: #FFFFFF; color: #14171C; font-family: 'IBM Plex Mono', monospace; font-size: 13px"></div>
+<div style="display: flex; flex-direction: column; gap: 4px"><label for="bh-s" style="font-size: 12px; font-weight: 600; color: #566070">Größe des Symbols (px)</label><input id="bh-s" type="number" value="22" style="height: 36px; box-sizing: border-box; padding: 0 10px; border: 1px solid #B9C0CA; border-radius: 8px; background: #FFFFFF; color: #14171C; font-family: 'IBM Plex Mono', monospace; font-size: 13px"></div>
+</div>
+<div style="display: flex; flex-direction: column; gap: 4px">
+<div style="display: flex; align-items: center; gap: 8px"><span style="font-size: 12px; font-weight: 600; color: #566070">Spalten</span><span style="font-size: 12px; color: #2440D0">geändert, vorher 1</span></div>
+<div role="group" aria-label="Spalten" style="display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 2px; padding: 3px; border-radius: 9px; background: #EEF0F3">
+<button style="height: 30px; border: 0; border-radius: 6px; background: transparent; font-family: 'IBM Plex Mono', monospace; cursor: pointer">1</button>
+<button aria-pressed="true" style="height: 30px; border: 0; border-radius: 6px; background: #2440D0; color: #FFFFFF; font-family: 'IBM Plex Mono', monospace; font-weight: 500; cursor: pointer">2</button>
+<button style="height: 30px; border: 0; border-radius: 6px; background: transparent; font-family: 'IBM Plex Mono', monospace; cursor: pointer">3</button>
+</div>
+</div>
+<label style="display: flex; align-items: center; gap: 10px; height: 36px; cursor: pointer"><span style="flex: 1">Als Kacheln zeigen (Symbol über dem Namen)</span><input type="checkbox" style="width: 18px; height: 18px; accent-color: #2440D0"></label>
+
+<div style="display: flex; flex-direction: column; gap: 8px; padding-top: 10px; border-top: 1px solid #D3D8DF">
+<div style="display: flex; align-items: center; gap: 8px"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M6 9l6 6 6-6"></path></svg><span style="flex: 1; font-weight: 700">Rahmen und Ecken der Menüpunkte</span></div>
+<div style="display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 10px">
+<div style="display: flex; flex-direction: column; gap: 4px"><label for="bh-bw" style="font-size: 12px; font-weight: 600; color: #566070">Rahmen (px)</label><input id="bh-bw" type="number" placeholder="leer" style="height: 36px; box-sizing: border-box; padding: 0 10px; border: 1px dashed #8A93A0; border-radius: 8px; background: transparent; color: #14171C; font-family: 'IBM Plex Mono', monospace; font-size: 13px"></div>
+<div style="display: flex; flex-direction: column; gap: 4px"><label for="bh-bc" style="font-size: 12px; font-weight: 600; color: #566070">Rahmenfarbe</label><input id="bh-bc" type="text" placeholder="leer" style="height: 36px; box-sizing: border-box; padding: 0 10px; border: 1px dashed #8A93A0; border-radius: 8px; background: transparent; color: #14171C; font-family: 'IBM Plex Mono', monospace; font-size: 13px"></div>
+<div style="display: flex; flex-direction: column; gap: 4px"><label for="bh-br" style="font-size: 12px; font-weight: 600; color: #566070">Ecken (px)</label><input id="bh-br" type="number" placeholder="leer" style="height: 36px; box-sizing: border-box; padding: 0 10px; border: 1px dashed #8A93A0; border-radius: 8px; background: transparent; color: #14171C; font-family: 'IBM Plex Mono', monospace; font-size: 13px"></div>
+</div>
+<div style="display: flex; flex-wrap: wrap; gap: 16px; font-size: 13px">
+<label style="display: flex; align-items: center; gap: 6px; cursor: pointer"><input type="checkbox" style="width: 16px; height: 16px; accent-color: #2440D0"><span>Seiten einzeln festlegen</span></label>
+<label style="display: flex; align-items: center; gap: 6px; cursor: pointer"><input type="checkbox" style="width: 16px; height: 16px; accent-color: #2440D0"><span>Ecken einzeln festlegen</span></label>
+</div>
+</div>
+
+<div style="display: flex; flex-direction: column; gap: 8px; padding-top: 10px; border-top: 1px solid #D3D8DF">
+<div style="display: flex; align-items: center; gap: 8px"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M6 9l6 6 6-6"></path></svg><span style="flex: 1; font-weight: 700">Mouse Hover</span></div>
+<div style="display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 10px">
+<div style="display: flex; flex-direction: column; gap: 4px"><label for="bh-hc" style="font-size: 12px; font-weight: 600; color: #566070">Farbe unter der Maus</label><input id="bh-hc" type="text" placeholder="leer" style="height: 36px; box-sizing: border-box; padding: 0 10px; border: 1px dashed #8A93A0; border-radius: 8px; background: transparent; color: #14171C; font-family: 'IBM Plex Mono', monospace; font-size: 13px"></div>
+<div style="display: flex; flex-direction: column; gap: 4px"><label for="bh-ho" style="font-size: 12px; font-weight: 600; color: #566070">Deckkraft (%)</label><input id="bh-ho" type="number" placeholder="leer" style="height: 36px; box-sizing: border-box; padding: 0 10px; border: 1px dashed #8A93A0; border-radius: 8px; background: transparent; color: #14171C; font-family: 'IBM Plex Mono', monospace; font-size: 13px"></div>
+</div>
+</div>
+</aside>
+
+</div>
+</div>
+</body>
+</html>

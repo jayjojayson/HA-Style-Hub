@@ -1,0 +1,13 @@
+{
+  "domain": "ha_style_hub",
+  "name": "HA Style Hub",
+  "version": "1.5.6",
+  "codeowners": ["@jayjojayson"],
+  "config_flow": true,
+  "dependencies": ["frontend", "http", "panel_custom", "websocket_api"],
+  "documentation": "https://github.com/jayjojayson/ha_style_hub",
+  "integration_type": "service",
+  "iot_class": "local_push",
+  "issue_tracker": "https://github.com/jayjojayson/ha_style_hub/issues",
+  "single_config_entry": true
+}

@@ -1,0 +1,23 @@
+{
+  "config": {
+    "step": {
+      "user": {
+        "title": "HA Style Hub",
+        "description": "HA Style Hub adds a configuration panel for the Home Assistant sidebar. There is nothing to set up here – everything is configured in the \"HA Style Hub\" panel after the installation."
+      }
+    },
+    "abort": {
+      "already_configured": "HA Style Hub is already set up."
+    }
+  },
+  "entity": {
+    "switch": {
+      "header_hidden": {
+        "name": "Hide the header (kiosk mode)"
+      },
+      "sidebar_hidden": {
+        "name": "Hide the sidebar (kiosk mode)"
+      }
+    }
+  }
+}
