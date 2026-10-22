@@ -1,4 +1,8 @@
-# HA Style Hub
+<p align="center">
+  <img src="logo.png" alt="HA Style Hub Logo" width="160">
+</p>
+
+<h1 align="center">HA Style Hub</h1>
 
 <p align="center">
   <a href="https://hacs.xyz"><img src="https://img.shields.io/badge/HACS-custom-orange.svg" alt="HACS"></a>
