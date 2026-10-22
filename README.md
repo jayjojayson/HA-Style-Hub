@@ -26,7 +26,8 @@ look — including *Settings*, *Notifications* and the *user entry*, which Home
 Assistant normally keeps pinned to the bottom. And then **Home Assistant itself**,
 through a real theme built in the same panel.
 
-📖 **Documentation: <https://jayjojayson.github.io/ha_style_hub/>** (English / Deutsch) · 🇩🇪 **Deutsche Anleitung: [README_de.md](docs/README_de.md)**
+📖 **Documentation: <https://jayjojayson.github.io/ha_style_hub/>** (English / Deutsch)  
+🇩🇪 **Deutsche Anleitung: [README_de.md](docs/README_de.md)**
 
 ---
 
