@@ -7,7 +7,108 @@ englische Fassung steht in [changelog.md](changelog.md).
 Die Versionsnummern zählen bis `.9` und springen dann auf die nächste
 Nebenversion (1.2.9 → 1.3.0 → 1.3.1 → 1.3.2 → 1.3.3 → 1.3.4 → 1.3.5 → 1.3.6 →
 1.3.7 → 1.3.8 → 1.3.9 → 1.4.0 → 1.4.1 → 1.4.2 → 1.4.3 → 1.4.4 → 1.4.5 →
-1.4.6 → 1.4.7 → 1.4.8 → 1.4.9 → 1.5.0 → 1.5.1 → 1.5.2 → 1.5.3 → 1.5.4 → 1.5.5 → 1.5.6).
+1.4.6 → 1.4.7 → 1.4.8 → 1.4.9 → 1.5.0 → 1.5.1 → 1.5.2 → 1.5.3 → 1.5.4 → 1.5.5 → 1.5.6 → 1.5.7).
+
+## 1.5.7
+
+* **Weblinks in der Sidebar und in PopUps.** Ein Link der Sidebar und eine
+  Kachel eines PopUps können jetzt auf eine beliebige Webseite zeigen, nicht
+  nur auf eine Seite von Home Assistant. Der Schlüssel des Eintrags lautet
+  `link:https://example.com/pfad` (PopUp-Kacheln: `links[].path`). Angenommen
+  werden nur Adressen mit `http://` oder `https://`, bis zu 500 Zeichen, ohne
+  Leerzeichen, Anführungszeichen oder `<>` (`EXTERNAL_URL` /
+  `EXTERNAL_URL_MAX` im Injector und im Panel, `_EXTERNAL_URL` /
+  `EXTERNAL_URL_MAX` in `store.py` – dieselbe Regel an allen drei Stellen,
+  damit `javascript:` und Ähnliches nie durchrutscht). Die Links der
+  *Kopfzeile* und die *Favoriten*-Leiste bleiben in Home Assistant und nehmen
+  weiter nur Pfade.
+  * Dialog: Das Feld heißt jetzt *Eigener Pfad oder Webadresse*. Eine ganze
+    Adresse dieses Home Assistant wird weiter auf ihren Pfad gekürzt; jede
+    andere Adresse bleibt ein Weblink. In den Dialogen von Kopfzeile und
+    Favoriten wird eine fremde Adresse mit einem Hinweis beantwortet, statt sie
+    aufzunehmen.
+  * Sidebar: Der Eintrag öffnet die Adresse in einem **neuen Tab**
+    (`window.open(..., "_blank", "noopener,noreferrer")`, auch mit der mittleren
+    Maustaste und Enter) und ändert nie die Seite von Home Assistant. Er ist
+    ein echtes `<a>` mit `target="_blank"` und `rel="noopener noreferrer"`,
+    das Kontextmenü des Browsers (Rechtsklick) funktioniert also. Bis du ihn
+    umbenennst, zeigt er den Rechnernamen ohne `www.` und das Symbol
+    `mdi:open-in-new`; als aktuelle Seite wird er nie markiert.
+  * PopUp: Die Kachel einer Webadresse verhält sich genauso (neuer Tab,
+    Rechnername, Symbol *In neuem Fenster öffnen*); Editor, Platzhalter und
+    Vorschau des PopUps kennen die neue Art, die Eintragsliste zeigt
+    *Weblink*.
+* **Webseite in einem PopUp.** Neben *Links* und *Karte (YAML)* hat ein PopUp
+  einen dritten Inhalt, *Webseite*: Es zeigt die Seite einer Webadresse direkt
+  in Home Assistant, wie ein kleiner Browser (`content: "web"` und das neue Feld
+  `url` des PopUps; dieselbe Adressregel wie bei Weblinks). Im Dialog zum
+  Anlegen und beim Eintrag wählt man den Inhalt mit *Inhalt des Fensters*;
+  Links und Karte bleiben gespeichert, ein Zurückschalten verliert also nichts.
+  * Fenster: standardmäßig 900 px breit; ohne feste Höhe bekommt die Seite 70 %
+    des Bildschirms (höchstens 640 px). Im Kopf sitzt ein Button *In neuem Tab
+    öffnen*; ein Hinweis unter der Seite sagt, dass manche Webseiten das
+    Einbetten verbieten.
+  * Die Seite läuft in einem abgeschotteten `<iframe>` (Skripte, gleicher
+    Ursprung, Formulare, PopUps und Downloads erlaubt – Navigation des
+    übergeordneten Fensters nicht; `referrerpolicy="no-referrer"`) und kann die
+    Seite von Home Assistant selbst nicht umleiten.
+  * Das Panel warnt, wenn Home Assistant mit `https` läuft und die Adresse
+    `http://` ist (Mixed Content blockiert der Browser), und zeigt in der
+    Vorschau des PopUps einen Platzhalter.
+  * Backend: `POPUP_CONTENTS = ("links", "card", "web")`, `DEFAULT_POPUP["url"]`
+    und `_clean_popup_card` (eine ungültige `url` wird geleert, eine alte
+    Konfiguration ohne `url` bleibt gültig).
+  * Grenzen: Ob eine Seite eingebettet werden darf, entscheidet die Webseite
+    selbst (`X-Frame-Options`, `frame-ancestors`); viele bleiben leer – dafür
+    öffnet ein Weblink oder ein PopUp mit Links sie in einem neuen Tab. Seiten
+    im eigenen Netz funktionieren oft, wenn sie es erlauben (z. B. Grafana
+    `allow_embedding`).
+* **Hinweise in den Feldspalten sind standardmäßig offen und einzeln
+  einklappbar.** Die Erklärungen in der rechten Spalte von *Sidebar*, *Theme*,
+  *Header* und *HA-Settings* (`.hint`, `.field-hint`, `.ps-hint`,
+  `.fields-note` und der kleine Text unter den Haken) werden angezeigt, jede
+  mit einem kleinen Info-Symbol. Ein Klick darauf klappt den Hinweis ein, ein
+  weiterer öffnet ihn wieder. Der Browser merkt sich, welche Hinweise
+  geschlossen wurden (`localStorage`, `ha-style-hub-hints-closed`, eine Liste
+  mit höchstens 300 Schlüsseln aus den ersten 100 Zeichen des Textes) – jeder
+  bestimmt also selbst, welche offen bleiben. Ein Beobachter am Panel rüstet
+  jeden Hinweis nach, auch die später neu aufgebauten (Inspektor eines
+  Eintrags, die Listen der Kopfzeile, …); dafür musste kein Feld angefasst
+  werden, und kein Konfigurationsschlüssel hat sich geändert. Meldungen, die
+  einen Zustand der Seite anzeigen (`data-show-when`, `data-hide-when`,
+  `.hidden-note`, `.shadow-note`), sowie die Hinweise der Dialoge und der
+  Info-Seite bleiben unberührt.
+* **Schalter *Alle Hinweise in den Einstellungsspalten ausblenden*.** Neuer
+  Haken auf der Info-Seite: Er blendet die Hinweise aller vier Spalten samt
+  Info-Symbolen aus (`[data-hints="off"]` am Panel). Wie das Akkordeon ist er
+  Sache des Browsers: gemerkt in `localStorage` (`ha-style-hub-hints`), nicht
+  in der Konfiguration – er ändert also weder den Zähler der ungespeicherten
+  Änderungen noch den Verlauf. Die einzeln eingeklappten Hinweise bleiben
+  gemerkt.
+* **Schatten der Zeilen (Geräte & Dienste).** Neues Feld *Schatten der Zeilen*
+  unter HA-Settings › Geräte & Dienste in der Gruppe, die jetzt *Rahmen,
+  Shadow und Ecken der Zeilen* heißt, darunter der Schatten-Baukasten der
+  Theme-Seite (ohne dessen kleines Vorschau-Kästchen – die große Vorschau links
+  zeigt den Schatten ohnehin). Schlüssel `settings.list_shadow` (`""` = Kartenschatten des
+  Themes, `none` = kein Schatten, oder ein beliebiger `box-shadow`). Der
+  Injector setzt ihn an die `ha-card` der Integrationszeilen und der Apps-Liste
+  (auch beim Hover) und auf der Seite einer Integration an
+  `.config-entry-wrapper` – nicht an den inneren Kasten der Geräte, damit er nie
+  doppelt liegt. `store.py` behält nur einen Text bis 300 Zeichen
+  (`LIST_SHADOW_MAX`) ohne `; { } < > \`, Zeilenumbrüche oder Kommentare, wie
+  `css()` im Injector. Die Vorschau zeigt bei leerem Feld den Schatten des
+  Themes.
+* **Maus hover auf der Seite einer Integration.** Die Hover-Farbe der Liste
+  färbt jetzt auch die anklickbaren Zeilen auf der Seite einer Integration:
+  die Gerätezeilen (`ha-config-entry-device-row`, direkt oder in einem
+  Untereintrag) und die Zeile *x Geräte* (`.toggle-devices-row`). Die Farbe
+  liegt als Hintergrund unter dem Inhalt, die Welle von Home Assistant ist dort
+  still gestellt (`--ha-ripple-hover-opacity: 0`), damit sich beides nicht
+  addiert; ohne eigene Hover-Farbe bleibt Home Assistants Effekt unberührt. Die
+  Zeile des Eintrags selbst ist in Home Assistant kein button und bekommt keinen
+  Hover. Die Vorschaubox *Seite einer Integration* zeigt dasselbe: Ihre
+  Gerätezeilen reagieren auf die Maus (ohne eigene Farbe mit dem leichten Grau
+  von Home Assistant).
 
 ## 1.5.6
 

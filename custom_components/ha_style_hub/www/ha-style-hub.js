@@ -1,6 +1,6 @@
 /*
  * HA Style Hub - ha-style-hub.js
- * Version: 1.5.6
+ * Version: 1.5.7
  *
  * Runtime patcher for the Home Assistant sidebar (ha-sidebar).
  *
@@ -26,7 +26,7 @@
 (() => {
   "use strict";
 
-  const VERSION = "1.5.6";
+  const VERSION = "1.5.7";
   const TAG = "[HA Style Hub]";
 
   const EVENT_UPDATED = "ha_style_hub_updated";
@@ -160,6 +160,7 @@
     list_background: "",
     list_hover_background: "",
     list_hover_opacity: 100,
+    list_shadow: "",
     list_border_split: false,
     list_side_top: -1,
     list_side_right: -1,
@@ -324,6 +325,10 @@
   const PROFILE_PAGE = "ha-profile-dashboard";
   const ENTRY_PAGE = "ha-config-integration-page";
   const ENTRY_ROW = "ha-config-entry-row";
+  // Die Geraetezeilen eines Eintrags (1.5.7, fuer den Hover) - direkt im
+  // Eintrag oder in einem Untereintrag.
+  const ENTRY_DEVICE_ROW = "ha-config-entry-device-row";
+  const ENTRY_SUB_ROW = "ha-config-sub-entry-row";
   // Welche Menuepunkte die Einstellungsseite in diesem Browser zuletzt
   // gezeigt hat. Das Panel liest die Liste, um sie zum Sortieren anzubieten:
   // so stimmen Namen (Sprache) und Bestand (Version von Home Assistant).
@@ -357,6 +362,32 @@
     const path = text.slice(LINK_PREFIX.length);
     return LINK_PATH.test(path) && path.length <= 200 ? path : "";
   };
+  // Externe Adressen (1.5.7): ein Link der Seitenleiste oder eines PopUps darf
+  // auch auf eine fremde Webseite zeigen ("link:https://example.com"). Nur
+  // http(s), ein Rechnername und danach Zeichen, die in einer Adresse ohne
+  // Maskierung vorkommen - keine Anfuehrungszeichen, Leerzeichen, spitzen
+  // Klammern oder Backslashes. Wie _EXTERNAL_URL in store.py.
+  const EXTERNAL_URL = /^https?:\/\/[A-Za-z0-9][A-Za-z0-9\-._~:/?#[\]@!$&()*+,;=%]*$/i;
+  const EXTERNAL_URL_MAX = 500;
+  const isExternalUrl = (value) => typeof value === "string" && value.length <= EXTERNAL_URL_MAX && EXTERNAL_URL.test(value);
+  // Der Rechnername einer externen Adresse - als Name, solange es keinen eigenen gibt.
+  const externalHost = (url) => {
+    try {
+      return new URL(url).hostname.replace(/^www\./i, "") || url;
+    } catch (err) {
+      return url;
+    }
+  };
+  const EXTERNAL_ICON = "mdi:open-in-new";
+  // Das Ziel eines Link-Eintrags: ein Pfad in Home Assistant oder eine externe Adresse.
+  const linkTarget = (key) => {
+    const text = String(key || "");
+    if (text.indexOf(LINK_PREFIX) !== 0) {
+      return "";
+    }
+    const rest = text.slice(LINK_PREFIX.length);
+    return isExternalUrl(rest) ? rest : linkPath(key);
+  };
   // Die Einstellungen stehen nur Administratoren offen.
   const linkNeedsAdmin = (path) => /^\/config(\/|$|\?|#)/.test(path);
 
@@ -382,7 +413,8 @@
         return;
       }
       const path = typeof one.path === "string" ? one.path : "";
-      if (!LINK_PATH.test(path) || path === "/" || path.length > 200 || seen.has(path)) {
+      const inside = LINK_PATH.test(path) && path !== "/" && path.length <= 200;
+      if ((!inside && !isExternalUrl(path)) || seen.has(path)) {
         return;
       }
       seen.add(path);
@@ -395,8 +427,12 @@
     return links;
   };
   const POPUP_TEXT = {
-    de: { label: "PopUp", close: "Schlie\u00dfen", empty: "Keine Links", noCard: "Keine Karte hinterlegt", cardError: "Die Karte konnte nicht angezeigt werden" },
-    en: { label: "Popup", close: "Close", empty: "No links", noCard: "No card configured", cardError: "The card could not be shown" },
+    de: { label: "PopUp", close: "Schlie\u00dfen", empty: "Keine Links", noCard: "Keine Karte hinterlegt", cardError: "Die Karte konnte nicht angezeigt werden",
+      openTab: "In neuem Tab \u00f6ffnen", noUrl: "Keine Webadresse hinterlegt",
+      webNote: "Bleibt die Seite leer? Manche Webseiten erlauben keine Einbettung \u2013 dann oben \"In neuem Tab \u00f6ffnen\" w\u00e4hlen." },
+    en: { label: "Popup", close: "Close", empty: "No links", noCard: "No card configured", cardError: "The card could not be shown",
+      openTab: "Open in a new tab", noUrl: "No web address configured",
+      webNote: "Page stays empty? Some websites do not allow being embedded - use \"Open in a new tab\" above." },
   };
   const popupText = (hass) => {
     const language = String((hass && hass.language) || "en").slice(0, 2);
@@ -626,6 +662,13 @@
     ".cardbox > * { display: block; min-width: 0; }",
     ":host([data-height]) .cardbox > * { height: 100%; }",
     ":host([data-card]) .head { margin-bottom: 12px; }",
+    // 1.5.7: Webseite im Fenster - der Rahmen fuellt den Platz, darunter ein Hinweis
+    ":host([data-web]) .card { grid-template-rows: auto minmax(0, 1fr) auto; }",
+    ".webbox { overflow: hidden; border-radius: var(--ha-card-border-radius, 12px); }",
+    ".webbox iframe { display: block; width: 100%; height: min(70vh, 640px); border: 0; background: #fff; }",
+    ":host([data-height]) .webbox iframe { height: 100%; }",
+    ".webnote { margin: 8px 2px 0; font-size: 12px; line-height: 1.4; opacity: .65; }",
+    "a.x { text-decoration: none; }",
     "@keyframes sh-fade { from { opacity: 0; } }",
     "@keyframes sh-pop { from { opacity: 0; transform: translateY(8px) scale(.98); } }",
     "@media (max-width: 600px) { .card { padding: 14px 14px 16px; } .grid { gap: 8px; }",
@@ -1198,6 +1241,8 @@
     content: "links",
     card_yaml: "",
     card: {},
+    // 1.5.7: Inhalt "web" - die Adresse der Seite im Fenster
+    url: "",
     width: 0,
     height: 0,
   });
@@ -1240,8 +1285,12 @@
   };
   /** Inhalt, Karte und Groesse eines PopUps pruefen - wie store.py. */
   const cleanPopupCard = (entry) => {
-    if (entry.content !== "card") {
+    if (entry.content !== "card" && entry.content !== "web") {
       entry.content = "links";
+    }
+    // 1.5.7: Inhalt "web" - die Adresse der Seite, die das Fenster zeigt
+    if (!isExternalUrl(entry.url)) {
+      entry.url = "";
     }
     if (typeof entry.card_yaml !== "string" || new Blob([entry.card_yaml]).size > POPUP_CARD_MAX) {
       entry.card_yaml = "";
@@ -2049,6 +2098,11 @@
         ? `background-color: ${rowBackground} !important;`
         : `background: ${rowBackground} !important;`
       : "";
+    // Schatten der Zeilen (1.5.7): leer heisst wie das Theme
+    // (--ha-card-box-shadow), "none" nimmt ihn weg - etwa fuer eine
+    // Spaltenansicht aus schlichten Listen.
+    const shadow = css(s.list_shadow);
+    const shadowRule = shadow ? `box-shadow: ${shadow} !important;` : "";
     const frame = [];
     if (borderWidth) {
       frame.push(`border-width: ${borderWidth} !important;`);
@@ -2062,6 +2116,9 @@
     }
     if (rowRule) {
       cardFrame.push(`ha-card { ${rowRule} }`);
+    }
+    if (shadowRule) {
+      cardFrame.push(`ha-card, ha-card:hover { ${shadowRule} }`);
     }
     if (borderColor) {
       // Nicht fuer Karten mit Problem: deren roter Rand bleibt, solange keine
@@ -2115,6 +2172,9 @@
       }
       if (rowRule) {
         frameRules.push(`ha-card { ${rowRule} }`);
+      }
+      if (shadowRule) {
+        frameRules.push(`ha-card, ha-card:hover { ${shadowRule} }`);
       }
       if (borderColor) {
         frameRules.push(
@@ -2190,6 +2250,27 @@
       if (rowRule) {
         wrap.push(`.config-entry-wrapper:not(.state-error):not(.state-failed-unload):not(.state-not-loaded), .devices { ${rowRule} }`);
       }
+      // 1.5.7: derselbe Schatten fuer den Rahmen eines Eintrags (nicht fuer
+      // den inneren Kasten der Geraete, sonst laege er doppelt).
+      if (shadowRule) {
+        wrap.push(`.config-entry-wrapper { ${shadowRule} }`);
+      }
+      // 1.5.7: Maus hover auf der Seite einer Integration. Anklickbar sind
+      // dort die Zeile "x Geraete" und die Geraetezeilen (ha-list-item-button);
+      // die Zeile des Eintrags selbst ist es nicht und bleibt ohne Hover.
+      // Die Farbe liegt als Hintergrund unter dem Inhalt, die Welle von Home
+      // Assistant wird still gestellt - sonst laege ihr Grau darueber.
+      let itemHover = "";
+      if (tint) {
+        const layer = isColor(hover) ? `linear-gradient(${tint}, ${tint})` : tint;
+        itemHover =
+          "ha-list-item-button { --ha-ripple-hover-opacity: 0 !important; }\n" +
+          `ha-list-item-button:hover { background-image: ${layer} !important; }`;
+        wrap.push(
+          ".toggle-devices-row { --ha-ripple-hover-opacity: 0 !important; }",
+          `.toggle-devices-row:hover { background-image: ${layer} !important; }`
+        );
+      }
       // 1.5.4: Hintergrund der Eintraege mit Problem - Home Assistant nimmt
       // rot (Fehler, z. B. Einrichtungsfehler) bzw. orange (nicht geladen,
       // Entladen fehlgeschlagen).
@@ -2234,6 +2315,7 @@
       }
       entries = {
         row: wrap.join("\n"),
+        item: itemHover,
         page: `ha-config-entry-row { margin-bottom: ${Math.max(gap, 4)}px !important;${rowVars} }`,
       };
     }
@@ -4476,9 +4558,10 @@
       const wanted = new Map();
       if (generation.gen > 1) {
         Object.keys(this.config.items || {}).forEach((key) => {
-          const path = linkPath(key);
+          const path = linkTarget(key);
           // Ein Link in die Einstellungen waere fuer alle anderen eine
           // Sackgasse - Home Assistant zeigt ihnen diese Seiten nicht.
+          // Externe Adressen (1.5.7) kennen diese Grenze nicht.
           if (path && (admin || !linkNeedsAdmin(path))) {
             wanted.set(key, path);
           }
@@ -4522,15 +4605,24 @@
           node.setAttribute("role", "link");
           node.setAttribute("tabindex", "0");
 
+          // Externe Adresse (1.5.7): oeffnet immer in einem neuen Tab, ohne
+          // Verbindung zu dieser Seite (noopener); Name = Rechnername.
+          const external = isExternalUrl(path);
+          if (external) {
+            node.dataset.shExternal = "";
+            node.setAttribute("target", "_blank");
+            node.setAttribute("rel", "noopener noreferrer");
+          }
+
           const icon = document.createElement("ha-icon");
           icon.setAttribute("slot", "start");
-          icon.setAttribute("icon", "mdi:link-variant");
+          icon.setAttribute("icon", external ? EXTERNAL_ICON : "mdi:link-variant");
           node.appendChild(icon);
 
           const label = document.createElement("span");
           label.className = "item-text";
           label.setAttribute("slot", "headline");
-          label.textContent = path;
+          label.textContent = external ? externalHost(path) : path;
           node.appendChild(label);
 
           node.addEventListener("click", (event) => {
@@ -4565,6 +4657,13 @@
      * Verlauf schreiben und "location-changed" melden.
      */
     openLink(path, newTab) {
+      // Eine fremde Webseite (1.5.7) geht immer in einen neuen Tab: die
+      // Oberflaeche von Home Assistant bleibt, wie sie ist.
+      if (isExternalUrl(path)) {
+        this.log("link", path);
+        window.open(path, "_blank", "noopener,noreferrer");
+        return;
+      }
       if (!LINK_PATH.test(path)) {
         return;
       }
@@ -4601,6 +4700,9 @@
       const entry = (this.config.items || {})[key] || {};
       if (entry.content === "card") {
         return isObject(entry.card) && typeof entry.card.type === "string";
+      }
+      if (entry.content === "web") {
+        return isExternalUrl(entry.url);
       }
       return this.popupLinks(key).length > 0;
     }
@@ -4708,17 +4810,21 @@
       const links = this.popupLinks(key);
       const host = document.createElement("div");
       host.className = "sh-popup-host";
+      const isWeb = entry.content === "web";
       const isCard = entry.content === "card";
       // Fenstergroesse (1.5.3): 0 = automatisch - Breite je nach Inhalt, die
       // Hoehe richtet sich nach dem Inhalt (hoechstens 85 % des Bildschirms).
-      const width = Number(entry.width) > 0 ? Math.max(240, Number(entry.width)) : isCard ? 600 : 560;
+      const width = Number(entry.width) > 0 ? Math.max(240, Number(entry.width)) : isWeb ? 900 : isCard ? 600 : 560;
       host.style.setProperty("--sh-w", `${width}px`);
       if (Number(entry.height) > 0) {
         host.style.setProperty("--sh-h", `${Math.max(120, Number(entry.height))}px`);
         host.setAttribute("data-height", "");
       }
-      if (isCard) {
+      if (isCard || isWeb) {
         host.setAttribute("data-card", "");
+      }
+      if (isWeb) {
+        host.setAttribute("data-web", "");
       }
       const accent = value(entry.icon_color);
       if (accent) {
@@ -4754,7 +4860,23 @@
       const closeIcon = document.createElement("ha-icon");
       closeIcon.setAttribute("icon", "mdi:close");
       close.appendChild(closeIcon);
-      head.append(badge, title, close);
+      // 1.5.7: bei einer Webseite ein Knopf "In neuem Tab oeffnen" - falls die
+      // Seite sich nicht einbetten laesst oder gross gebraucht wird.
+      if (isWeb && isExternalUrl(entry.url)) {
+        const outside = document.createElement("a");
+        outside.className = "x ext";
+        outside.href = entry.url;
+        outside.target = "_blank";
+        outside.rel = "noopener noreferrer";
+        outside.setAttribute("aria-label", text.openTab);
+        outside.title = text.openTab;
+        const outsideIcon = document.createElement("ha-icon");
+        outsideIcon.setAttribute("icon", EXTERNAL_ICON);
+        outside.appendChild(outsideIcon);
+        head.append(badge, title, outside, close);
+      } else {
+        head.append(badge, title, close);
+      }
       card.appendChild(head);
       const grid = document.createElement("div");
       grid.className = "grid";
@@ -4765,14 +4887,19 @@
         tile.className = "tile";
         tile.href = link.path;
         tile.dataset.path = link.path;
+        const external = isExternalUrl(link.path);
+        if (external) {
+          tile.target = "_blank";
+          tile.rel = "noopener noreferrer";
+        }
         const circle = document.createElement("span");
         circle.className = "ti";
         const icon = document.createElement("ha-icon");
-        icon.setAttribute("icon", link.icon || "mdi:link-variant");
+        icon.setAttribute("icon", link.icon || (external ? EXTERNAL_ICON : "mdi:link-variant"));
         circle.appendChild(icon);
         const label = document.createElement("span");
         label.className = "tn";
-        label.textContent = link.name || link.path;
+        label.textContent = link.name || (external ? externalHost(link.path) : link.path);
         tile.append(circle, label);
         tile.addEventListener("click", (event) => {
           event.preventDefault();
@@ -4794,7 +4921,35 @@
         grid.appendChild(empty);
       }
       let cardBox = null;
-      if (isCard) {
+      if (isWeb) {
+        // Eine Webseite statt der Links (1.5.7). Der Rahmen darf Skripte und
+        // Formulare nutzen und Links in neuen Tabs oeffnen, aber nie die Seite
+        // von Home Assistant umleiten (kein allow-top-navigation).
+        const box = document.createElement("div");
+        box.className = "cardbox webbox";
+        if (isExternalUrl(entry.url)) {
+          const frame = document.createElement("iframe");
+          frame.src = entry.url;
+          frame.title = name;
+          frame.setAttribute("referrerpolicy", "no-referrer");
+          frame.setAttribute("allow", "fullscreen");
+          frame.setAttribute(
+            "sandbox",
+            "allow-scripts allow-same-origin allow-forms allow-popups allow-popups-to-escape-sandbox allow-downloads"
+          );
+          box.appendChild(frame);
+        } else {
+          const empty = document.createElement("p");
+          empty.className = "empty";
+          empty.textContent = text.noUrl;
+          box.appendChild(empty);
+        }
+        card.appendChild(box);
+        const note = document.createElement("p");
+        note.className = "webnote";
+        note.textContent = text.webNote;
+        card.appendChild(note);
+      } else if (isCard) {
         // Eine Lovelace-Karte statt der Links (1.5.3)
         cardBox = document.createElement("div");
         cardBox.className = "cardbox";
@@ -4824,7 +4979,11 @@
       host.addEventListener("hass-more-info", () => window.setTimeout(() => this.closePopup(), 0));
       this.popupHost = host;
       this.popupKey = key;
-      this.log("popup", key, isCard ? `card ${entry.card && entry.card.type}` : links.length);
+      this.log("popup", key, isWeb ? `web ${entry.url}` : isCard ? `card ${entry.card && entry.card.type}` : links.length);
+      if (isWeb) {
+        window.requestAnimationFrame(() => close.focus({ preventScroll: true }));
+        return;
+      }
       if (isCard) {
         this.renderPopupCard(cardBox, entry.card, key);
         window.requestAnimationFrame(() => close.focus({ preventScroll: true }));
@@ -4983,7 +5142,7 @@
       }
       const here = window.location.pathname;
       root.querySelectorAll("[data-sh-link]").forEach((node) => {
-        const path = String(node.dataset.shLink || "").split(/[?#]/)[0];
+        const path = node.hasAttribute("data-sh-external") ? "" : String(node.dataset.shLink || "").split(/[?#]/)[0];
         const on = !!path && (here === path || here.indexOf(`${path}/`) === 0);
         if (node.classList.contains("selected") !== on) {
           node.classList.toggle("selected", on);
@@ -5403,6 +5562,7 @@
         profileMenus: [],
         entryPages: [],
         entryRows: [],
+        entryItems: [],
       };
     }
 
@@ -6920,6 +7080,14 @@
       if (tag === ENTRY_ROW) {
         found.entryRows.push(node);
       }
+      if (tag === ENTRY_DEVICE_ROW) {
+        // Nur die Geraetezeilen auf der Seite einer Integration.
+        const outer = node.host.getRootNode();
+        const outerTag = outer && outer.host ? outer.host.localName : "";
+        if (outerTag === ENTRY_ROW || outerTag === ENTRY_SUB_ROW) {
+          found.entryItems.push(node);
+        }
+      }
       if (tag === DATA_TABLE) {
         found.tables.push(node);
       }
@@ -7072,6 +7240,13 @@
               put(root, "listentry", want.list.entries.row);
             }
           });
+          if (want.list.entries.item) {
+            found.entryItems.forEach((root) => {
+              if (root.querySelector("ha-list-item-button")) {
+                put(root, "listentryitem", want.list.entries.item);
+              }
+            });
+          }
         }
         if (want.list.apps) {
           found.appPages.forEach((root) => {
@@ -7964,7 +8139,7 @@
 
   // Die Elemente der Einstellungsseiten und die Kopfzeile des Dashboards
   // melden sich beim Zeichnen selbst - siehe hookElement.
-  [LIST_CARD, LIST_HEADER, LIST_CARD_HEADER, LIST_CARD_FOOTER, ENTRY_ROW, ENTRY_PAGE, PROFILE_PAGE, MENU_LIST, DATA_TABLE, APPS_PAGE, APPS_CARD, DASH_PAGE, SYSTEM_PAGE].forEach((tag) =>
+  [LIST_CARD, LIST_HEADER, LIST_CARD_HEADER, LIST_CARD_FOOTER, ENTRY_ROW, ENTRY_DEVICE_ROW, ENTRY_PAGE, PROFILE_PAGE, MENU_LIST, DATA_TABLE, APPS_PAGE, APPS_CARD, DASH_PAGE, SYSTEM_PAGE].forEach((tag) =>
     hookElement(tag, "styleSettingsElement")
   );
   hookElement("hui-root", "styleHeaderElement");

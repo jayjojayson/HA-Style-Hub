@@ -28,6 +28,7 @@ from .const import (
     DEFAULT_ITEM,
     DEFAULT_LAYOUT,
     DEFAULT_SETTINGS,
+    LIST_SHADOW_MAX,
     DASH_DIRECTIONS,
     DASH_IMAGE_SIZES,
     DEFAULT_THEME,
@@ -37,6 +38,7 @@ from .const import (
     KEY_PREFIX_HEADING,
     KEY_PREFIX_POPUP,
     POPUP_LINKS_MAX,
+    EXTERNAL_URL_MAX,
     POPUP_CARD_MAX,
     POPUP_CONTENTS,
     POPUP_SIZE_MAX,
@@ -70,10 +72,26 @@ def _merge_section(defaults: dict[str, Any], data: Any) -> dict[str, Any]:
 # Nur Pfade innerhalb von Home Assistant, wie im Injector (LINK_PATH).
 _LINK_PATH = re.compile(r"/(?!/)[A-Za-z0-9_\-./?=&%#~+]*")
 _ICON_NAME = re.compile(r"[a-z0-9-]+:[a-z0-9-]+", re.IGNORECASE)
+# Externe Adresse (1.5.7), wie im Injector (EXTERNAL_URL): nur http(s), ein
+# Rechnername, danach nur Zeichen, die in einer Adresse ohne Maskierung
+# vorkommen - keine Anfuehrungszeichen, Leerzeichen oder spitzen Klammern.
+_EXTERNAL_URL = re.compile(r"https?://[A-Za-z0-9][A-Za-z0-9\-._~:/?#\[\]@!$&()*+,;=%]*", re.IGNORECASE)
+
+
+def _is_external_url(value: Any) -> bool:
+    """Return True for a web address that may be opened from the sidebar."""
+    return (
+        isinstance(value, str)
+        and len(value) <= EXTERNAL_URL_MAX
+        and _EXTERNAL_URL.fullmatch(value) is not None
+    )
 
 
 def _clean_header_links(
-    raw: Any, limit: int = HEADER_LINKS_MAX, entities: bool = False
+    raw: Any,
+    limit: int = HEADER_LINKS_MAX,
+    entities: bool = False,
+    external: bool = False,
 ) -> list[dict[str, str]]:
     """Return the links of the dashboard header as a clean list.
 
@@ -86,6 +104,9 @@ def _clean_header_links(
     entity instead: {"path": "", "entity": "sensor.x", ...}, each entity once.
     It has two more keys: value_color (color of the value; color is the
     icon) and value_only (the value without an icon).
+
+    With external (only popups, 1.5.7) the path may also be a web address
+    (http / https), up to EXTERNAL_URL_MAX characters.
     """
     links: list[dict[str, str]] = []
     if not isinstance(raw, list):
@@ -119,13 +140,10 @@ def _clean_header_links(
                 break
             continue
         path = one.get("path")
-        if (
-            not isinstance(path, str)
-            or len(path) > 200
-            or path == "/"
-            or not _LINK_PATH.fullmatch(path)
-            or path in seen
-        ):
+        if not isinstance(path, str) or path in seen:
+            continue
+        inside = len(path) <= 200 and path != "/" and _LINK_PATH.fullmatch(path)
+        if not inside and not (external and _is_external_url(path)):
             continue
         seen.add(path)
         name = one.get("name")
@@ -147,11 +165,12 @@ def _clean_header_links(
 def _clean_popup_links(raw: Any) -> list[dict[str, str]]:
     """Return the links of a popup entry (1.5.1): path, name and icon.
 
-    Checked like the links of the header, at most POPUP_LINKS_MAX.
+    Checked like the links of the header, at most POPUP_LINKS_MAX. Unlike
+    there, a link may also be an external web address (1.5.7).
     """
     return [
         {"path": link["path"], "name": link["name"], "icon": link["icon"]}
-        for link in _clean_header_links(raw, POPUP_LINKS_MAX)
+        for link in _clean_header_links(raw, POPUP_LINKS_MAX, external=True)
     ]
 
 
@@ -165,6 +184,10 @@ def _clean_popup_card(entry: dict[str, Any]) -> None:
     """
     if entry.get("content") not in POPUP_CONTENTS:
         entry["content"] = "links"
+    # 1.5.7: the web address of a popup that shows a website (same rule as
+    # for the external links); anything else is dropped.
+    if not _is_external_url(entry.get("url")):
+        entry["url"] = ""
     text = entry.get("card_yaml")
     if not isinstance(text, str) or len(text.encode("utf-8")) > POPUP_CARD_MAX:
         entry["card_yaml"] = ""
@@ -430,6 +453,13 @@ def normalize(data: Any) -> dict[str, Any]:
         config["settings"][key] = _clean_paths(config["settings"].get(key))
     config["settings"]["menu_items"] = _clean_menu_items(config["settings"].get("menu_items"))
     config["settings"]["monitor_sensors"] = _clean_sensors(config["settings"].get("monitor_sensors"))
+    # 1.5.7: Schatten der Zeilen - ein Text ohne Zeichen, mit denen er aus
+    # seiner CSS-Regel ausbrechen koennte (wie css() im Injector).
+    shadow = config["settings"].get("list_shadow")
+    shadow = shadow.strip() if isinstance(shadow, str) else ""
+    if len(shadow) > LIST_SHADOW_MAX or any(char in shadow for char in ";{}<>\\\n\r") or "/*" in shadow:
+        shadow = ""
+    config["settings"]["list_shadow"] = shadow
     config["theme"] = _merge_theme(data.get("theme"))
 
     order = data.get("order")

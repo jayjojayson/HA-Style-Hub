@@ -6,7 +6,7 @@
 
 <p align="center">
   <a href="https://hacs.xyz"><img src="https://img.shields.io/badge/HACS-custom-orange.svg" alt="HACS"></a>
-  <a href="https://github.com/jayjojayson/HA-Style-Hub/releases"><img src="https://img.shields.io/badge/version-1.5.6-blue.svg" alt="Version"></a>
+  <a href="https://github.com/jayjojayson/HA-Style-Hub/releases"><img src="https://img.shields.io/badge/version-1.5.7-blue.svg" alt="Version"></a>
   <a href="https://github.com/jayjojayson/HA-Style-Hub/actions/workflows/validate.yml"><img src="https://github.com/jayjojayson/HA-Style-Hub/actions/workflows/validate.yml/badge.svg" alt="Validate"></a>
   <a href="https://github.com/jayjojayson/HA-Style-Hub/releases"><img src="https://img.shields.io/github/downloads/jayjojayson/HA-Style-Hub/total.svg" alt="Downloads"></a>
   <a href="https://github.com/jayjojayson/HA-Style-Hub/blob/main/LICENSE"><img src="https://img.shields.io/github/license/jayjojayson/HA-Style-Hub.svg" alt="License"></a>
@@ -43,7 +43,9 @@ through a real theme built in the same panel.
 | 🔀 **Free order** | drag and drop, including Settings, Notifications and the user entry |
 | 🏷️ **Section headings** | own dividers with a name, an icon, a border, a radius, a height and capital letters on or off, hidden while the sidebar is collapsed |
 | 🗂️ **Groups** | drag an entry to the right to file it under a heading, then fold the whole block away with a click |
-| 🪟 **Popup links** | one sidebar entry that opens a window with several pages - dashboards, panels or pages of the settings - or with a Lovelace card from your dashboard (YAML) |
+| 🪟 **Popup links** | one sidebar entry that opens a window with several pages - dashboards, panels or pages of the settings - with a Lovelace card from your dashboard (YAML) or with a website |
+| 🌐 **Web links** | sidebar entries and popup tiles can also point to any website - they open in a new tab |
+| 💡 **Hints on demand** | the explanations next to the fields can be folded away one by one with a small info icon (the browser remembers which); one tick on the Info page hides them all |
 | ✏️ **Rename** | give every entry your own label |
 | 🎨 **Own icons** | any `mdi:` icon per entry |
 | 👁️ **Hide** | switch entries off without removing the dashboard |
@@ -54,7 +56,7 @@ through a real theme built in the same panel.
 | 🔔 **Notification drawer** | optionally styled to match the sidebar |
 | 🌓 **Theme editor** | builds a real Home Assistant theme with 309 variables, dark and light - including the dashboard background (color, gradient or image) and the state colors per device type - with an anchored live preview, YAML export and import of existing themes |
 | 🧭 **Dashboard header** | colours, gradient, opacity and blur, height, border, corners, a border around each button and tab, icon and title size, tab colours, the four buttons on the right, the bar at the top or at the bottom - and a switch that hides the bar completely |
-| 🏠 **HA-Settings** | settings for Home Assistant itself: the menu entries of the Settings page as rounded boxes with your own colors and sizes, Devices & services (and optionally Apps) as a slim list instead of a grid, own colors and fonts for the group headers of the tables, striped rows, and the Settings page itself: order, hidden entries, own names, subtitles and icon colors per entry, columns, tiles, a favourites bar, a system monitor with own entities, the last backup with *Create backup now* and an overview with counters - the profile page and the page of an integration follow along |
+| 🏠 **HA-Settings** | settings for Home Assistant itself: the menu entries of the Settings page as rounded boxes with your own colors and sizes, Devices & services (and optionally Apps) as a slim list instead of a grid with its own row shadow and hover, own colors and fonts for the group headers of the tables, striped rows, and the Settings page itself: order, hidden entries, own names, subtitles and icon colors per entry, columns, tiles, a favourites bar, a system monitor with own entities, the last backup with *Create backup now* and an overview with counters - the profile page and the page of an integration follow along |
 | 🎨 **Choose a palette** | pick a main color and both theme modes are worked out from it - with text that stays readable |
 | 🕘 **History** | the last 10 saved states with what changed and who saved; one click loads an earlier state back into the page |
 | 🎚️ **Switch entities** | hiding the header and hiding the sidebar are real `switch` entities, so they can be put on a dashboard or used in an automation |
@@ -188,7 +190,19 @@ chosen part is outlined and labelled (*"Cards · selected"*).
 * **Info.** Welcome text, author and links, support, the master switch **HA
   Style Hub active** (off: the integration no longer changes the sidebar, the
   header and the HA-Settings pages; a registered theme stays), *Write debug
-  output to the browser console* and **Reset everything**.
+  output to the browser console*, *Hide all hints in the settings columns*
+  (1.5.7, only this browser) and **Reset everything**.
+
+**Hints in the field columns** (1.5.7): the explanations next to the fields of
+*Sidebar*, *Theme*, *Header* and *HA-Settings* are shown by default, each with a
+small **info icon**. A click on the icon folds that hint away (it leaves only the
+icon), another click opens it again - HA Style Hub remembers which hints you
+closed, so you decide yourself which ones stay open. If you know the fields
+well, tick *Hide all hints in the settings columns* on the **Info** page: all
+hints and their icons disappear and the columns become as compact as possible.
+Both settings are kept in the browser, not in the configuration. Notes that
+report a state of the page (for example *The whole sidebar disappears*) stay
+visible.
 
 On a tablet the search becomes an icon and the field column gets narrower; on
 *Entries* the column shows either the chosen entry or, via *All entries*, the
@@ -204,8 +218,14 @@ with two choices: a **section heading** or a **link**. A link is a shortcut to
 a page of Home Assistant - automations, scenes, scripts, blueprints, devices,
 entities, helpers, areas, the system pages, the tools (states, actions,
 template, ...) and more. Pick the page from the list or enter one yourself with
-*Own path* (for example `/config/tools/state`; a full address copied from the
-browser works too). After that the link is a normal entry: name, icon, colours,
+*Own path or web address* (for example `/config/tools/state`; a full address
+copied from the browser works too). Since 1.5.7 a link may also point to
+**any other website**: enter a web address such as `https://www.home-assistant.io`
+and the entry opens it in a **new tab** (Home Assistant stays as it is). Until
+you rename it, the entry shows the host name (`home-assistant.io`) and the
+*open in new* icon; only `http://` and `https://` addresses without spaces or
+special characters are accepted, up to 500 characters. The header and the
+favourites bar stay inside Home Assistant. After that the link is a normal entry: name, icon, colours,
 position, column span, hiding and section headings work as for every other
 entry, and the bin removes it again. Links into the settings are only shown to
 administrators. Ctrl-click or the middle mouse button open the page in a new
@@ -216,11 +236,11 @@ their name as a tooltip on hover, like the entries of Home Assistant (1.5.4).
 **Popup links in the sidebar** (1.5.1): the third choice of the dialog,
 *Popup link*. Give it a name, pick pages one after the other - first the
 dashboards and pages of your sidebar, then the pages of Home Assistant as for a
-link, or an own path - and *Create popup*. The popup is one entry in the
+link, or an own path or web address (1.5.7) - and *Create popup*. The popup is one entry in the
 sidebar; a click on it in Home Assistant opens a window with the chosen pages
 as tiles, a click on a tile opens the page without a reload (Ctrl-click,
 ⌘-click on a Mac, or the middle mouse button: new tab - the dialog and the
-entry say so as well). The tiles always fill the window row by row: up to four
+entry say so as well; a tile with a web address always opens in a new tab). The tiles always fill the window row by row: up to four
 per row on a computer (5 → 3 + 2, 7 → 4 + 3), two per row on a phone; a last
 row with fewer tiles is filled by wider tiles. The window
 closes with the cross, a click next to it, `Esc` or a change of page. Under
@@ -231,6 +251,26 @@ the window. While a popup is selected under *Entries*, the preview shows its
 window above the dashboard. Pages that sit in a popup can be hidden in the
 sidebar with the eye. Links into the settings are only shown to
 administrators; a popup with nothing left for a user does not appear for them.
+
+**A website in the popup** (1.5.7): a popup can also show a **website**, like a
+small browser window inside Home Assistant - for example Grafana, a router
+page or a status page right on top of your dashboard. Choose *Website* under
+*Content of the window* (in the dialog or later at the entry) and enter the web
+address (`http://` or `https://`, no spaces or special characters, at most 500
+characters). A click on the entry opens the window with the page; the arrow in
+the header opens it in a new tab, the cross or a click next to the window
+closes it. Links and card stay stored - switching back loses nothing. **Window
+size:** 900 px wide, without a fixed height the page gets 70 % of the screen (at
+most 640 px). The page runs in a sandboxed frame: it may use scripts, forms and
+downloads and open links in new tabs, but it cannot redirect Home Assistant's
+own page, and no referrer is sent. **Limits you should know:** many websites
+forbid being embedded in other pages (`X-Frame-Options` / `frame-ancestors`)
+and stay empty - for those use a normal web link or a tile in a popup with
+links, which open in a new tab; services in your own network (e.g. Grafana with
+`allow_embedding`) often work when they allow it. If Home Assistant is opened
+with `https`, the browser blocks an `http://` page inside it (use an
+`https://` address). Whether a page may be embedded is decided by that website,
+not by HA Style Hub.
 
 **A card in the popup** (1.5.3): instead of links a popup can show a Lovelace
 card - built by Home Assistant itself, exactly as on a dashboard. Choose
@@ -249,7 +289,7 @@ last valid card stays active. At most 50 KB of code. Buttons and switches of the
 dashboard; if the card opens a more-info dialog, the popup makes way for it.
 Links and card are kept side by side - switching back to *Links* loses
 nothing. **Window size:** *Window width* and *Window height* in px, `0` =
-automatic: 560 px wide with links, 600 px with a card, the height follows the
+automatic: 560 px wide with links, 600 px with a card (900 px with a website), the height follows the
 content up to 85 % of the screen. A fixed height (at most the height of the
 screen) makes the card fill the whole window below the title. The window never
 shows a scroll bar; a card that is taller than the window can still be
@@ -598,6 +638,13 @@ count and symbols on the right.
   not loaded get a colored border from Home Assistant (red or orange). Here
   you pick your own color for them. The normal border color does not touch
   these rows, so a problem stays visible.
+* **Shadow of the rows** (1.5.7, in the group *Border, shadow and corners of
+  the rows*) - left empty, the rows keep the card shadow of your theme. With
+  *No shadow* (`none`) it disappears, which helps when the list is built as
+  plain columns; any other `box-shadow` can be typed in or put together with
+  *Design the shadow* (templates, direction, distance, blur, spread, color,
+  opacity, inset). Clear the field to go back to the theme. Also applies to the
+  Apps list and to the frame of the entries on the page of an integration.
 * **Mouse hover** - the color the whole row takes on under the mouse, and its
   opacity (0-100 %). Left empty, Home Assistant's own effect stays.
 * The preview shows grid and list side by side in miniature, including one row
@@ -607,14 +654,16 @@ count and symbols on the right.
 for apps as well**. Switched on, the *Apps* page (formerly add-ons) turns into
 the same slim rows: icon, name and description on the left (the description is
 cut off with "..." when the row is narrow), update / pre-release tags and the
-status on the right. Height, gap, maximum width, border, corners and hover are
+status on the right. Height, gap, maximum width, border, shadow, corners and hover are
 the ones of the list above - there is no second set of fields. The checkbox only
 has an effect while the list view is on. The page *Install app* is not touched.
 
 **Page of an integration.** Also under the list view: **Style the page of an
 integration as well** (on by default). The entries on the page of a single
-integration (Home Assistant 2026.10) get border, corners, border and problem
-color, background and gap of the list. Below it **Row height on the integration
+integration (Home Assistant 2026.10) get border, shadow, corners, border and
+problem color, background, gap and hover of the list. The hover colors the rows
+you can click there (1.5.7): the devices and the row *x devices*; the row of the
+entry itself is not a button in Home Assistant and stays as it is. Below it **Row height on the integration
 page** sets the height of the entries, devices and sub-entries there on its own
 (32-120 px, 0 = like Home Assistant). **Background on errors** and **Background
 when not loaded** (1.5.4) color the entries that need attention: Home Assistant
@@ -624,8 +673,9 @@ empty keeps Home Assistant's. **Opacity of both backgrounds** (0-100 %) tones
 a strong color down for both at once. While the checkbox is on, the preview of
 *Devices & services* shows a small integration page below the list (1.5.5):
 an entry with an error and two devices, one that is not loaded and a normal
-hub - with border, corners, colors, background, gap, row height and the
-backgrounds for problems as set.
+hub - with border, shadow, corners, colors, background, gap, row height and the
+backgrounds for problems as set; the mouse hover works there on the device rows
+too (1.5.7).
 
 **Tables: group headers and rows.** Tables in Home Assistant (automations, entities,
 helpers, devices, ...) can be grouped, and the group header ("Ungrouped", the

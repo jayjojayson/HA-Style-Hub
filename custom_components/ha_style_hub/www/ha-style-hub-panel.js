@@ -1,6 +1,6 @@
 /*
  * HA Style Hub - ha-style-hub-panel.js
- * Version: 1.5.6
+ * Version: 1.5.7
  *
  * Configuration panel for the sidebar. Registered by the Python part of the
  * integration through panel_custom, so Home Assistant sets the properties
@@ -22,7 +22,7 @@
 (() => {
   "use strict";
 
-  const VERSION = "1.5.6";
+  const VERSION = "1.5.7";
   // Das Logo liegt neben dieser Datei im Ordner www (siehe URL_BASE in const.py).
   const LOGO_URL = `/ha_style_hub-static/ha-style-hub-logo.png?v=${VERSION}`;
   const EVENT_PREVIEW = "ha-style-hub-preview";
@@ -163,6 +163,7 @@
     list_background: "",
     list_hover_background: "",
     list_hover_opacity: 100,
+    list_shadow: "",
     list_border_split: false,
     list_side_top: -1,
     list_side_right: -1,
@@ -2356,6 +2357,27 @@
   const LINK_PATH = /^\/(?!\/)[A-Za-z0-9_\-./?=&%#~+]*$/;
   const isLink = (key) => String(key).indexOf(LINK_PREFIX) === 0;
   const LINK_ICON = "mdi:link-variant";
+  // Externe Adressen (1.5.7): ein Link der Seitenleiste oder eines PopUps darf
+  // auf eine fremde Webseite zeigen ("link:https://example.com"). Wie im
+  // Injector (EXTERNAL_URL) und in store.py (_EXTERNAL_URL).
+  const EXTERNAL_URL = /^https?:\/\/[A-Za-z0-9][A-Za-z0-9\-._~:/?#[\]@!$&()*+,;=%]*$/i;
+  const EXTERNAL_URL_MAX = 500;
+  const EXTERNAL_ICON = "mdi:open-in-new";
+  const isExternalUrl = (value) => typeof value === "string" && value.length <= EXTERNAL_URL_MAX && EXTERNAL_URL.test(value);
+  const externalHost = (url) => {
+    try {
+      return new URL(url).hostname.replace(/^www\./i, "") || url;
+    } catch (err) {
+      return url;
+    }
+  };
+  // Ein Pfad in Home Assistant oder eine externe Adresse
+  const linkOk = (path) =>
+    typeof path === "string" &&
+    ((LINK_PATH.test(path) && path !== "/" && path.length <= 200) || isExternalUrl(path));
+  // Was ein Link anzeigt, solange er keinen eigenen Namen hat
+  const linkLabel = (path) => (isExternalUrl(path) ? externalHost(path) : path);
+  const linkIcon = (path) => (isExternalUrl(path) ? EXTERNAL_ICON : LINK_ICON);
   // PopUp-Links (1.5.1): ein Eintrag, der beim Anklicken ein Fenster mit
   // mehreren Links oeffnet - siehe den Injector. Schluessel "popup:<id>",
   // die Links stehen in items[key].links als {path, name, icon}.
@@ -2365,6 +2387,7 @@
   // 1.5.3: PopUp mit einer Lovelace-Karte - Code als YAML (hoechstens 50 KB,
   // wie store.py), Fenstergroesse in px (0 = automatisch)
   const POPUP_CARD_ICON = "mdi:card-text-outline";
+  const POPUP_WEB_ICON = "mdi:web";
   const POPUP_CARD_MAX = 51200;
   const POPUP_SIZE_MAX = 4000;
   const byteSize = (text) => new Blob([String(text)]).size;
@@ -2399,7 +2422,11 @@
   };
   /** Inhalt, Karte und Groesse eines PopUps pruefen - wie store.py. */
   const cleanPopupCard = (entry) => {
-    entry.content = entry.content === "card" ? "card" : "links";
+    entry.content = entry.content === "card" || entry.content === "web" ? entry.content : "links";
+    // 1.5.7: Inhalt "web" - die Adresse der Seite, die das Fenster zeigt
+    if (!isExternalUrl(entry.url)) {
+      entry.url = "";
+    }
     if (typeof entry.card_yaml !== "string" || byteSize(entry.card_yaml) > POPUP_CARD_MAX) {
       entry.card_yaml = "";
     }
@@ -2472,7 +2499,7 @@
         return;
       }
       const path = typeof one.path === "string" ? one.path : "";
-      if (!LINK_PATH.test(path) || path === "/" || path.length > 200 || seen.has(path)) {
+      if (!linkOk(path) || seen.has(path)) {
         return;
       }
       seen.add(path);
@@ -2487,7 +2514,7 @@
   /** Die Vorgaben eines Eintrags je nach Art (PopUp mit eigener, frischer Liste). */
   const itemDefaults = (key) =>
     isHeading(key) ? DEFAULT_HEADING : isPopup(key)
-      ? Object.assign({}, DEFAULT_ITEM, { links: [], content: "links", card_yaml: "", card: {}, width: 0, height: 0 })
+      ? Object.assign({}, DEFAULT_ITEM, { links: [], content: "links", card_yaml: "", card: {}, url: "", width: 0, height: 0 })
       : DEFAULT_ITEM;
   // Die Menuepunkte der Einstellungsseite, wie der Injector sie zuletzt
   // gesehen hat (pro Browser) - siehe MENU_SEEN_KEY dort.
@@ -2833,7 +2860,7 @@
       n_changed: "{n} changed",
       info_lead: "Make your Home Assistant look exactly the way you like it. With HA Style Hub you adapt the interface and your dashboards to your own taste, without having to write code.",
       info_areas: "Style Hub is split into four areas, and together they cover the design of the system and of your dashboards:",
-      info_sidebar: "<p>This is where you set up the sidebar the way you want it:</p><p><strong>Layout</strong>: 1 to 4 columns (1 to 3 collapsed), gap, width expanded and collapsed, size of the entries, an optional restart button, Settings, Notifications and the user entry inside the grid, and hiding the whole sidebar (kiosk mode).</p><p><strong>Entries</strong>: sort by dragging - right in the preview as well -, rename, own icons, colors and column width per entry, hide, section headings as groups that fold away, links to any page of Home Assistant and popup links that open a window with several pages or a Lovelace card from your dashboard.</p><p><strong>Appearance</strong>: background and gradient, hover, text and icon colors, font, borders per side, corners per corner, the notification drawer and the theme colors of the sidebar.</p>",
+      info_sidebar: "<p>This is where you set up the sidebar the way you want it:</p><p><strong>Layout</strong>: 1 to 4 columns (1 to 3 collapsed), gap, width expanded and collapsed, size of the entries, an optional restart button, Settings, Notifications and the user entry inside the grid, and hiding the whole sidebar (kiosk mode).</p><p><strong>Entries</strong>: sort by dragging - right in the preview as well -, rename, own icons, colors and column width per entry, hide, section headings as groups that fold away, links to any page of Home Assistant or to any web address and popup links that open a window with several pages, a Lovelace card from your dashboard or a website.</p><p><strong>Appearance</strong>: background and gradient, hover, text and icon colors, font, borders per side, corners per corner, the notification drawer and the theme colors of the sidebar.</p>",
       info_theme: "<p>Colors Home Assistant itself - dashboards, dialogs and the settings pages - as a real theme with {n} variables, dark and light kept separately, plus the {p} steps of the primary color scale that are worked out automatically.</p><p><strong>Preview</strong>: every tile and every element in it can be clicked - switches, buttons, state colors, table rows, chart colors, code … - and opens exactly the matching fields on the right.</p><p><strong>Range</strong>: cards, fonts, state and status colors, tables, input fields, dialogs and code editor up to charts, energy, weather and the design tokens and switches of Home Assistant 2026.10.</p><p><strong>Tools</strong>: a palette from one main color, ready-made templates, the shadow designer, contrast check, quick colors, the dashboard background as color, gradient or image, and YAML export and import.</p>",
       info_header: "<p>Takes care of the bar at the top of the dashboards, up to hiding it completely (kiosk mode, also as a switch entity).</p><p><strong>Look</strong>: color or gradient, opacity and blur, height, border and corners, title and icon size, colors and borders of the view tabs and buttons - or one of the templates <em>Glass</em>, <em>Slim</em> and <em>Detached</em>.</p><p><strong>Buttons</strong>: hide Home Assistant's four buttons one by one, and put your own in front of them: restart, links, sensors (the state of any entity) and CPU, memory and storage.</p><p><strong>Theme colors of the header</strong>: the theme variables of the bar, also for the edit mode of a dashboard.</p>",
       info_settings: "<p>Styles the pages of Home Assistant itself:</p><p><strong>Settings page</strong>: the menu entries as boxes in your own colors, in columns or as tiles, in your own order and with an own name, subtitle and colors per entry - on the profile page as well. Plus a favourites bar, a system monitor with processor, memory, storage and up to six own entities, the last backup with <em>Create backup now</em> and an overview with counters.</p><p><strong>Devices &amp; services</strong>: integrations and apps as a slim list in 1 to 3 columns; the page of a single integration follows with its own row height.</p><p><strong>Tables</strong>: group headers, stripes, row background, font size and mouse hover.</p>",
@@ -2938,7 +2965,7 @@
       settings_profile_page: "Use it on the profile page too",
       settings_profile_page_hint: "Since Home Assistant 2026.10 the profile page has the same menu: icon boxes, colors, columns, tiles, border and mouse hover apply there as well.",
       settings_list_entries: "Style the page of an integration as well",
-      settings_list_entries_hint: "The entries on the page of a single integration get border, corners, background and gap of the rows (Home Assistant 2026.10 and later).",
+      settings_list_entries_hint: "The entries on the page of a single integration get border, shadow, corners, background, gap and hover of the rows (Home Assistant 2026.10 and later). The hover colors the rows you can click there: the devices and the row “x devices”.",
       menu_item_edit: "Edit this menu entry",
       menu_item_name: "Name",
       menu_item_hide_sub: "Hide the subtitle",
@@ -3043,6 +3070,11 @@
       lsec_theme: "Theme colors of the sidebar",
       sidebar_theme_hint: "These variables belong to the theme (dark / light) and only apply while the theme is registered in Home Assistant. Colors you set above (background, text, icons, active entry, top area, title) are taken over automatically for both modes; a value you set here yourself stays. Your own values above take precedence in Home Assistant.",
       accordion_label: "Groups as accordion",
+      hint_open: "Show the hint",
+      hint_close: "Fold the hint away",
+      hints_hide: "Hide all hints in the settings columns",
+      hints_hide_hint:
+        "The explanations next to the fields of Sidebar, Theme, Header and HA settings are shown by default. A click on the small info icon next to a hint folds it away - HA Style Hub remembers which ones you closed. Tick this to hide all of them at once; the columns become even tidier. Only affects this browser; you can show the hints again at any time.",
       accordion_on: "Accordion: only one group open at a time (click to open groups individually)",
       accordion_off: "Groups open individually (click for accordion: only one open at a time)",
       table_row_background: "Row color",
@@ -3117,7 +3149,7 @@
       ctl_timeline: "History line",
       entry_add: "Add a section heading, a link or a popup",
       add_popup_title: "Popup link",
-      add_popup_hint: "One entry in the sidebar that opens a window - with several pages as tiles, or with a card from your dashboard.",
+      add_popup_hint: "One entry in the sidebar that opens a window - with several pages or web addresses as tiles, or with a card from your dashboard.",
       add_popup_name: "Name of the popup",
       add_popup_pick: "Add page to the popup",
       add_popup_button: "Create popup",
@@ -3127,7 +3159,7 @@
       popup_sub: "Window with links",
       popup_remove: "Remove popup",
       popup_links: "Links in the popup",
-      popup_links_empty: "No links yet - choose a page below.",
+      popup_links_empty: "No links yet - choose a page below or enter a web address.",
       popup_add: "Add",
       popup_link_remove: "Remove this link",
       popup_full: "A popup holds at most 24 links.",
@@ -3135,13 +3167,25 @@
       popup_hint_hide: "Tip: entries that now sit in the popup can be hidden in the sidebar (eye).",
       popup_preview_tag: "Popup · preview",
       qc_special: "No color",
-      popup_use_hint: "In Home Assistant a click on the entry opens the window. A click on a tile opens the page without reloading; Ctrl-click (⌘-click on a Mac) or the middle mouse button opens it in a new tab. Esc, the cross or a click next to the window closes it.",
+      popup_use_hint: "In Home Assistant a click on the entry opens the window. A click on a tile opens the page without reloading; Ctrl-click (⌘-click on a Mac) or the middle mouse button opens it in a new tab; web addresses always open in a new tab. Esc, the cross or a click next to the window closes it.",
       popup_content: "Content of the window",
       popup_content_links: "Links",
       popup_content_card: "Card (YAML)",
+      popup_content_web: "Website",
+      popup_sub_web: "Window with a website",
+      popup_web_url: "Web address of the page",
+      popup_web_empty: "Enter a web address, e.g. https://example.com",
+      popup_web_invalid: "That is not a valid web address: it has to start with https:// or http:// and must not contain spaces or special characters (at most 500 characters).",
+      popup_web_mixed: "Home Assistant is opened with https - the browser blocks an http:// page inside it. Use an https:// address.",
+      popup_web_ok: "The window shows the page of {host}.",
+      popup_web_hint: "The window shows the page of this address right inside Home Assistant, like a small browser. Many websites forbid being embedded in other pages and stay blank - use Links for those. Services in your own network often work when they allow embedding (e.g. Grafana: allow_embedding).",
+      popup_web_use_hint: "In Home Assistant a click on the entry opens the window with the page. The arrow in the header opens it in a new tab, the cross or a click next to the window closes it. The page can open links in new tabs but cannot change Home Assistant's own page.",
+      popup_web_preview: "{host} - Home Assistant shows the page here",
+      popup_web_none: "No web address yet - enter one under Entries.",
+      add_popup_web_hint: "Enter the address of the page the window should show. You can change it later under Entries.",
       popup_width: "Window width (px)",
       popup_height: "Window height (px)",
-      popup_size_hint: "0 = automatic: width 560 px with links, 600 px with a card; the height follows the content up to 85 % of the screen, more scrolls. On a phone the window is never wider than the screen.",
+      popup_size_hint: "0 = automatic: width 560 px with links, 600 px with a card, 900 px with a website; the height follows the content up to 85 % of the screen (a website gets 70 %, at most 640 px), more scrolls. On a phone the window is never wider than the screen.",
       popup_card_yaml: "Card code (YAML)",
       popup_card_placeholder: "type: entities\nentities:\n  - light.living_room",
       popup_card_hint: "Take the code from a dashboard: edit the card → ⋮ → Edit in code editor, copy everything and paste it here. Several cards: put them into a vertical-stack or grid. Custom cards work if they are installed (HACS). The code is read by Home Assistant's YAML parser, as in configuration.yaml: put on/off/yes/no in quotes (\"on\"), otherwise they become true/false. At most 50 KB.",
@@ -3350,7 +3394,10 @@
       settings_list_gap: "Gap between rows (px)",
       settings_list_max_width: "Max. width of the list (px)",
       settings_menu_frame: "Border and corners of the entries",
-      settings_list_frame: "Border and corners of the rows",
+      settings_list_frame: "Border, shadow and corners of the rows",
+      settings_list_shadow: "Shadow of the rows",
+      settings_list_shadow_hint:
+        "Empty takes the shadow of the cards from the theme. “No shadow” (none) removes it - handy for a column view of plain lists. Clear the field to go back to the theme. Applies to the apps and to the page of an integration as well.",
       settings_menu_border_width: "Border (px)",
       settings_menu_border_color: "Border color",
       settings_menu_border_radius: "Corner radius (px)",
@@ -3390,7 +3437,7 @@
       settings_list_three_columns: "Three columns",
       settings_list_apps: "Use the list view for apps as well",
       settings_list_apps_hint:
-        "The “Apps” page (formerly add-ons) is then shown as a list too: one app per row with icon, name, description and status. Row height, gap, width, border and hover of the list apply there as well.",
+        "The “Apps” page (formerly add-ons) is then shown as a list too: one app per row with icon, name, description and status. Row height, gap, width, border, shadow and hover of the list apply there as well.",
       table_rows_title: "Rows",
       table_zebra: "Colour of every second row",
       table_hover: "Mouse Hover",
@@ -3572,12 +3619,15 @@
       add_heading_button: "Add a section heading",
       add_link_title: "Link",
       add_link_hint:
-        "A shortcut to a page of Home Assistant, straight in the sidebar - no detour through the settings. Name, icon, colours and position are set afterwards like for any other entry. Links into the settings are only shown to administrators.",
+        "A shortcut to a page of Home Assistant, straight in the sidebar - no detour through the settings. Or a web address (https://...) of any other site: it opens in a new tab. Name, icon, colours and position are set afterwards like for any other entry. Links into the settings are only shown to administrators.",
       add_link_page: "Page",
-      add_link_custom: "Own path \u2026",
-      add_link_path: "Path",
+      add_link_custom: "Own path or web address \u2026",
+      add_link_path: "Path or web address",
+      add_link_path_ph: "/config/tools/state or https://example.com",
+      add_link_external_here: "Web addresses outside Home Assistant only work in the sidebar and in popups. Please enter a path here, e.g. /config/tools/state",
+      link_external: "Web link",
       add_link_button: "Add the link",
-      add_link_invalid: "The path has to start with / and must not contain spaces or special characters, e.g. /config/tools/state",
+      add_link_invalid: "Enter a path inside Home Assistant (starting with /, e.g. /config/tools/state) or a web address starting with https:// or http:// - without spaces or special characters.",
       add_link_exists: "This link is already in the list.",
       link: "Link",
       link_remove: "Remove this link",
@@ -3779,7 +3829,7 @@
       n_changed: "{n} geändert",
       info_lead: "Gestalte dein Home Assistant genau so, wie es dir gefällt! Mit dem HA Style Hub passt du die Benutzeroberfläche und deine Dashboards ganz ohne tiefes Coding individuell an.",
       info_areas: "Das Style Hub ist aktuell in vier Bereiche unterteilt und bietet dir die Möglichkeit, das Design für das System und deine Dashboards anzupassen:",
-      info_sidebar: "<p>Hier richtest du die Seitenleiste nach deinen Wünschen ein:</p><p><strong>Layout</strong>: 1 bis 4 Spalten (eingeklappt 1 bis 3), Abstand, Breite ausgeklappt und eingeklappt, Größe der Einträge, ein Neustart-Button, Einstellungen, Benachrichtigungen und Benutzer im Raster sowie das Ausblenden der ganzen Sidebar (kiosk-mode).</p><p><strong>Einträge</strong>: per Ziehen sortieren – auch direkt im Vorschaubild –, umbenennen, eigene Icons, Farben und Spaltenbreite je Eintrag, ausblenden, Zwischenüberschriften als Gruppen zum Zuklappen, Links zu beliebigen Seiten von Home Assistant und PopUp-Links, die ein Fenster mit mehreren Seiten oder einer Lovelace-Karte aus deinem Dashboard öffnen.</p><p><strong>Aussehen</strong>: Hintergrund und Verlauf, Hover, Text- und Iconfarben, Schrift, Rahmen je Seite, Ecken je Ecke, die Benachrichtigungsleiste und die Theme-Farben der Sidebar.</p>",
+      info_sidebar: "<p>Hier richtest du die Seitenleiste nach deinen Wünschen ein:</p><p><strong>Layout</strong>: 1 bis 4 Spalten (eingeklappt 1 bis 3), Abstand, Breite ausgeklappt und eingeklappt, Größe der Einträge, ein Neustart-Button, Einstellungen, Benachrichtigungen und Benutzer im Raster sowie das Ausblenden der ganzen Sidebar (kiosk-mode).</p><p><strong>Einträge</strong>: per Ziehen sortieren – auch direkt im Vorschaubild –, umbenennen, eigene Icons, Farben und Spaltenbreite je Eintrag, ausblenden, Zwischenüberschriften als Gruppen zum Zuklappen, Links zu beliebigen Seiten von Home Assistant oder Webadressen und PopUp-Links, die ein Fenster mit mehreren Seiten, einer Lovelace-Karte aus deinem Dashboard oder einer Webseite öffnen.</p><p><strong>Aussehen</strong>: Hintergrund und Verlauf, Hover, Text- und Iconfarben, Schrift, Rahmen je Seite, Ecken je Ecke, die Benachrichtigungsleiste und die Theme-Farben der Sidebar.</p>",
       info_theme: "<p>Färbt Home Assistant selbst ein – Dashboards, Dialoge und Einstellungsseiten – als echtes Theme mit {n} Variablen, getrennt für Hell und Dunkel, dazu die {p} Stufen der Primärfarbe, die automatisch berechnet werden.</p><p><strong>Vorschau</strong>: Jede Kachel und jedes Element darin ist anklickbar – Schalter, Buttons, Zustandsfarben, Tabellenzeilen, Diagrammfarben, Code … – und öffnet rechts genau die passenden Felder.</p><p><strong>Umfang</strong>: Karten, Schrift, Zustands- und Statusfarben, Tabellen, Eingabefelder, Dialoge und Code-Editor bis hin zu Diagrammen, Energie, Wetter sowie den Design-Tokens und Schaltern von Home Assistant 2026.10.</p><p><strong>Werkzeuge</strong>: Farbpalette aus einer Hauptfarbe, fertige Vorlagen, Schatten-Baukasten, Kontrast-Prüfung, Schnellfarben, Dashboard-Hintergrund als Farbe, Verlauf oder Bild sowie YAML-Export und -Import.</p>",
       info_header: "<p>Kümmert sich um das Headermenu der Dashboards, bis hin zum kompletten Ausblenden (kiosk-mode, auch als Schalter-Entität).</p><p><strong>Aussehen</strong>: Farbe oder Verlauf, Deckkraft und Weichzeichner, Höhe, Rahmen und Ecken, Titel- und Icongröße, Farben und Rahmen der Reiter und Buttons – oder eine der Vorlagen <em>Glas</em>, <em>Schlank</em> und <em>Abgesetzt</em>.</p><p><strong>Buttons</strong>: die vier Buttons von Home Assistant einzeln ausblenden, davor eigene: Neustart, Links, Sensoren (der Zustand einer beliebigen Entität) sowie CPU, RAM und Speicher.</p><p><strong>Theme-Farben der Kopfzeile</strong>: die Theme-Variablen der Leiste, auch für den Bearbeiten-Modus eines Dashboards.</p>",
       info_settings: "<p>Gestaltet die Seiten von Home Assistant selbst:</p><p><strong>Einstellungsseite</strong>: die Menüpunkte als Boxen in eigenen Farben, in Spalten oder als Kacheln, in eigener Reihenfolge und mit eigenem Namen, Untertitel und Farben je Punkt – auch auf der Profilseite. Dazu eine Favoriten-Leiste, ein Systemmonitor mit Prozessor, Arbeitsspeicher, Speicher und bis zu sechs eigenen Entitäten, das letzte Backup mit <em>Backup jetzt erstellen</em> und eine Übersicht mit Zählern.</p><p><strong>Geräte &amp; Dienste</strong>: Integrationen und Apps als schmale Liste in 1 bis 3 Spalten; die Seite einer einzelnen Integration zieht mit eigener Zeilenhöhe mit.</p><p><strong>Tabellen</strong>: Gruppenköpfe, Streifen, Zeilenhintergrund, Schriftgröße und Maus-Hover.</p>",
@@ -3884,7 +3934,7 @@
       settings_profile_page: "Auch auf der Profilseite anwenden",
       settings_profile_page_hint: "Seit Home Assistant 2026.10 hat die Profilseite dasselbe Menü: Symbol-Boxen, Farben, Spalten, Kacheln, Rahmen und Maus-Hover gelten dort ebenfalls.",
       settings_list_entries: "Auch die Seite einer Integration gestalten",
-      settings_list_entries_hint: "Die Einträge auf der Seite einer einzelnen Integration bekommen Rahmen, Ecken, Hintergrund und Abstand der Zeilen (ab Home Assistant 2026.10).",
+      settings_list_entries_hint: "Die Einträge auf der Seite einer einzelnen Integration bekommen Rahmen, Schatten, Ecken, Hintergrund, Abstand und Hover der Zeilen (ab Home Assistant 2026.10). Der Hover färbt dort die anklickbaren Zeilen: die Geräte und die Zeile „x Geräte“.",
       menu_item_edit: "Menüpunkt bearbeiten",
       menu_item_name: "Name",
       menu_item_hide_sub: "Untertitel ausblenden",
@@ -3989,6 +4039,11 @@
       lsec_theme: "Theme-Farben der Sidebar",
       sidebar_theme_hint: "Diese Variablen gehören zum Theme (Dunkel / Hell) und wirken nur, solange das Theme in Home Assistant eingetragen ist. Farben, die du oben setzt (Hintergrund, Text, Icons, aktiver Eintrag, Kopfbereich, Titel), werden automatisch für beide Modi übernommen; einen Wert, den du hier selbst gesetzt hast, lassen sie stehen. In Home Assistant haben deine Werte von oben Vorrang.",
       accordion_label: "Gruppen als Akkordeon",
+      hint_open: "Hinweis anzeigen",
+      hint_close: "Hinweis einklappen",
+      hints_hide: "Alle Hinweise in den Einstellungsspalten ausblenden",
+      hints_hide_hint:
+        "Die Erkl\u00e4rungen bei den Feldern von Sidebar, Theme, Header und HA-Einstellungen sind standardm\u00e4\u00dfig sichtbar. Ein Klick auf das kleine Info-Symbol neben einem Hinweis klappt ihn ein \u2013 HA Style Hub merkt sich, welche du geschlossen hast. Mit diesem Haken verschwinden alle auf einmal, die Spalten werden noch aufger\u00e4umter. Gilt nur in diesem Browser; du kannst die Hinweise jederzeit wieder einblenden.",
       accordion_on: "Akkordeon: immer nur eine Gruppe offen (Klick: Gruppen einzeln öffnen)",
       accordion_off: "Gruppen einzeln öffnen (Klick: Akkordeon, immer nur eine offen)",
       table_row_background: "Farbe der Zeilen",
@@ -4063,7 +4118,7 @@
       ctl_timeline: "Verlaufsleiste",
       entry_add: "Zwischenüberschrift, Link oder PopUp hinzufügen",
       add_popup_title: "PopUp Link",
-      add_popup_hint: "Ein Eintrag in der Seitenleiste, der ein Fenster öffnet – mit mehreren Seiten als Kacheln oder mit einer Karte aus deinem Dashboard.",
+      add_popup_hint: "Ein Eintrag in der Seitenleiste, der ein Fenster öffnet – mit mehreren Seiten oder Webadressen als Kacheln oder mit einer Karte aus deinem Dashboard.",
       add_popup_name: "Name des PopUps",
       add_popup_pick: "Seite ins PopUp aufnehmen",
       add_popup_button: "PopUp anlegen",
@@ -4073,7 +4128,7 @@
       popup_sub: "Fenster mit Links",
       popup_remove: "PopUp entfernen",
       popup_links: "Links im PopUp",
-      popup_links_empty: "Noch keine Links – unten eine Seite wählen.",
+      popup_links_empty: "Noch keine Links – unten eine Seite wählen oder eine Webadresse eintragen.",
       popup_add: "Hinzufügen",
       popup_link_remove: "Diesen Link entfernen",
       popup_full: "Ein PopUp fasst höchstens 24 Links.",
@@ -4081,13 +4136,25 @@
       popup_hint_hide: "Tipp: Einträge, die jetzt im PopUp stehen, kannst du in der Seitenleiste ausblenden (Auge).",
       popup_preview_tag: "PopUp · Vorschau",
       qc_special: "Ohne Farbe",
-      popup_use_hint: "In Home Assistant öffnet ein Klick auf den Eintrag das Fenster. Ein Klick auf eine Kachel wechselt die Seite ohne Neuladen; Strg-Klick (am Mac ⌘-Klick) oder die mittlere Maustaste öffnet sie in einem neuen Tab. Esc, das Kreuz oder ein Klick daneben schließt das Fenster.",
+      popup_use_hint: "In Home Assistant öffnet ein Klick auf den Eintrag das Fenster. Ein Klick auf eine Kachel wechselt die Seite ohne Neuladen; Strg-Klick (am Mac ⌘-Klick) oder die mittlere Maustaste öffnet sie in einem neuen Tab; Webadressen öffnen immer in einem neuen Tab. Esc, das Kreuz oder ein Klick daneben schließt das Fenster.",
       popup_content: "Inhalt des Fensters",
       popup_content_links: "Links",
       popup_content_card: "Karte (YAML)",
+      popup_content_web: "Webseite",
+      popup_sub_web: "Fenster mit Webseite",
+      popup_web_url: "Webadresse der Seite",
+      popup_web_empty: "Webadresse eingeben, z. B. https://example.com",
+      popup_web_invalid: "Das ist keine g\u00fcltige Webadresse: Sie muss mit https:// oder http:// beginnen und darf keine Leer- oder Sonderzeichen enthalten (h\u00f6chstens 500 Zeichen).",
+      popup_web_mixed: "Home Assistant ist mit https ge\u00f6ffnet \u2013 der Browser blockiert darin eine http://-Seite. Bitte eine https://-Adresse verwenden.",
+      popup_web_ok: "Das Fenster zeigt die Seite von {host}.",
+      popup_web_hint: "Das Fenster zeigt die Seite dieser Adresse direkt in Home Assistant, wie ein kleiner Browser. Viele Webseiten verbieten, in anderen Seiten eingebettet zu werden, und bleiben leer \u2013 daf\u00fcr besser Links nehmen. Dienste im eigenen Netz funktionieren oft, wenn sie das Einbetten erlauben (z. B. Grafana: allow_embedding).",
+      popup_web_use_hint: "In Home Assistant \u00f6ffnet ein Klick auf den Eintrag das Fenster mit der Seite. Der Pfeil im Kopf \u00f6ffnet sie in einem neuen Tab, das Kreuz oder ein Klick daneben schlie\u00dft das Fenster. Die Seite kann Links in neuen Tabs \u00f6ffnen, aber die Seite von Home Assistant selbst nicht umleiten.",
+      popup_web_preview: "{host} \u2013 Home Assistant zeigt hier die Seite",
+      popup_web_none: "Noch keine Webadresse \u2013 unter Eintr\u00e4ge eine eintragen.",
+      add_popup_web_hint: "Die Adresse der Seite eintragen, die das Fenster zeigen soll. Sp\u00e4ter \u00e4nderbar unter Eintr\u00e4ge.",
       popup_width: "Fensterbreite (px)",
       popup_height: "Fensterhöhe (px)",
-      popup_size_hint: "0 = automatisch: Breite 560 px mit Links, 600 px mit Karte; die Höhe richtet sich nach dem Inhalt, höchstens 85 % des Bildschirms, darüber wird gescrollt. Auf dem Handy ist das Fenster nie breiter als der Bildschirm.",
+      popup_size_hint: "0 = automatisch: Breite 560 px mit Links, 600 px mit Karte, 900 px mit Webseite; die Höhe richtet sich nach dem Inhalt, höchstens 85 % des Bildschirms (eine Webseite bekommt 70 %, höchstens 640 px), darüber wird gescrollt. Auf dem Handy ist das Fenster nie breiter als der Bildschirm.",
       popup_card_yaml: "Code der Karte (YAML)",
       popup_card_placeholder: "type: entities\nentities:\n  - light.wohnzimmer",
       popup_card_hint: "Den Code aus einem Dashboard holen: Karte bearbeiten → ⋮ → Im Code-Editor bearbeiten, alles kopieren und hier einfügen. Mehrere Karten: in einen vertical-stack oder grid packen. Custom Cards funktionieren, wenn sie installiert sind (HACS). Gelesen wird der Code vom YAML-Parser von Home Assistant wie in der configuration.yaml: on/off/yes/no in Anführungszeichen setzen (\"on\"), sonst werden sie zu true/false. Höchstens 50 KB.",
@@ -4296,7 +4363,10 @@
       settings_list_gap: "Abstand zw. den Zeilen (px)",
       settings_list_max_width: "Maximale Breite Liste (px)",
       settings_menu_frame: "Rahmen und Ecken der Menüpunkte",
-      settings_list_frame: "Rahmen und Ecken der Zeilen",
+      settings_list_frame: "Rahmen, Shadow und Ecken der Zeilen",
+      settings_list_shadow: "Schatten der Zeilen",
+      settings_list_shadow_hint:
+        "Leer übernimmt den Schatten der Karten aus dem Theme. „Kein Schatten“ (none) nimmt ihn weg \u2013 praktisch für eine Spaltenansicht aus schlichten Listen. Feld leeren, um wieder den Schatten des Themes zu nehmen. Gilt auch für die Apps und die Seite einer Integration.",
       settings_menu_border_width: "Rahmen (px)",
       settings_menu_border_color: "Rahmenfarbe",
       settings_menu_border_radius: "Eckenradius (px)",
@@ -4336,7 +4406,7 @@
       settings_list_three_columns: "Dreispaltige Liste",
       settings_list_apps: "Ansicht auch für Apps übernehmen",
       settings_list_apps_hint:
-        "Die Seite „Apps“ (früher Add-ons) wird dann ebenfalls als Liste angezeigt: eine App pro Zeile mit Symbol, Name, Beschreibung und Status. Höhe, Abstand, Breite, Rahmen und Hover der Liste gelten dort mit.",
+        "Die Seite „Apps“ (früher Add-ons) wird dann ebenfalls als Liste angezeigt: eine App pro Zeile mit Symbol, Name, Beschreibung und Status. Höhe, Abstand, Breite, Rahmen, Schatten und Hover der Liste gelten dort mit.",
       table_rows_title: "Zeilen",
       table_zebra: "Farbe jeder zweiten Zeile",
       table_hover: "Mouse Hover",
@@ -4519,12 +4589,15 @@
       add_heading_button: "Zwischen\u00fcberschrift hinzuf\u00fcgen",
       add_link_title: "Link",
       add_link_hint:
-        "Eine Abk\u00fcrzung zu einer Seite von Home Assistant, direkt in der Sidebar \u2013 ohne Umweg \u00fcber die Einstellungen. Name, Icon, Farben und Position stellst du danach ein wie bei jedem anderen Eintrag. Links in die Einstellungen sehen nur Administratoren.",
+        "Eine Abk\u00fcrzung zu einer Seite von Home Assistant, direkt in der Sidebar \u2013 ohne Umweg \u00fcber die Einstellungen. Oder die Adresse (https://...) einer beliebigen anderen Webseite: sie \u00f6ffnet in einem neuen Tab. Name, Icon, Farben und Position stellst du danach ein wie bei jedem anderen Eintrag. Links in die Einstellungen sehen nur Administratoren.",
       add_link_page: "Seite",
-      add_link_custom: "Eigener Pfad \u2026",
-      add_link_path: "Pfad",
+      add_link_custom: "Eigener Pfad oder Webadresse \u2026",
+      add_link_path: "Pfad oder Webadresse",
+      add_link_path_ph: "/config/tools/state oder https://example.com",
+      add_link_external_here: "Webadressen au\u00dferhalb von Home Assistant gehen nur in der Sidebar und in PopUps. Hier bitte einen Pfad angeben, z. B. /config/tools/state",
+      link_external: "Weblink",
       add_link_button: "Link hinzuf\u00fcgen",
-      add_link_invalid: "Der Pfad muss mit / beginnen und darf keine Leer- oder Sonderzeichen enthalten, z. B. /config/tools/state",
+      add_link_invalid: "Gib einen Pfad in Home Assistant an (mit / am Anfang, z. B. /config/tools/state) oder eine Webadresse, die mit https:// oder http:// beginnt \u2013 ohne Leer- oder Sonderzeichen.",
       add_link_exists: "Diesen Link gibt es in der Liste schon.",
       link: "Link",
       link_remove: "Diesen Link entfernen",
@@ -5331,6 +5404,9 @@
       background: var(--rbg, none);
     }
     .lpv[data-list] .lpv-card:hover { background-image: var(--hv, none); }
+    /* 1.5.7: Schatten der Zeilen - ohne eigenen Wert der Kartenschatten des Themes */
+    .lpv-card { box-shadow: var(--ha-card-box-shadow, none); }
+    .lpv[data-list] .lpv-card { box-shadow: var(--lsh, var(--ha-card-box-shadow, none)); }
     /* Vorschau der Tabellen mit Gruppenkoepfen. Ohne eigene Werte so, wie
        Home Assistant sie zeichnet: Seitenhintergrund, Schrift Medium. */
     .tpv {
@@ -6091,6 +6167,22 @@
     .fields-foot { padding: 14px 22px 16px; border-top: 1px solid var(--sh-line); display: flex; flex-direction: column; gap: 10px; }
     .fields-note { font-size: 12px; color: var(--sh-muted); line-height: 1.45; margin: 16px 0 0; }
     .fields-note p { margin: 0 0 8px; }
+    /* Hinweise der Feldspalte: eingeklappt hinter dem Info-Knopf (1.5.7) */
+    .fields-body [data-hint] { position: relative; }
+    .fields-body [data-hint] > .hint-text { display: block; }
+    .fields-body [data-hint]:not([data-open]) > .hint-text { display: none; }
+    .fields-body [data-hint][data-open] { padding-left: 26px; }
+    /* Bei Haken und Schaltern steht das Zeichen gleich hinter der Beschriftung */
+    .fields-body label.check .sub[data-hint]:not([data-open]) { display: inline; margin: 0 0 0 6px; }
+    .hint-toggle {
+      display: inline-flex; align-items: center; justify-content: center; width: 20px; height: 20px;
+      padding: 0; margin: 0; border: 0; border-radius: 50%; background: transparent;
+      color: var(--sh-muted); cursor: pointer; font-size: 12px; line-height: 1; vertical-align: middle; opacity: .75;
+    }
+    .hint-toggle:hover, .hint-toggle:focus-visible { background: var(--sh-row-hover); opacity: 1; }
+    .hint-toggle ha-icon { --mdc-icon-size: 15px; display: block; }
+    .fields-body [data-hint][data-open] > .hint-toggle { position: absolute; left: 0; top: -2px; color: var(--sh-accent); opacity: 1; }
+    .app[data-hints="off"] .fields-body [data-hint] { display: none !important; }
     .topic-panel { display: none; }
     .topic-panel[data-current] { display: flex; flex-direction: column; gap: 14px; }
     /* Einstellungsseite, "Alle Felder": die drei Themen untereinander */
@@ -6947,6 +7039,12 @@
     .epv-row { display: flex; align-items: center; gap: 10px; min-height: var(--erow, 40px); padding: 3px 12px; box-sizing: border-box; }
     .epv-row b { font-weight: 500; }
     .epv-dev { padding-left: 26px; border-top: 1px solid color-mix(in srgb, var(--divider-color) 60%, transparent); }
+    /* 1.5.7: Schatten und Maus hover wie auf der echten Seite - der Hover
+       nur auf den anklickbaren Zeilen (Geraete), ohne eigene Farbe das
+       leichte Grau von Home Assistant. */
+    .epv-entry { box-shadow: var(--esh, none); }
+    .epv-dev { cursor: pointer; }
+    .epv-dev:hover { background-image: var(--ehv, linear-gradient(color-mix(in srgb, var(--primary-text-color) 8%, transparent), color-mix(in srgb, var(--primary-text-color) 8%, transparent))); }
     .epv-dev-ic { width: 14px; height: 11px; border: 1.5px solid var(--secondary-text-color); border-radius: 2px; flex: none; opacity: .8; }
     .epv-msg { display: flex !important; align-items: center; gap: 4px; font-weight: 700; }
     .epv-msg i { display: inline-flex; align-items: center; justify-content: center; width: 11px; height: 11px; border-radius: 50%;
@@ -7251,6 +7349,42 @@
       // Privater Modus - dann eben nicht gemerkt.
     }
   };
+  // Hinweise der rechten Spalte (1.5.7): standardmaessig offen, mit einem
+  // Info-Knopf einzeln einklappbar (der Browser merkt sich, welche) und auf
+  // Wunsch alle ganz ausgeblendet - eine Ansichtssache des Browsers.
+  const HINTS_KEY = "ha-style-hub-hints";
+  const HINTS_CLOSED_KEY = "ha-style-hub-hints-closed";
+  const HINTS_CLOSED_MAX = 300;
+  const readHintsClosed = () => {
+    try {
+      const raw = JSON.parse(window.localStorage.getItem(HINTS_CLOSED_KEY) || "[]");
+      return Array.isArray(raw) ? raw.filter((one) => typeof one === "string").slice(0, HINTS_CLOSED_MAX) : [];
+    } catch (err) {
+      return [];
+    }
+  };
+  const writeHintsClosed = (set) => {
+    try {
+      window.localStorage.setItem(HINTS_CLOSED_KEY, JSON.stringify([...set].slice(-HINTS_CLOSED_MAX)));
+    } catch (err) {
+      // Privater Modus - dann eben nicht gemerkt.
+    }
+  };
+  const HINT_SELECTOR = [".hint", ".field-hint", ".ps-hint", ".fields-note", "label.check .sub"].map((s) => `.fields-body ${s}`).join(", ");
+  const readHintsHidden = () => {
+    try {
+      return window.localStorage.getItem(HINTS_KEY) === "off";
+    } catch (err) {
+      return false;
+    }
+  };
+  const writeHintsHidden = (hidden) => {
+    try {
+      window.localStorage.setItem(HINTS_KEY, hidden ? "off" : "on");
+    } catch (err) {
+      // Privater Modus - dann eben nicht gemerkt.
+    }
+  };
   const writeGroups = (map) => {
     try {
       window.localStorage.setItem(GROUPS_KEY, JSON.stringify(map));
@@ -7330,6 +7464,7 @@
       this._lastPanels = hass && hass.panels;
       if (first) {
         this._renderShell();
+        this._initHints();
         this._load();
       } else if (this._ready) {
         if (this._lastDock !== hass.dockedSidebar) {
@@ -7650,7 +7785,7 @@
         if (isLink(key)) {
           found.push({
             key: key,
-            label: this._t.link,
+            label: isExternalUrl(key.slice(LINK_PREFIX.length)) ? this._t.link_external : this._t.link,
             sub: key.slice(LINK_PREFIX.length),
             icon: this._config.items[key].icon || LINK_ICON,
             link: true,
@@ -7664,8 +7799,8 @@
           found.push({
             key: key,
             label: this._t.popup,
-            sub: this._config.items[key].content === "card" ? this._t.popup_sub_card : this._t.popup_sub,
-            icon: this._config.items[key].icon || (this._config.items[key].content === "card" ? POPUP_CARD_ICON : POPUP_ICON),
+            sub: this._popupSub(this._config.items[key].content),
+            icon: this._config.items[key].icon || this._popupIcon(this._config.items[key].content),
             popup: true,
           });
         }
@@ -8913,7 +9048,10 @@
             <small class="field-hint">${escapeHtml(t.settings_list_fields_hint)}</small>
             ${this._grp("settings:list-frame", t.settings_list_frame, frame("list", t.settings_list_border_width, t.settings_list_border_radius, [
               this._color("settings.list_border_color", t.settings_list_border_color),
-            ]) + this._color("settings.list_error_color", t.settings_list_error_color), { open: true })}
+            ]) + this._color("settings.list_error_color", t.settings_list_error_color) + `
+              ${this._field("settings.list_shadow", t.settings_list_shadow, "text", 'placeholder="theme" spellcheck="false" autocomplete="off" maxlength="300"')}
+              ${this._shadowBox("settings.list_shadow", { demo: false })}
+              <small class="field-hint">${escapeHtml(t.settings_list_shadow_hint)}</small>`, { open: true })}
             ${this._grp("settings:list-hover", t.section_hover, `
               <div class="grid2">
                 ${this._color("settings.list_hover_background", t.settings_hover_background)}
@@ -9266,6 +9404,7 @@
         // Ein Verlauf als Zeilenhintergrund bleibt unter der Hover-Farbe stehen.
         const under = rowBg && !(window.CSS && CSS.supports && CSS.supports("color", rowBg)) ? `, ${rowBg}` : "";
         set(list, "--hv", hover ? `linear-gradient(${tint}, ${tint})${under}` : "");
+        set(list, "--lsh", String(cfg.list_shadow || "").trim());
       }
 
       // 1.5.5: die Seite einer Integration - dieselben Werte wie im Injector
@@ -9279,6 +9418,15 @@
         set(page, "--ebc", String(cfg.list_border_color || "").trim());
         set(page, "--eec", String(cfg.list_error_color || "").trim());
         set(page, "--ebg", String(cfg.list_background || "").trim());
+        // 1.5.7: Schatten (nur ein eigener - der Rahmen eines Eintrags hat
+        // in Home Assistant keinen) und Hover der Geraetezeilen
+        set(page, "--esh", String(cfg.list_shadow || "").trim());
+        const entryHover = String(cfg.list_hover_background || "").trim();
+        const entryHoverOpacity = num("list_hover_opacity", 0, 100);
+        const entryPlain = !!(window.CSS && CSS.supports && CSS.supports("color", entryHover));
+        const entryTint =
+          entryHoverOpacity >= 100 || !entryPlain ? entryHover : `color-mix(in srgb, ${entryHover} ${entryHoverOpacity}%, transparent)`;
+        set(page, "--ehv", entryHover ? (entryPlain ? `linear-gradient(${entryTint}, ${entryTint})` : entryTint) : "");
         set(page, "--egap", `${Math.max(3, Math.round(Math.max(num("list_gap", 0, 48), 4) * scale))}px`);
         const rowHeight = num("list_entries_row_height", 0, 120);
         set(page, "--erow", rowHeight > 0 ? `${Math.round(Math.min(120, Math.max(32, rowHeight)) * scale)}px` : "");
@@ -10206,18 +10354,16 @@
         return;
       }
       const chosen = root.getElementById("add-link-select").value;
-      let path = chosen || root.getElementById("add-link-path").value.trim();
-      // Eine ganze Adresse aus der Adresszeile ist auch recht - gebraucht
-      // wird nur der Teil hinter dem Rechnernamen.
-      if (!chosen && /^https?:\/\//i.test(path)) {
-        try {
-          const url = new URL(path);
-          path = url.pathname + url.search + url.hash;
-        } catch (err) {
-          path = "";
-        }
+      // 1.5.7: in der Seitenleiste darf es auch eine fremde Webseite sein;
+      // Kopfzeile und Favoriten bleiben in Home Assistant.
+      const outside = this._addTarget !== "header" && this._addTarget !== "favorites";
+      const typed = chosen ? "" : root.getElementById("add-link-path").value.trim();
+      const path = chosen || this._addressOf(typed, outside);
+      if (!chosen && !outside && isExternalUrl(typed) && !path) {
+        this._addError(this._t.add_link_external_here);
+        return;
       }
-      if (!LINK_PATH.test(path) || path === "/" || path.length > 200) {
+      if (!linkOk(path)) {
         this._addError(this._t.add_link_invalid);
         return;
       }
@@ -10229,7 +10375,7 @@
           }
         })
       );
-      const fallback = path.split(/[?#]/)[0].split("/").filter(Boolean).pop() || path;
+      const fallback = isExternalUrl(path) ? externalHost(path) : path.split(/[?#]/)[0].split("/").filter(Boolean).pop() || path;
       if (this._addTarget === "header" || this._addTarget === "favorites") {
         const store = this._linkStore(this._addTarget);
         const links = store.section[store.key] || [];
@@ -10266,7 +10412,7 @@
       // Seite spaeter in einer anderen Sprache geoeffnet wird.
       this._config.items[key] = Object.assign({}, DEFAULT_ITEM, {
         name: known ? (this._de ? known[2] : known[3]) : fallback,
-        icon: known ? known[1] : LINK_ICON,
+        icon: known ? known[1] : linkIcon(path),
       });
       this._config.order = [key].concat(
         (this._config.order || []).filter((one) => one !== key)
@@ -10414,7 +10560,7 @@
               <span class="handle" title="drag">${glyph("mdi:drag", "&#8942;")}</span>
               <span class="row-icon">${icon}</span>
               <span class="row-name"><span>${escapeHtml(this._entryName(entry))}</span>${
-                entry.link ? `<span class="row-link">${escapeHtml(t.link)}</span>` : entry.popup ? `<span class="row-link">${escapeHtml(t.popup)}</span>` : ""
+                entry.link ? `<span class="row-link">${escapeHtml(isExternalUrl(entry.sub) ? t.link_external : t.link)}</span>` : entry.popup ? `<span class="row-link">${escapeHtml(t.popup)}</span>` : ""
               }<span class="dot" data-dot${changed ? "" : " hidden"}></span></span>
               <span class="row-meta">${escapeHtml(meta)}</span>
               <button class="eye" data-action="hidden" ${cfg.hidden ? "data-on" : ""}
@@ -10592,6 +10738,11 @@
           this._setAccordion(!this._accordion);
           return;
         }
+        const hintButton = target.closest(".hint-toggle");
+        if (hintButton) {
+          this._toggleHint(hintButton.closest("[data-hint]"));
+          return;
+        }
         const pane = target.closest("[data-pane-btn]");
         if (pane) {
           const which = pane.dataset.paneBtn;
@@ -10657,6 +10808,10 @@
       });
       // Segmentierte Felder ziehen mit, wenn sich ihr <select> aendert.
       root.addEventListener("change", (event) => {
+        if (event.target.matches && event.target.matches("[data-hints-hide]")) {
+          this._setHintsHidden(event.target.checked);
+          return;
+        }
         const field = event.target.closest && event.target.closest(".seg-field");
         if (field) {
           this._syncSegs(field);
@@ -11126,7 +11281,7 @@
       on("add-popup-kind", "click", (event) => {
         const button = event.target.closest && event.target.closest("[data-apc]");
         if (button) {
-          this._addPopupContent = button.dataset.apc === "card" ? "card" : "links";
+          this._addPopupContent = button.dataset.apc === "card" || button.dataset.apc === "web" ? button.dataset.apc : "links";
           this._renderAddPopup();
         }
       });
@@ -12795,7 +12950,7 @@
             </label>
             <label class="field" id="add-link-custom" hidden>
               <span>${escapeHtml(t.add_link_path)}</span>
-              <input type="text" id="add-link-path" spellcheck="false" placeholder="/config/tools/state" />
+              <input type="text" id="add-link-path" spellcheck="false" placeholder="${escapeHtml(t.add_link_path_ph)}" />
             </label>
             </div>
             <p class="modal-error warn" hidden></p>
@@ -12815,6 +12970,7 @@
                 <div class="seg inline" id="add-popup-kind">
                   <button type="button" data-apc="links">${escapeHtml(t.popup_content_links)}</button>
                   <button type="button" data-apc="card">${escapeHtml(t.popup_content_card)}</button>
+                  <button type="button" data-apc="web">${escapeHtml(t.popup_content_web)}</button>
                 </div>
               </div>
               <div id="add-popup-links">
@@ -12824,12 +12980,19 @@
                 </label>
                 <label class="field" id="add-popup-custom" hidden>
                   <span>${escapeHtml(t.add_link_path)}</span>
-                  <input type="text" id="add-popup-path" spellcheck="false" placeholder="/config/tools/state" />
+                  <input type="text" id="add-popup-path" spellcheck="false" placeholder="${escapeHtml(t.add_link_path_ph)}" />
                 </label>
                 <div class="add-actions">
                   <button class="flat" id="add-popup-pick">${glyph("mdi:plus", "+")}${escapeHtml(t.add_popup_pick)}</button>
                 </div>
                 <ul class="add-popup-list" id="add-popup-list"></ul>
+              </div>
+              <div id="add-popup-web" hidden>
+                <label class="field">
+                  <span>${escapeHtml(t.popup_web_url)}</span>
+                  <input type="text" id="add-popup-url" spellcheck="false" autocomplete="off" placeholder="https://example.com" />
+                </label>
+                <p class="hint">${escapeHtml(t.add_popup_web_hint)}</p>
               </div>
               <p class="hint" id="add-popup-card-hint" hidden>${escapeHtml(t.add_popup_card_hint)}</p>
               <p class="warn add-popup-error" id="add-popup-error" hidden></p>
@@ -13195,8 +13358,11 @@
      * Er hat keine eigene Bindung - er schreibt in das Feld (path), und
      * _syncShadowBoxes liest das Feld zurueck in die Regler.
      */
-    _shadowBox(path) {
+    _shadowBox(path, options) {
       const t = this._t;
+      // 1.5.7: ohne das kleine Vorschau-Kaestchen, wo die grosse Vorschau
+      // links den Schatten ohnehin zeigt (HA-Settings).
+      const demo = !(options && options.demo === false);
       const range = (part, label, min, max, unit) => `
         <label class="range">
           <span class="cap">${escapeHtml(label)}<output data-sh-out="${part}" data-unit="${unit}"></output></span>
@@ -13211,7 +13377,7 @@
           <div class="shadow-body">
           <div class="shadow-head">
             <p class="hint">${escapeHtml(t.shadow_hint)}</p>
-            <span class="shadow-demo" aria-hidden="true"></span>
+            ${demo ? '<span class="shadow-demo" aria-hidden="true"></span>' : ""}
           </div>
           <div class="shadow-presets">${SHADOW_PRESETS.map(([id, value]) =>
             `<button type="button" class="chip" data-shadow-preset="${escapeHtml(value)}">${escapeHtml(t[`shadow_p_${id}`])}</button>`).join("")}</div>
@@ -13713,6 +13879,13 @@ ${[
               </div>
               ${toggle("advanced.enabled", t.enabled, t.enabled_hint)}
               ${toggle("advanced.debug", t.debug, t.debug_hint)}
+              <div class="card info-switch">
+                <label class="check strong">
+                  <input type="checkbox" data-hints-hide />
+                  <span>${escapeHtml(t.hints_hide)}</span>
+                </label>
+                <p class="hint">${escapeHtml(t.hints_hide_hint)}</p>
+              </div>
               <div class="card danger">
                 <h2>${escapeHtml(t.reset_title)}</h2>
                 <p class="hint">${t.reset_hint}</p>
@@ -14281,6 +14454,108 @@ ${[
         if (head) {
           head.setAttribute("aria-expanded", open ? "true" : "false");
         }
+      });
+    }
+
+    /**
+     * Hinweise der rechten Spalte (1.5.7): jeder Text (.hint, .field-hint,
+     * .ps-hint, .fields-note, label.check .sub) steht offen neben einem
+     * Info-Knopf; ein Klick darauf klappt ihn ein, und der Browser merkt sich,
+     * welche Hinweise zu sind. Auf der Seite Info laesst sich alles ausblenden. Das Panel baut Felder an vielen Stellen neu, darum
+     * ruestet ein Beobachter neue Hinweise nach, statt jeden einzeln zu
+     * kennen. Was ein Zustand der Seite ist (data-show-when, data-hide-when,
+     * .hidden-note), bleibt unangetastet.
+     */
+    _initHints() {
+      this._hintsClosed = new Set(readHintsClosed());
+      this._hintsHidden = readHintsHidden();
+      this._applyHintsHidden();
+      this._enhanceHints();
+      // Die Rueckrufe des Beobachters laufen vor dem naechsten Zeichnen: ein
+      // neu gebauter Hinweis erscheint gleich im richtigen Zustand, ohne Flackern.
+      this._hintObserver = new MutationObserver(() => this._enhanceHints());
+      this._hintObserver.observe(this.shadowRoot, { childList: true, subtree: true });
+    }
+
+    _hintKey(box) {
+      const text = box.querySelector(":scope > .hint-text");
+      return String((text || box).textContent || "").replace(/\s+/g, " ").trim().slice(0, 100);
+    }
+
+    _enhanceHints() {
+      const t = this._t;
+      this.shadowRoot.querySelectorAll(HINT_SELECTOR).forEach((box) => {
+        if (
+          box.hasAttribute("data-hint") ||
+          box.closest("[data-hint]") ||
+          box.hasAttribute("data-show-when") ||
+          box.hasAttribute("data-hide-when") ||
+          box.classList.contains("hidden-note") ||
+          box.classList.contains("shadow-note") ||
+          !box.textContent.trim()
+        ) {
+          return;
+        }
+        const text = document.createElement("span");
+        text.className = "hint-text";
+        while (box.firstChild) {
+          text.appendChild(box.firstChild);
+        }
+        const button = document.createElement("button");
+        button.type = "button";
+        button.className = "hint-toggle";
+        button.innerHTML = glyph("mdi:information-outline", "i");
+        box.setAttribute("data-hint", "");
+        box.append(button, text);
+        this._setHintOpen(box, !this._hintsClosed.has(this._hintKey(box)));
+      });
+    }
+
+    _setHintOpen(box, open) {
+      const t = this._t;
+      const button = box.querySelector(":scope > .hint-toggle");
+      box.toggleAttribute("data-open", !!open);
+      if (button) {
+        button.setAttribute("aria-expanded", open ? "true" : "false");
+        button.title = open ? t.hint_close : t.hint_open;
+        button.setAttribute("aria-label", button.title);
+      }
+    }
+
+    _toggleHint(box) {
+      if (!box) {
+        return;
+      }
+      const open = !box.hasAttribute("data-open");
+      this._setHintOpen(box, open);
+      const key = this._hintKey(box);
+      if (open) {
+        this._hintsClosed.delete(key);
+      } else {
+        this._hintsClosed.add(key);
+      }
+      writeHintsClosed(this._hintsClosed);
+    }
+
+    /** Alle Hinweise der rechten Spalte aus- oder einblenden (Seite Info). */
+    _setHintsHidden(hidden) {
+      this._hintsHidden = !!hidden;
+      writeHintsHidden(this._hintsHidden);
+      this._applyHintsHidden();
+    }
+
+    _applyHintsHidden() {
+      const root = this.shadowRoot;
+      const app = root.getElementById("app");
+      if (app) {
+        if (this._hintsHidden) {
+          app.setAttribute("data-hints", "off");
+        } else {
+          app.removeAttribute("data-hints");
+        }
+      }
+      root.querySelectorAll("[data-hints-hide]").forEach((box) => {
+        box.checked = !!this._hintsHidden;
       });
     }
 
@@ -16235,6 +16510,9 @@ ${[
           found = link;
         }
       }));
+      if (!found && isExternalUrl(path)) {
+        return { path, name: externalHost(path), icon: EXTERNAL_ICON };
+      }
       const fallback = path.split(/[?#]/)[0].split("/").filter(Boolean).pop() || path;
       return { path, name: found ? found[2] : fallback, icon: found ? found[1] : LINK_ICON };
     }
@@ -16254,19 +16532,34 @@ ${[
       select.value = free ? free.value : "";
     }
 
-    /** Pfad aus Auswahl oder eigenem Feld - wie beim Link auch eine ganze Adresse. */
-    _readPagePath(select, input) {
-      const chosen = select ? select.value : "";
-      let path = chosen || (input ? input.value.trim() : "");
-      if (!chosen && /^https?:\/\//i.test(path)) {
+    /**
+     * Aus einer Eingabe einen Pfad in Home Assistant oder (1.5.7, wenn
+     * external gesetzt ist) eine externe Adresse machen. Eine ganze Adresse
+     * von Home Assistant selbst aus der Adresszeile ist auch recht - gebraucht
+     * wird nur der Teil hinter dem Rechnernamen; jede andere Adresse bleibt,
+     * wie sie ist. Leer, wenn nichts davon passt.
+     */
+    _addressOf(text, external) {
+      let path = String(text || "").trim();
+      if (/^https?:\/\//i.test(path)) {
         try {
           const url = new URL(path);
-          path = url.pathname + url.search + url.hash;
+          if (url.host === window.location.host) {
+            path = url.pathname + url.search + url.hash;
+          } else if (!(external && isExternalUrl(path))) {
+            path = "";
+          }
         } catch (err) {
           path = "";
         }
       }
-      return LINK_PATH.test(path) && path !== "/" && path.length <= 200 ? path : "";
+      return linkOk(path) ? path : "";
+    }
+
+    /** Pfad aus Auswahl oder eigenem Feld (PopUp: auch eine externe Adresse). */
+    _readPagePath(select, input) {
+      const chosen = select ? select.value : "";
+      return chosen || this._addressOf(input ? input.value : "", true);
     }
 
     /** Seite oder Sensor (nur Kopfzeile, 1.5.4): Teile und Knopf des Dialogs. */
@@ -16375,14 +16668,17 @@ ${[
           </li>`).join("")
         : `<li class="apl-empty">${escapeHtml(t.add_popup_empty)}</li>`;
       root.getElementById("add-popup-pick").disabled = links.length >= POPUP_LINKS_MAX;
-      // Links oder Karte (1.5.3): bei der Karte kommt der Code danach im Eintrag
-      const card = this._addPopupContent === "card";
+      // Links, Karte (1.5.3) oder Webseite (1.5.7): bei der Karte kommt der
+      // Code danach im Eintrag, bei der Webseite steht die Adresse gleich hier
+      const kind = this._addPopupContent === "card" || this._addPopupContent === "web" ? this._addPopupContent : "links";
+      const card = kind === "card";
       root.querySelectorAll("#add-popup-kind [data-apc]").forEach((button) => {
-        button.toggleAttribute("data-active", button.dataset.apc === (card ? "card" : "links"));
+        button.toggleAttribute("data-active", button.dataset.apc === kind);
       });
-      root.getElementById("add-popup-links").hidden = card;
+      root.getElementById("add-popup-links").hidden = kind !== "links";
+      root.getElementById("add-popup-web").hidden = kind !== "web";
       root.getElementById("add-popup-card-hint").hidden = !card;
-      root.querySelector("#add-modal .add-popup-use").hidden = card;
+      root.querySelector("#add-modal .add-popup-use").hidden = kind !== "links";
       this._addPopupError("");
     }
 
@@ -16420,8 +16716,14 @@ ${[
     _addPopup() {
       const root = this.shadowRoot;
       const card = this._addPopupContent === "card";
-      const links = card ? [] : cleanPopupLinks(this._addPopupLinks);
-      if (!card && !links.length) {
+      const web = this._addPopupContent === "web";
+      const links = card || web ? [] : cleanPopupLinks(this._addPopupLinks);
+      const url = web ? root.getElementById("add-popup-url").value.trim() : "";
+      if (web && !isExternalUrl(url)) {
+        this._addPopupError(this._t.popup_web_invalid);
+        return;
+      }
+      if (!card && !web && !links.length) {
         this._addPopupError(this._t.add_popup_none);
         return;
       }
@@ -16429,10 +16731,11 @@ ${[
       // Der Name steht im Eintrag (wie bei den Links), damit die Seitenleiste
       // ihn auch in einer anderen Sprache so zeigt, wie er angelegt wurde.
       const name = root.getElementById("add-popup-name").value.trim().slice(0, 60) || this._t.popup;
-      this._config.items[key] = Object.assign(itemDefaults(key), { name, icon: card ? POPUP_CARD_ICON : POPUP_ICON, links,
-        content: card ? "card" : "links" });
+      this._config.items[key] = Object.assign(itemDefaults(key), { name, icon: this._popupIcon(web ? "web" : card ? "card" : "links"), links,
+        content: web ? "web" : card ? "card" : "links", url });
       this._config.order = [key].concat((this._config.order || []).filter((one) => one !== key));
       this._addPopupLinks = [];
+      root.getElementById("add-popup-url").value = "";
       this._closeAdd();
       this._selKey = key;
       this._itemsView = "entry";
@@ -16452,6 +16755,7 @@ ${[
       const t = this._t;
       const k = escapeHtml(key);
       const card = cfg.content === "card";
+      const web = cfg.content === "web";
       const num = (prop, label) => `
         <label class="field"><span>${escapeHtml(label)}</span>
           <input type="number" min="0" max="${POPUP_SIZE_MAX}" step="10" data-item="${k}" data-prop="${prop}"
@@ -16462,14 +16766,77 @@ ${[
           <div class="field">
             <span class="cap">${escapeHtml(t.popup_content)}</span>
             <div class="seg inline pe-kind">
-              <button type="button" data-pcontent="links"${card ? "" : " data-active"}>${escapeHtml(t.popup_content_links)}</button>
+              <button type="button" data-pcontent="links"${card || web ? "" : " data-active"}>${escapeHtml(t.popup_content_links)}</button>
               <button type="button" data-pcontent="card"${card ? " data-active" : ""}>${escapeHtml(t.popup_content_card)}</button>
+              <button type="button" data-pcontent="web"${web ? " data-active" : ""}>${escapeHtml(t.popup_content_web)}</button>
             </div>
           </div>
           <div class="grid2">${num("width", t.popup_width)}${num("height", t.popup_height)}</div>
           <small class="field-hint">${escapeHtml(t.popup_size_hint)}</small>
         </div>
-        ${card ? this._popupCardEditor(key, cfg) : this._popupLinksEditor(key, cfg)}`;
+        ${web ? this._popupWebEditor(key, cfg) : card ? this._popupCardEditor(key, cfg) : this._popupLinksEditor(key, cfg)}`;
+    }
+
+    /** Text und Symbol der Art eines PopUps (Links, Karte, Webseite). */
+    _popupSub(content) {
+      return content === "web" ? this._t.popup_sub_web : content === "card" ? this._t.popup_sub_card : this._t.popup_sub;
+    }
+
+    _popupIcon(content) {
+      return content === "web" ? POPUP_WEB_ICON : content === "card" ? POPUP_CARD_ICON : POPUP_ICON;
+    }
+
+    /** Die Zeile unter dem Adressfeld: leer, ungueltig, http auf einer https-Seite oder in Ordnung. */
+    _popupWebView(url) {
+      const t = this._t;
+      const text = String(url || "").trim();
+      if (!text) {
+        return { message: t.popup_web_empty };
+      }
+      if (!isExternalUrl(text)) {
+        return { error: true, message: t.popup_web_invalid };
+      }
+      if (/^http:/i.test(text) && window.location.protocol === "https:") {
+        return { error: true, message: t.popup_web_mixed };
+      }
+      return { ok: true, message: t.popup_web_ok.replace("{host}", externalHost(text)) };
+    }
+
+    _popupWebFlag(state) {
+      return state.ok ? " data-ok" : state.error ? " data-error" : "";
+    }
+
+    /** Die Webadresse eines PopUps (1.5.7). */
+    _popupWebEditor(key, cfg) {
+      const t = this._t;
+      const state = this._popupWebView(cfg.url);
+      return `
+        <div class="popup-edit pe-web" data-popup="${escapeHtml(key)}">
+          <label class="field">
+            <span>${escapeHtml(t.popup_web_url)}</span>
+            <input type="text" data-pweb spellcheck="false" autocomplete="off" autocapitalize="off"
+              placeholder="https://example.com" value="${escapeHtml(cfg.url || "")}" />
+          </label>
+          <div class="pe-yaml-state" data-pweb-state${this._popupWebFlag(state)}>${escapeHtml(state.message)}</div>
+          <small class="field-hint">${escapeHtml(t.popup_web_hint)}</small>
+          <small class="field-hint">${escapeHtml(t.popup_web_use_hint)}</small>
+        </div>`;
+    }
+
+    _setPopupWeb(text) {
+      const key = this._selKey;
+      if (!isPopup(key)) {
+        return;
+      }
+      this._itemConfig(key).url = String(text || "").trim();
+      const box = this._inspector && this._inspector.querySelector("[data-pweb-state]");
+      if (box) {
+        const state = this._popupWebView(text);
+        box.textContent = state.message;
+        box.toggleAttribute("data-ok", !!state.ok);
+        box.toggleAttribute("data-error", !!state.error);
+      }
+      this._touch();
     }
 
     /** Die Karte eines PopUps als YAML (1.5.3). */
@@ -16496,9 +16863,9 @@ ${[
       const icon = (name) => (customElements.get("ha-icon") ? `<ha-icon icon="${escapeHtml(name)}"></ha-icon>` : "");
       const rows = links.map((link, index) => `
             <li class="pe-row" data-pindex="${index}">
-              <span class="pe-icon">${icon(link.icon || LINK_ICON)}</span>
-              <input type="text" class="pe-name" data-plink="name" maxlength="60" value="${escapeHtml(link.name)}" placeholder="${escapeHtml(link.path)}" aria-label="${escapeHtml(t.name)}" title="${escapeHtml(t.name)}" />
-              <input type="text" class="pe-ic" data-plink="icon" value="${escapeHtml(link.icon)}" placeholder="${LINK_ICON}" spellcheck="false" aria-label="${escapeHtml(t.icon)}" title="${escapeHtml(t.icon)}" />
+              <span class="pe-icon">${icon(link.icon || linkIcon(link.path))}</span>
+              <input type="text" class="pe-name" data-plink="name" maxlength="60" value="${escapeHtml(link.name)}" placeholder="${escapeHtml(linkLabel(link.path))}" aria-label="${escapeHtml(t.name)}" title="${escapeHtml(t.name)}" />
+              <input type="text" class="pe-ic" data-plink="icon" value="${escapeHtml(link.icon)}" placeholder="${linkIcon(link.path)}" spellcheck="false" aria-label="${escapeHtml(t.icon)}" title="${escapeHtml(t.icon)}" />
               <small class="pe-path">${escapeHtml(link.path)}</small>
               <span class="pe-btns">
                 <button type="button" class="icon-btn" data-paction="up" ${index === 0 ? "disabled" : ""} title="${escapeHtml(t.move_up)}">${glyph("mdi:arrow-up", "&#9650;")}</button>
@@ -16515,7 +16882,7 @@ ${[
           <ul class="pe-list">${rows || `<li class="pe-empty">${escapeHtml(t.popup_links_empty)}</li>`}</ul>
           <div class="pe-add">
             <select data-pe-select aria-label="${escapeHtml(t.add_link_page)}">${this._pageOptions(links.map((link) => link.path))}</select>
-            <input type="text" data-pe-path hidden spellcheck="false" placeholder="/config/tools/state" aria-label="${escapeHtml(t.add_link_path)}" />
+            <input type="text" data-pe-path hidden spellcheck="false" placeholder="${escapeHtml(t.add_link_path_ph)}" aria-label="${escapeHtml(t.add_link_path)}" />
             <button type="button" class="btn sm" data-paction="add"${links.length >= POPUP_LINKS_MAX ? " disabled" : ""}>${glyph("mdi:plus", "+")}${escapeHtml(t.popup_add)}</button>
           </div>
           <p class="warn pe-error" data-pe-error hidden></p>
@@ -16529,6 +16896,9 @@ ${[
       inspector.addEventListener("input", (event) => {
         if (event.target.matches && event.target.matches("[data-pcard]")) {
           this._setPopupCard(event.target.value);
+        }
+        if (event.target.matches && event.target.matches("[data-pweb]")) {
+          this._setPopupWeb(event.target.value);
         }
       });
       inspector.addEventListener("keydown", (event) => {
@@ -16600,10 +16970,10 @@ ${[
         const kind = event.target.closest && event.target.closest("button[data-pcontent]");
         if (kind && isPopup(this._selKey)) {
           const cfg = this._itemConfig(this._selKey);
-          cfg.content = kind.dataset.pcontent === "card" ? "card" : "links";
+          cfg.content = kind.dataset.pcontent === "card" || kind.dataset.pcontent === "web" ? kind.dataset.pcontent : "links";
           const entry = this._entries.find((one) => one.key === this._selKey);
           if (entry) {
-            entry.sub = cfg.content === "card" ? this._t.popup_sub_card : this._t.popup_sub;
+            entry.sub = this._popupSub(cfg.content);
           }
           this._renderItems();
           this._touch();
@@ -16814,11 +17184,12 @@ ${[
       }
       box.dataset.key = key;
       const card = cfg.content === "card";
-      const width = Number(cfg.width) > 0 ? Math.max(240, Number(cfg.width)) : card ? 600 : 560;
+      const web = cfg.content === "web";
+      const width = Number(cfg.width) > 0 ? Math.max(240, Number(cfg.width)) : web ? 900 : card ? 600 : 560;
       box.style.cssText = (accent ? `--ppv-c:${cssValue(accent)};` : "") + `--ppv-w:${width}px` +
         (Number(cfg.height) > 0 ? `;--ppv-h:${Math.max(120, Number(cfg.height))}px` : "");
       box.toggleAttribute("data-height", Number(cfg.height) > 0);
-      box.toggleAttribute("data-card", card);
+      box.toggleAttribute("data-card", card || web);
       box.innerHTML = `
         <div class="ppv-scrim"></div>
         <div class="ppv-card" role="presentation">
@@ -16827,16 +17198,23 @@ ${[
             <strong>${escapeHtml(String(cfg.name || "").trim() || t.popup)}</strong>
             <span class="ppv-x">${icon("mdi:close")}</span>
           </div>
-          ${card ? '<div class="ppv-cardbox"></div>' : `<div class="ppv-grid" style="--ppv-cols:${popupColumns(links.length, 4)}">${links.map((link) => `
+          ${card || web ? '<div class="ppv-cardbox"></div>' : `<div class="ppv-grid" style="--ppv-cols:${popupColumns(links.length, 4)}">${links.map((link) => `
             <div class="ppv-tile" title="${escapeHtml(link.path)}">
-              <span class="ppv-ti">${icon(link.icon || LINK_ICON)}</span>
-              <span class="ppv-tn">${escapeHtml(link.name || link.path)}</span>
+              <span class="ppv-ti">${icon(link.icon || linkIcon(link.path))}</span>
+              <span class="ppv-tn">${escapeHtml(link.name || linkLabel(link.path))}</span>
             </div>`).join("") || `<p class="ppv-empty">${escapeHtml(t.popup_links_empty)}</p>`}
           </div>`}
         </div>
         <span class="ppv-tag">${escapeHtml(t.popup_preview_tag)}</span>`;
       if (card) {
         this._mountPreviewCard(box.querySelector(".ppv-cardbox"), cfg.card);
+      }
+      if (web) {
+        // Die Seite selbst zeigt nur Home Assistant - hier ein Platzhalter
+        const slot = box.querySelector(".ppv-cardbox");
+        slot.innerHTML = `<p class="ppv-empty ppv-cardph">${icon(POPUP_WEB_ICON)} ${escapeHtml(
+          isExternalUrl(cfg.url) ? t.popup_web_preview.replace("{host}", externalHost(cfg.url)) : t.popup_web_none
+        )}</p>`;
       }
     }
 

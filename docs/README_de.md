@@ -6,7 +6,7 @@
 
 <p align="center">
   <a href="https://hacs.xyz"><img src="https://img.shields.io/badge/HACS-custom-orange.svg" alt="HACS"></a>
-  <a href="https://github.com/jayjojayson/HA-Style-Hub/releases"><img src="https://img.shields.io/badge/version-1.5.6-blue.svg" alt="Version"></a>
+  <a href="https://github.com/jayjojayson/HA-Style-Hub/releases"><img src="https://img.shields.io/badge/version-1.5.7-blue.svg" alt="Version"></a>
   <a href="https://github.com/jayjojayson/HA-Style-Hub/actions/workflows/validate.yml"><img src="https://github.com/jayjojayson/HA-Style-Hub/actions/workflows/validate.yml/badge.svg" alt="Validate"></a>
   <a href="https://github.com/jayjojayson/HA-Style-Hub/releases"><img src="https://img.shields.io/github/downloads/jayjojayson/HA-Style-Hub/total.svg" alt="Downloads"></a>
   <a href="https://github.com/jayjojayson/HA-Style-Hub/blob/main/LICENSE"><img src="https://img.shields.io/github/license/jayjojayson/HA-Style-Hub.svg" alt="License"></a>
@@ -42,8 +42,13 @@ das komplette Aussehen — inklusive *Einstellungen*, *Benachrichtigungen* und
   einsortieren und mit einem Klick auf sie zusammenklappen
 * **PopUp-Links**: ein Eintrag der Seitenleiste, der ein Fenster mit mehreren
   Seiten öffnet — Dashboards, Panels oder Seiten der Einstellungen —, um eine
-  lange Seitenleiste zu bündeln, oder mit einer Lovelace-Karte aus deinem
-  Dashboard (YAML)
+  lange Seitenleiste zu bündeln, mit einer Lovelace-Karte aus deinem
+  Dashboard (YAML) oder mit dem Inhalt einer Webseite
+* **Weblinks**: Einträge der Seitenleiste und Kacheln eines PopUps können auch
+  auf eine beliebige Webseite zeigen — sie öffnet in einem neuen Tab
+* **Hinweise bei Bedarf**: die Erklärungen bei den Feldern lassen sich einzeln
+  über ein kleines Info-Symbol einklappen (der Browser merkt sich welche); ein
+  Haken auf der Info-Seite blendet sie alle aus
 * **Umbenennen** und **eigene Icons** für jeden Eintrag
 * **Ausblenden** einzelner Einträge
 * **Breite** getrennt für den ein- und ausgeklappten Zustand
@@ -64,8 +69,8 @@ das komplette Aussehen — inklusive *Einstellungen*, *Benachrichtigungen* und
   oben oder unten — und ein Schalter, der die Leiste ganz ausblendet
 * **HA-Settings**: Einstellungen für Home Assistant selbst: die Menüpunkte der
   Einstellungsseite als abgerundete Boxen in eigenen Farben und Größen,
-  Geräte & Dienste (auf Wunsch auch Apps) als schmale Liste statt als Raster,
-  eigene Farben und Schrift für die Gruppenköpfe der Tabellen, gestreifte
+  Geräte & Dienste (auf Wunsch auch Apps) als schmale Liste statt als Raster
+  mit eigenem Schatten und Hover der Zeilen, eigene Farben und Schrift für die Gruppenköpfe der Tabellen, gestreifte
   Zeilen und die Einstellungsseite selbst: Reihenfolge, ausgeblendete
   Menüpunkte, eigene Namen, Untertitel und Symbolfarben je Punkt, Spalten,
   Kacheln, eine Favoriten-Leiste, ein Systemmonitor mit eigenen Entitäten, das
@@ -222,13 +227,26 @@ Das gewählte Element ist umrandet und beschriftet (*„Karten · ausgewählt“
 * **Info.** Willkommenstext, Autor und Links, Unterstützung, der Hauptschalter
   **HA Style Hub aktiv** (aus: die Integration ändert nichts mehr an Sidebar,
   Header und den HA-Settings-Seiten; ein eingetragenes Theme bleibt),
-  *Debug-Ausgaben in der Browser-Konsole* und **Alles zurücksetzen**. Die
+  *Debug-Ausgaben in der Browser-Konsole*, *Alle Hinweise in den
+  Einstellungsspalten ausblenden* (1.5.7, nur in diesem Browser) und **Alles
+  zurücksetzen**. Die
   Debug-Ausgaben gelten für alle vier Bereiche: In der Konsole (F12) stehen
   Zeilen mit `[HA Style Hub] [sidebar]`, `[theme]`, `[header]` und
   `[settings]`. *Alles zurücksetzen* setzt die *gesamte* Konfiguration auf die
   Standardwerte — Sidebar (Layout, Einträge, Reihenfolge, Aussehen), Theme,
   Header, HA-Settings und die beiden kiosk-mode-Schalter. Der Stand davor
   bleibt im Verlauf und lässt sich von dort wiederherstellen.
+
+**Hinweise in den Feldspalten** (1.5.7): Die Erklärungen bei den Feldern von
+*Sidebar*, *Theme*, *Header* und *HA-Settings* sind standardmäßig sichtbar, jede
+mit einem kleinen **Info-Symbol**. Ein Klick darauf klappt diesen Hinweis ein
+(es bleibt nur das Symbol), ein weiterer Klick öffnet ihn wieder – HA Style Hub
+merkt sich, welche Hinweise du eingeklappt hast, du bestimmst also selbst, welche
+offen bleiben. Wer die Felder gut kennt, setzt auf der Seite **Info** den Haken
+*Alle Hinweise in den Einstellungsspalten ausblenden*: dann verschwinden alle
+Hinweise samt Symbolen, und die Spalten werden so kompakt wie möglich. Beides
+wird im Browser gemerkt, nicht in der Konfiguration. Meldungen, die einen Zustand
+der Seite anzeigen (z. B. *Die ganze Seitenleiste verschwindet*), bleiben sichtbar.
 
 Auf dem Tablet wird die Suche zum Symbol und die Feldspalte schmaler; unter
 *Einträge* zeigt die Spalte den gewählten Eintrag oder über *Alle Einträge* die
@@ -257,9 +275,16 @@ einen Dialog mit zwei Möglichkeiten: eine **Zwischenüberschrift** oder einen
 **Link**. Ein Link ist eine Abkürzung zu einer Seite von Home Assistant —
 Automatisierungen, Szenen, Skripte, Blueprints, Geräte, Entitäten, Helfer,
 Bereiche, System-Seiten, die Werkzeuge (Zustände, Aktionen, Template, …) und
-mehr. Du wählst die Seite aus einer Liste oder gibst mit *Eigener Pfad* einen
-eigenen an (z. B. `/config/tools/state`; eine ganze Adresse aus der
-Adresszeile geht auch). Der Link ist danach ein normaler Eintrag: Name, Icon,
+mehr. Du wählst die Seite aus einer Liste oder gibst mit *Eigener Pfad oder
+Webadresse* einen eigenen an (z. B. `/config/tools/state`; eine ganze Adresse
+aus der Adresszeile geht auch). Seit 1.5.7 darf ein Link auch auf **eine
+beliebige andere Webseite** zeigen: Gib eine Webadresse wie
+`https://www.home-assistant.io` ein, und der Eintrag öffnet sie in einem
+**neuen Tab** (Home Assistant bleibt, wie es ist). Bis du ihn umbenennst, zeigt
+der Eintrag den Rechnernamen (`home-assistant.io`) und das Symbol *In neuem
+Fenster öffnen*; angenommen werden nur Adressen mit `http://` oder `https://`
+ohne Leer- und Sonderzeichen, bis zu 500 Zeichen. Kopfzeile und Favoriten-Leiste
+bleiben in Home Assistant. Der Link ist danach ein normaler Eintrag: Name, Icon,
 Farben, Position, Spaltenbreite, Ausblenden und Zwischenüberschriften wirken
 wie bei jedem anderen, der Papierkorb entfernt ihn wieder. Links in die
 Einstellungen sehen nur Administratoren. Strg-Klick oder die mittlere Maustaste
@@ -271,11 +296,12 @@ als Tooltip – wie die Einträge von Home Assistant (1.5.4).
 **PopUp-Links in der Seitenleiste** (1.5.1): die dritte Möglichkeit im Dialog,
 *PopUp Link*. Einen Namen vergeben, nacheinander Seiten aufnehmen — zuerst die
 Dashboards und Seiten deiner Seitenleiste, dann die Seiten von Home Assistant
-wie beim Link oder ein eigener Pfad — und *PopUp anlegen*. Das PopUp ist ein
+wie beim Link oder ein eigener Pfad bzw. eine Webadresse (1.5.7) — und *PopUp anlegen*. Das PopUp ist ein
 Eintrag der Seitenleiste; ein Klick darauf öffnet in Home Assistant ein Fenster
 mit den gewählten Seiten als Kacheln, ein Klick auf eine Kachel öffnet die Seite
 ohne Neuladen (Strg-Klick, am Mac ⌘-Klick, oder die mittlere Maustaste: neuer
-Tab – das steht auch im Dialog und beim Eintrag). Die Kacheln füllen das
+Tab – das steht auch im Dialog und beim Eintrag; eine Kachel mit Webadresse
+öffnet immer in einem neuen Tab). Die Kacheln füllen das
 Fenster immer Zeile für Zeile: am Computer bis zu vier je Zeile (5 → 3 + 2,
 7 → 4 + 3), am Handy zwei; eine kürzere letzte Zeile füllen breitere Kacheln. Das Fenster schließt mit dem Kreuz, einem Klick
 daneben, `Esc` oder einem Seitenwechsel. Unter *Einträge* verhält sich das
@@ -287,6 +313,27 @@ ist, zeigt das Vorschaubild sein Fenster über dem Dashboard. Seiten, die jetzt
 im PopUp stehen, lassen sich in der Seitenleiste mit dem Auge ausblenden. Links
 in die Einstellungen sehen nur Administratoren; ein PopUp, in dem für einen
 Benutzer nichts übrig bleibt, erscheint bei ihm nicht.
+
+**Eine Webseite im PopUp** (1.5.7): Ein PopUp kann auch eine **Webseite** zeigen,
+wie ein kleines Browserfenster in Home Assistant – etwa Grafana, die Oberfläche
+des Routers oder eine Statusseite direkt über dem Dashboard. Wähle bei *Inhalt
+des Fensters* (im Dialog oder später beim Eintrag) *Webseite* und trage die
+Webadresse ein (`http://` oder `https://`, ohne Leer- und Sonderzeichen, bis zu
+500 Zeichen). Ein Klick auf den Eintrag öffnet das Fenster mit der Seite; der
+Pfeil im Kopf öffnet sie in einem neuen Tab, das Kreuz oder ein Klick daneben
+schließt das Fenster. Links und Karte bleiben gespeichert – wer zurückschaltet,
+verliert nichts. **Größe:** 900 px breit; ohne feste Höhe bekommt die Seite 70 %
+des Bildschirms (höchstens 640 px). Die Seite läuft in einem abgeschotteten
+Rahmen: Sie darf Skripte, Formulare und Downloads nutzen und Links in neuen Tabs
+öffnen, kann aber die Seite von Home Assistant selbst nicht umleiten; es wird
+kein Referrer gesendet. **Grenzen, die du kennen solltest:** Viele Webseiten
+verbieten, in andere Seiten eingebettet zu werden (`X-Frame-Options` /
+`frame-ancestors`) und bleiben leer – dafür nimmst du einen normalen Weblink
+oder ein PopUp mit Links, die in einem neuen Tab öffnen; Dienste im eigenen
+Netz (z. B. Grafana mit `allow_embedding`) funktionieren oft, wenn sie es
+erlauben. Ist Home Assistant mit `https` geöffnet, blockiert der Browser darin
+eine `http://`-Seite (dann eine `https://`-Adresse verwenden). Ob eine Seite
+eingebettet werden darf, entscheidet diese Webseite, nicht HA Style Hub.
 
 **Eine Karte im PopUp** (1.5.3): statt Links kann ein PopUp eine
 Lovelace-Karte zeigen – gebaut von Home Assistant selbst, genau wie im
@@ -669,6 +716,14 @@ und Symbole rechts.
 * **Hintergrundfarbe der Zeilen** — eine Farbe oder ein Verlauf; leer bleibt die
   Kartenfarbe von Home Assistant. Gilt auch für die Apps-Liste und bleibt unter
   der Hover-Farbe sichtbar.
+* **Schatten der Zeilen** (1.5.7, in der Gruppe *Rahmen, Shadow und Ecken der
+  Zeilen*) — leer behalten die Zeilen den Kartenschatten deines Themes. Mit
+  *Kein Schatten* (`none`) verschwindet er, praktisch, wenn die Liste als
+  schlichte Spalten aufgebaut ist; jeder andere `box-shadow` lässt sich
+  eintragen oder mit *Schatten gestalten* zusammenstellen (Vorlagen, Richtung,
+  Abstand, Weichheit, Ausdehnung, Farbe, Deckkraft, nach innen). Feld leeren,
+  um wieder den Schatten des Themes zu nehmen. Gilt auch für die Apps-Liste und
+  den Rahmen der Einträge auf der Seite einer Integration.
 * **Maus hover** — die Farbe, die die ganze Zeile unter der Maus annimmt, und
   ihre Deckkraft (0–100 %). Leer bleibt Home Assistants eigener Effekt.
 * Die Vorschau zeigt Raster und Liste im Kleinen, auch eine Zeile mit Problem.
@@ -677,15 +732,18 @@ und Symbole rechts.
 für Apps übernehmen**. Ist es an, wird die Seite *Apps* (früher Add-ons) zu
 denselben schmalen Zeilen: links Symbol, Name und Beschreibung (die Beschreibung
 wird bei knappem Platz mit „…“ gekürzt), rechts die Marken für Update und
-Vorabversion und der Status. Höhe, Abstand, maximale Breite, Rahmen, Ecken und
-Hover sind die der Liste darüber — es gibt keinen zweiten Satz Felder. Das
+Vorabversion und der Status. Höhe, Abstand, maximale Breite, Rahmen, Schatten,
+Ecken und Hover sind die der Liste darüber — es gibt keinen zweiten Satz Felder. Das
 Kästchen wirkt nur, solange die Listenansicht an ist. Die Seite *App
 installieren* bleibt unberührt.
 
 **Seite einer Integration.** Ebenfalls unter der Listenansicht: **Auch die Seite
 einer Integration gestalten** (Standard: an). Die Einträge auf der Seite
-einer einzelnen Integration (Home Assistant 2026.10) bekommen Rahmen, Ecken,
-Rahmen- und Problemfarbe, Hintergrund und Abstand der Liste. Darunter legt
+einer einzelnen Integration (Home Assistant 2026.10) bekommen Rahmen, Schatten,
+Ecken, Rahmen- und Problemfarbe, Hintergrund, Abstand und Hover der Liste. Der
+Hover färbt dort die anklickbaren Zeilen (1.5.7): die Geräte und die Zeile
+*x Geräte*; die Zeile des Eintrags selbst ist in Home Assistant kein Knopf und
+bleibt, wie sie ist. Darunter legt
 **Zeilenhöhe auf der Integrationsseite** die Höhe der Einträge, Geräte und
 Untereinträge dort eigens fest (32–120 px, 0 = wie Home Assistant).
 **Hintergrund bei Fehlern** und **Hintergrund wenn nicht geladen** (1.5.4) färben
@@ -697,8 +755,9 @@ Hintergründe** (0–100 %) nimmt einer kräftigen Farbe für beide auf einmal d
 Wucht. Solange das Kästchen an ist, zeigt die Vorschau von *Geräte & Dienste*
 unter der Liste eine kleine Integrationsseite (1.5.5): einen Eintrag mit Fehler
 und zwei Geräten, einen nicht geladenen und einen normalen Hub – mit Rahmen,
-Ecken, Farben, Hintergrund, Abstand, Zeilenhöhe und den Hintergründen bei
-Problemen, wie eingestellt.
+Ecken, Farben, Schatten, Hintergrund, Abstand, Zeilenhöhe und den Hintergründen
+bei Problemen, wie eingestellt; auch der Maus-Hover wirkt dort auf den
+Gerätezeilen (1.5.7).
 
 **Tabellen: Gruppenköpfe und Zeilen.** Tabellen in Home Assistant (Automatisierungen,
 Entitäten, Helfer, Geräte, …) lassen sich gruppieren, und der Gruppenkopf

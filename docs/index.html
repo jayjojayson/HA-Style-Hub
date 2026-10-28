@@ -334,7 +334,7 @@
               <a class="btn" href="#tour"><span data-en>▶ Watch the tour</span><span data-de>▶ Tour ansehen</span></a>
             </div>
             <div class="badges">
-              <span class="badge">Version 1.5.6</span>
+              <span class="badge">Version 1.5.7</span>
               <span class="badge">Home Assistant 2025.3+</span>
               <span class="badge">HACS</span>
               <span class="badge">MIT</span>
@@ -394,6 +394,16 @@
               <strong><span data-en>Popup links</span><span data-de>PopUp-Links</span></strong>
               <p data-en>One entry that opens a window with several pages or with a Lovelace card (YAML).</p>
               <p data-de>Ein Eintrag, der ein Fenster mit mehreren Seiten oder einer Lovelace-Karte (YAML) öffnet.</p>
+            </div>
+            <div class="feature">
+              <strong><span data-en>Web links</span><span data-de>Weblinks</span></strong>
+              <p data-en>Sidebar entries and popup tiles can point to any website - it opens in a new tab. A popup can even show the website itself.</p>
+              <p data-de>Einträge der Seitenleiste und PopUp-Kacheln können auf jede Webseite zeigen - sie öffnet in einem neuen Tab. Ein PopUp kann die Webseite sogar selbst anzeigen.</p>
+            </div>
+            <div class="feature">
+              <strong><span data-en>Hints on demand</span><span data-de>Hinweise bei Bedarf</span></strong>
+              <p data-en>Explanations are open by default; fold each one away with its info icon (remembered), or hide them all with one tick on the Info page.</p>
+              <p data-de>Erklärungen sind standardmäßig offen; jede lässt sich über ihr Info-Symbol einklappen (wird gemerkt), oder ein Haken auf der Info-Seite blendet alle aus.</p>
             </div>
             <div class="feature">
               <strong><span data-en>Appearance</span><span data-de>Aussehen</span></strong>
@@ -475,8 +485,8 @@
             </div>
             <div class="feature">
               <strong><span data-en>Slim lists</span><span data-de>Schmale Listen</span></strong>
-              <p data-en>Devices &amp; services (and Apps) as a list instead of a card grid.</p>
-              <p data-de>Geräte &amp; Dienste (und Apps) als Liste statt als Kartenraster.</p>
+              <p data-en>Devices &amp; services (and Apps) as a list instead of a card grid - with own border, shadow and hover.</p>
+              <p data-de>Geräte &amp; Dienste (und Apps) als Liste statt als Kartenraster - mit eigenem Rahmen, Schatten und Hover.</p>
             </div>
             <div class="feature">
               <strong><span data-en>System monitor</span><span data-de>Systemmonitor</span></strong>
@@ -688,10 +698,10 @@
               <li data-de>Ein Klick auf einen Eintrag im Bild wählt ihn aus, Ziehen dort sortiert um.</li>
               <li data-en>In the list on the right (drag and drop, eye) the chosen entry folds open: name, icon, column span, colors as tiles, hide, up / down, reset.</li>
               <li data-de>In der Liste rechts (Drag and Drop, Auge) klappt der gewählte Eintrag auf: Name, Icon, Spaltenbreite, Farben als Kacheln, Ausblenden, nach oben / unten, Zurücksetzen.</li>
-              <li data-en>The <code>+</code> button adds a <strong>section heading</strong>, a <strong>link</strong> to a page of Home Assistant (automations, entities, tools … or an own path) or a <strong>popup link</strong>.</li>
-              <li data-de>Der <code>+</code>-Knopf fügt eine <strong>Zwischenüberschrift</strong>, einen <strong>Link</strong> zu einer Seite von Home Assistant (Automatisierungen, Entitäten, Werkzeuge … oder eigener Pfad) oder einen <strong>PopUp-Link</strong> ein.</li>
-              <li data-en>A popup link opens a window with several pages or with a card (YAML from the code editor of a dashboard card, at most 50 KB). Width and height can be set, 0 = automatic.</li>
-              <li data-de>Ein PopUp-Link öffnet ein Fenster mit mehreren Seiten oder einer Karte (YAML aus dem Code-Editor einer Dashboard-Karte, höchstens 50 KB). Breite und Höhe sind einstellbar, 0 = automatisch.</li>
+              <li data-en>The <code>+</code> button adds a <strong>section heading</strong>, a <strong>link</strong> to a page of Home Assistant (automations, entities, tools … or an own path) or to any <strong>web address</strong> (opens in a new tab), or a <strong>popup link</strong>.</li>
+              <li data-de>Der <code>+</code>-Knopf fügt eine <strong>Zwischenüberschrift</strong>, einen <strong>Link</strong> zu einer Seite von Home Assistant (Automatisierungen, Entitäten, Werkzeuge … oder eigener Pfad) oder zu einer beliebigen <strong>Webadresse</strong> (öffnet in einem neuen Tab) oder einen <strong>PopUp-Link</strong> ein.</li>
+              <li data-en>A popup link opens a window with several pages or web addresses, with a card (YAML from the code editor of a dashboard card, at most 50 KB) or with the content of a website (shown like a small browser; many sites forbid embedding). Width and height can be set, 0 = automatic.</li>
+              <li data-de>Ein PopUp-Link öffnet ein Fenster mit mehreren Seiten oder Webadressen, mit einer Karte (YAML aus dem Code-Editor einer Dashboard-Karte, höchstens 50 KB) oder mit dem Inhalt einer Webseite (wie ein kleiner Browser; viele Seiten verbieten das Einbetten). Breite und Höhe sind einstellbar, 0 = automatisch.</li>
             </ul>
             <h4 data-en>Section headings</h4>
             <h4 data-de>Zwischenüberschriften</h4>
@@ -827,8 +837,10 @@
               <li data-de>Zwei oder drei Spalten (auf schmalen Bildschirmen von selbst weniger)</li>
               <li data-en>Border width, corner radius (per side / corner if you like) and border color; a separate border color for integrations with a problem</li>
               <li data-de>Rahmenstärke, Eckenradius (auf Wunsch je Seite / Ecke) und Rahmenfarbe; eigene Rahmenfarbe für Integrationen mit Problem</li>
-              <li data-en>Hover color with opacity</li>
-              <li data-de>Hover-Farbe mit Deckkraft</li>
+              <li data-en>Shadow of the rows: the theme's card shadow, none, or your own (with the shadow designer)</li>
+              <li data-de>Schatten der Zeilen: Kartenschatten des Themes, keiner oder ein eigener (mit dem Schatten-Baukasten)</li>
+              <li data-en>Hover color with opacity - on the page of an integration for the device rows as well</li>
+              <li data-de>Hover-Farbe mit Deckkraft - auf der Seite einer Integration auch für die Gerätezeilen</li>
               <li data-en>Optionally the Apps page becomes a list as well</li>
               <li data-de>Auf Wunsch wird auch die Apps-Seite zur Liste</li>
             </ul>
@@ -880,8 +892,8 @@
           <li data-de><strong>Export / Import:</strong> die komplette Konfiguration als <code>.json</code> sowie Sidebar, Theme (<code>.yaml</code>), Header und HA-Settings einzeln. Ein Import wird sofort in die Seite übernommen und erst mit Speichern abgelegt; bis dahin holt Verwerfen den gespeicherten Stand zurück.</li>
           <li data-en><strong>History:</strong> the clock icon opens the last 10 saved states, newest first, each with the time, the person who saved it and what changed (e.g. <em>“Header: 3 values”</em>). <em>Restore</em> loads a state into the page — stored only with Save. Administrators only; the history lives in <code>.storage/ha_style_hub.history</code>.</li>
           <li data-de><strong>Verlauf:</strong> das Uhr-Symbol öffnet die letzten 10 gespeicherten Stände, der neueste oben, jeweils mit Zeit, Speicherndem und Änderungen (z. B. <em>„Header: 3 Werte“</em>). <em>Wiederherstellen</em> lädt einen Stand in die Seite — gespeichert wird erst mit Speichern. Nur für Administratoren; der Verlauf liegt in <code>.storage/ha_style_hub.history</code>.</li>
-          <li data-en><strong>Info:</strong> welcome text, author and links, support, the master switch <em>HA Style Hub active</em>, debug output in the browser console and <em>Reset everything</em>.</li>
-          <li data-de><strong>Info:</strong> Willkommenstext, Autor und Links, Unterstützung, der Hauptschalter <em>HA Style Hub aktiv</em>, Debug-Ausgaben in der Browser-Konsole und <em>Alles zurücksetzen</em>.</li>
+          <li data-en><strong>Info:</strong> welcome text, author and links, support, the master switch <em>HA Style Hub active</em>, debug output in the browser console, <em>Hide all hints in the settings columns</em> and <em>Reset everything</em>.</li>
+          <li data-de><strong>Info:</strong> Willkommenstext, Autor und Links, Unterstützung, der Hauptschalter <em>HA Style Hub aktiv</em>, Debug-Ausgaben in der Browser-Konsole, <em>Alle Hinweise in den Einstellungsspalten ausblenden</em> und <em>Alles zurücksetzen</em>.</li>
         </ul>
 
         <div class="note">
@@ -1284,7 +1296,7 @@ ha-list-item-button { text-transform: uppercase; }
     <footer>
       <div class="wrap row">
         <span>
-          HA Style Hub 1.5.6 ·
+          HA Style Hub 1.5.7 ·
           <a href="https://github.com/jayjojayson/HA-Style-Hub">github.com/jayjojayson/HA-Style-Hub</a>
           · MIT
         </span>

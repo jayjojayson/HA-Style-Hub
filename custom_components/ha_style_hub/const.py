@@ -7,7 +7,7 @@ from typing import Any, Final
 
 DOMAIN: Final = "ha_style_hub"
 NAME: Final = "HA Style Hub"
-VERSION: Final = "1.5.6"
+VERSION: Final = "1.5.7"
 
 # Storage
 STORAGE_KEY: Final = f"{DOMAIN}.config"
@@ -51,7 +51,8 @@ WS_TYPE_SUBSCRIBE: Final = f"{DOMAIN}/subscribe"
 # panel build them, the backend only stores them):
 #   "panel:<url_path>"   dashboards and panels Home Assistant renders itself
 #   "heading:<id>"       own section headings (KEY_PREFIX_HEADING, below)
-#   "link:<path>"        own links to a page of Home Assistant
+#   "link:<path>"        own links to a page of Home Assistant, or
+#                        "link:https://..." to an external web address (1.5.7)
 #   "popup:<id>"         own popup entries with several links (1.5.1)
 #   "action:restart"     the restart button
 #   "config", "notifications", "profile", "external-config" for the fixed
@@ -65,10 +66,13 @@ KEY_PREFIX_HEADING: Final = "heading:"
 # mehreren Links oeffnet. Die Links stehen in items[key]["links"].
 KEY_PREFIX_POPUP: Final = "popup:"
 POPUP_LINKS_MAX: Final = 24
+# Externe Adressen (1.5.7) in Links und PopUps: nur http(s), hoechstens so lang.
+EXTERNAL_URL_MAX: Final = 500
 # Eine Lovelace-Karte im PopUp (1.5.3): YAML und daraus die Konfiguration,
 # beides hoechstens so viele Bytes. Fenstergroesse in px, 0 = automatisch.
 POPUP_CARD_MAX: Final = 51200
-POPUP_CONTENTS: Final = ("links", "card")
+# 1.5.7: "web" zeigt eine Webseite im Fenster (iframe), Adresse in "url"
+POPUP_CONTENTS: Final = ("links", "card", "web")
 POPUP_SIZE_MAX: Final = 4000
 
 # Layout ----------------------------------------------------------------------
@@ -216,6 +220,8 @@ DEFAULT_HEADER: Final[dict[str, Any]] = {
 HEADER_LINKS_MAX: Final = 12
 # Hoechstens so viele Pfade in menu_order / menu_hidden.
 MENU_PATHS_MAX: Final = 80
+# Hoechstens so lang darf der Schatten der Zeilen sein (1.5.7).
+LIST_SHADOW_MAX: Final = 300
 
 # Einstellungen von Home Assistant selbst ------------------------------------
 # Alles, was nicht die Sidebar, das Theme oder die Kopfzeile eines Dashboards
@@ -264,6 +270,9 @@ DEFAULT_SETTINGS: Final[dict[str, Any]] = {
     # und Deckkraft 0-100.
     "list_hover_background": "",
     "list_hover_opacity": 100,
+    # 1.5.7: Schatten der Zeilen (box-shadow). Leer = wie das Theme
+    # (--ha-card-box-shadow), "none" = kein Schatten.
+    "list_shadow": "",
     # Rahmen und Ecken je Seite / je Ecke (-1 = wie Home Assistant), fuer die
     # Zeilen der Liste (list_*) und fuer die Menuepunkte der Einstellungsseite
     # (menu_*).
@@ -1013,6 +1022,8 @@ DEFAULT_POPUP: Final[dict[str, Any]] = {
     "content": "links",
     "card_yaml": "",
     "card": {},
+    # 1.5.7: Inhalt "web" - die Webadresse, deren Seite das Fenster zeigt
+    "url": "",
     "width": 0,
     "height": 0,
 }

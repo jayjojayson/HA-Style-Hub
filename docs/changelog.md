@@ -7,7 +7,100 @@ called *Sidebar Hub*), newest first. A German version is in
 Version numbers count up to `.9` and then move on to the next minor (1.2.9 →
 1.3.0 → 1.3.1 → 1.3.2 → 1.3.3 → 1.3.4 → 1.3.5 → 1.3.6 → 1.3.7 →
 1.3.8 → 1.3.9 → 1.4.0 → 1.4.1 → 1.4.2 → 1.4.3 → 1.4.4 → 1.4.5 →
-1.4.6 → 1.4.7 → 1.4.8 → 1.4.9 → 1.5.0 → 1.5.1 → 1.5.2 → 1.5.3 → 1.5.4 → 1.5.5 → 1.5.6).
+1.4.6 → 1.4.7 → 1.4.8 → 1.4.9 → 1.5.0 → 1.5.1 → 1.5.2 → 1.5.3 → 1.5.4 → 1.5.5 → 1.5.6 → 1.5.7).
+
+## 1.5.7
+
+* **Web links in the sidebar and in popups.** A link of the sidebar and a
+  tile of a popup can now point to any website, not only to a page of Home
+  Assistant. The key of the entry is `link:https://example.com/path`
+  (popup tiles: `links[].path`). Only `http://` and `https://` addresses of up
+  to 500 characters without spaces, quotes or `<>` are accepted
+  (`EXTERNAL_URL` / `EXTERNAL_URL_MAX` in the injector and the panel,
+  `_EXTERNAL_URL` / `EXTERNAL_URL_MAX` in `store.py` - the same rule in all
+  three places, so `javascript:` and similar never get through). The
+  *Header* links and the *Favourites* bar stay inside Home Assistant and still
+  take paths only.
+  * Dialog: the field is now *Own path or web address*. A full address of this
+    Home Assistant is still reduced to its path; any other address stays a
+    web link. In the dialogs of the header and the favourites a foreign
+    address is answered with a hint instead of being added.
+  * Sidebar: the entry opens the address in a **new tab**
+    (`window.open(..., "_blank", "noopener,noreferrer")`, also for the middle
+    mouse button and Enter) and never changes the page of Home Assistant. It
+    is a real `<a>` with `target="_blank"` and `rel="noopener noreferrer"`, so
+    the right-click menu of the browser works. Until you rename it, it shows
+    the host name without `www.` and the icon `mdi:open-in-new`; it is never
+    marked as the current page.
+  * Popup: the tile of a web address behaves the same way (new tab, host name,
+    *open in new* icon); the editor, its placeholders and the preview of the
+    popup know the new kind, the list of entries shows *Web link*.
+* **Website in a popup.** Besides *Links* and *Card (YAML)* a popup has a
+  third content, *Website*: it shows the page of a web address right inside
+  Home Assistant, like a small browser (`content: "web"` and the new field
+  `url` of the popup; the same address rule as for web links). In the add
+  dialog and at the entry the content is chosen with *Content of the window*;
+  links and card stay stored, so switching back loses nothing.
+  * Window: 900 px wide by default; without a fixed height the page gets
+    70 % of the screen (at most 640 px). The header carries an *Open in a new
+    tab* button; a note under the page tells that some websites forbid
+    embedding.
+  * The page runs in a sandboxed `<iframe>` (scripts, same origin, forms,
+    popups and downloads allowed - top-level navigation is not;
+    `referrerpolicy="no-referrer"`), so it cannot redirect Home Assistant's own
+    page.
+  * The panel warns when Home Assistant runs on `https` and the address is
+    `http://` (mixed content is blocked by the browser) and shows a
+    placeholder in the preview of the popup.
+  * Backend: `POPUP_CONTENTS = ("links", "card", "web")`, `DEFAULT_POPUP["url"]`
+    and `_clean_popup_card` (an invalid `url` is cleared, an old configuration
+    without `url` stays valid).
+  * Limits: whether a page may be embedded is decided by the website
+    (`X-Frame-Options`, `frame-ancestors`); many stay blank, for those a web
+    link or a popup with links opens them in a new tab. Pages of your own
+    network often work when they allow it (e.g. Grafana `allow_embedding`).
+* **Hints in the field columns are open by default and can be folded one by
+  one.** The explanations in the right column of *Sidebar*, *Theme*, *Header*
+  and *HA-Settings* (`.hint`, `.field-hint`, `.ps-hint`, `.fields-note` and the
+  small text under checkboxes) are shown, each with a small info icon. A click
+  on the icon folds that hint away, another click opens it again. The browser
+  remembers which hints were closed (`localStorage`,
+  `ha-style-hub-hints-closed`, a list of at most 300 keys built from the first
+  100 characters of the text), so everyone decides which ones stay open. One
+  observer on the panel dresses every hint, also the ones that are rebuilt
+  later (the inspector of an entry, the lists of the header, ...), so no field
+  had to be touched and no configuration key changed. Notes that report a state
+  of the page (`data-show-when`, `data-hide-when`, `.hidden-note`,
+  `.shadow-note`) and the hints of dialogs and of the Info page are not
+  touched.
+* **Switch *Hide all hints in the settings columns*.** New checkbox on the
+  Info page: it hides the hints of all four columns including their info
+  icons (`[data-hints="off"]` on the panel). Like the accordion it is a
+  matter of the browser: stored in `localStorage` (`ha-style-hub-hints`), not
+  in the configuration, so it neither changes the counter of unsaved changes
+  nor the history. The individually closed hints stay remembered.
+* **Shadow of the rows (Devices & services).** New field *Shadow of the rows*
+  on HA-Settings › Devices & services, in the group now called *Border, shadow
+  and corners of the rows*, with the shadow designer of the theme page under
+  it (without the small preview box of the theme page - the big preview on
+  the left shows the shadow anyway). Key `settings.list_shadow` (`""` = the card shadow of the theme, `none` =
+  no shadow, or any `box-shadow`). The injector puts it on the `ha-card` of
+  the integration rows and of the Apps list (also while hovering) and on
+  `.config-entry-wrapper` on the page of an integration - not on the inner box
+  of the devices, so it never lies twice. `store.py` keeps only a text of up to
+  300 characters (`LIST_SHADOW_MAX`) without `; { } < > \`, line breaks or
+  comments, like `css()` in the injector. The preview shows the theme's shadow
+  while the field is empty.
+* **Mouse hover on the page of an integration.** The hover color of the list
+  now also colors the rows you can click on the page of an integration: the
+  device rows (`ha-config-entry-device-row`, directly or in a sub-entry) and the
+  row *x devices* (`.toggle-devices-row`). The color lies as background under
+  the content, Home Assistant's ripple is silenced there
+  (`--ha-ripple-hover-opacity: 0`), so the two never add up; without an own
+  hover color Home Assistant's effect stays untouched. The row of the entry
+  itself is no button in Home Assistant and gets no hover. The preview box
+  *Page of an integration* shows the same: its device rows react to the mouse
+  (with Home Assistant's light grey while no own color is set).
 
 ## 1.5.6
 
