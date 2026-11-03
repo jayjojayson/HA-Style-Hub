@@ -29,6 +29,7 @@ from .const import (
     DEFAULT_LAYOUT,
     DEFAULT_SETTINGS,
     LIST_SHADOW_MAX,
+    HIDE_FOR_MAX,
     DASH_DIRECTIONS,
     DASH_IMAGE_SIZES,
     DEFAULT_THEME,
@@ -76,6 +77,23 @@ _ICON_NAME = re.compile(r"[a-z0-9-]+:[a-z0-9-]+", re.IGNORECASE)
 # Rechnername, danach nur Zeichen, die in einer Adresse ohne Maskierung
 # vorkommen - keine Anfuehrungszeichen, Leerzeichen oder spitzen Klammern.
 _EXTERNAL_URL = re.compile(r"https?://[A-Za-z0-9][A-Za-z0-9\-._~:/?#\[\]@!$&()*+,;=%]*", re.IGNORECASE)
+
+
+# Benutzer-IDs von Home Assistant (1.5.8): hex, ohne Sonderzeichen.
+_USER_ID = re.compile(r"[A-Za-z0-9_-]{1,64}")
+
+
+def _clean_user_ids(raw: Any) -> list[str]:
+    """Return the user ids an entry is hidden for - unique, at most HIDE_FOR_MAX."""
+    ids: list[str] = []
+    if not isinstance(raw, list):
+        return ids
+    for one in raw:
+        if isinstance(one, str) and _USER_ID.fullmatch(one) and one not in ids:
+            ids.append(one)
+        if len(ids) >= HIDE_FOR_MAX:
+            break
+    return ids
 
 
 def _is_external_url(value: Any) -> bool:
@@ -479,6 +497,9 @@ def normalize(data: Any) -> dict[str, Any]:
             else:
                 defaults = DEFAULT_ITEM
             clean_items[key] = _merge_section(defaults, value)
+            clean_items[key]["hide_for"] = _clean_user_ids(
+                value.get("hide_for") if isinstance(value, dict) else None
+            )
             if key.startswith(KEY_PREFIX_POPUP):
                 clean_items[key]["links"] = _clean_popup_links(
                     value.get("links") if isinstance(value, dict) else None

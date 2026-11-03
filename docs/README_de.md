@@ -6,7 +6,7 @@
 
 <p align="center">
   <a href="https://hacs.xyz"><img src="https://img.shields.io/badge/HACS-custom-orange.svg" alt="HACS"></a>
-  <a href="https://github.com/jayjojayson/HA-Style-Hub/releases"><img src="https://img.shields.io/badge/version-1.5.7-blue.svg" alt="Version"></a>
+  <a href="https://github.com/jayjojayson/HA-Style-Hub/releases"><img src="https://img.shields.io/badge/version-1.5.8-blue.svg" alt="Version"></a>
   <a href="https://github.com/jayjojayson/HA-Style-Hub/actions/workflows/validate.yml"><img src="https://github.com/jayjojayson/HA-Style-Hub/actions/workflows/validate.yml/badge.svg" alt="Validate"></a>
   <a href="https://github.com/jayjojayson/HA-Style-Hub/releases"><img src="https://img.shields.io/github/downloads/jayjojayson/HA-Style-Hub/total.svg" alt="Downloads"></a>
   <a href="https://github.com/jayjojayson/HA-Style-Hub/blob/main/LICENSE"><img src="https://img.shields.io/github/license/jayjojayson/HA-Style-Hub.svg" alt="License"></a>
@@ -50,7 +50,8 @@ das komplette Aussehen — inklusive *Einstellungen*, *Benachrichtigungen* und
   über ein kleines Info-Symbol einklappen (der Browser merkt sich welche); ein
   Haken auf der Info-Seite blendet sie alle aus
 * **Umbenennen** und **eigene Icons** für jeden Eintrag
-* **Ausblenden** einzelner Einträge
+* **Ausblenden** einzelner Einträge — für alle oder nur für einzelne Benutzer
+  (auch Überschriften, Links und PopUps)
 * **Breite** getrennt für den ein- und ausgeklappten Zustand
 * **Aussehen**: Hintergrund und Farbverläufe (über die Oberfläche zusammengestellt),
   Hover-Farben, Text- und Iconfarben, Schriftgröße und -stärke, Icongröße,
@@ -86,6 +87,9 @@ das komplette Aussehen — inklusive *Einstellungen*, *Benachrichtigungen* und
   oder für Automationen
 * **Seitenleiste ausblenden**: die ganze Leiste verschwindet, das Panel bleibt
   unter `/ha-style-hub` erreichbar
+* **Sidebar-Vorlagen**: Zeilen oder Kacheln, jeweils dezent oder kräftig –
+  Raster und Aussehen der Seitenleiste mit einem Klick, in den Farben deines
+  Themes
 * **Theme-Vorlagen**: vier fertige Looks, die beide Modi mit einem Klick füllen
   und danach ganz normal weiter bearbeitet werden können
 * **Neustart-Knopf** auf Wunsch im Raster — nur für Administratoren, mit
@@ -171,7 +175,22 @@ Das gewählte Element ist umrandet und beschriftet (*„Karten · ausgewählt“
   Entfernen bei Überschriften und Links, *Zurücksetzen* auf den gespeicherten
   Stand. Ein Klick auf einen Eintrag im Vorschaubild wählt ihn aus, Ziehen dort
   sortiert um; in der Liste ziehst du wie bisher (nach rechts zum Einsortieren
-  unter eine Überschrift). Unter *Aussehen* öffnet ein Klick auf einen Teil der
+  unter eine Überschrift). Der Eintrag, den du bearbeitest, zeigt in der
+  Vorschau seine eigenen Farben, auch wenn er die gerade geöffnete Seite ist
+  (1.5.8) – in den anderen Reitern zeigt die Vorschau die aktive Seite so wie
+  Home Assistant: eigene Farben unter *Aussehen › aktiver Eintrag* gehen vor,
+  eine eigene Iconfarbe des Eintrags bleibt immer. Der Pfeil einer Überschrift,
+  die sich zusammenklappen lässt, klappt ihre Gruppe auch in der Vorschau ein –
+  zum Ausprobieren, gespeichert wird dabei nichts.
+  **Vorlagen** (1.5.8, unter *Layout* und *Aussehen*): vier fertige Looks für
+  die Seitenleiste – *Zeilen · Dezent*, *Zeilen · Kräftig*, *Kacheln · Dezent*
+  und *Kacheln · Kräftig*. Eine Vorlage setzt das Raster (Spalten, Zeilen oder
+  Kacheln, Abstände, Höhen, Breite) und das Aussehen; die Farben kommen aus
+  deinem Theme (Primärfarbe, Text, Karten), darum passt jede Vorlage zu Hell
+  und Dunkel. Titel, eigenes CSS, die Benachrichtigungen, *Layout › Verhalten*
+  und alles, was an einzelnen Einträgen eingestellt ist, bleiben, wie sie sind.
+  Gespeichert wird erst mit *Speichern*; *Verwerfen* oder `Strg Z` nimmt es
+  zurück. Der Dialog markiert die Vorlage, die zu den aktuellen Werten passt. Unter *Aussehen* öffnet ein Klick auf einen Teil der
   Seitenleiste (Titel, Einträge, Badge, Benachrichtigungen, Hintergrund) seine
   Gruppe. Unter dem Bild: *Ausgeklappt / Eingeklappt*; unten in der Spalte
   *Layout* **Sidebar ganz ausblenden (kiosk-mode)**. Ein Klick auf den Header
@@ -293,6 +312,24 @@ Einstellungen sehen nur Administratoren. Strg-Klick oder die mittlere Maustaste
 Links, PopUps und der Neustart-Eintrag beim Überfahren mit der Maus ihren Namen
 als Tooltip – wie die Einträge von Home Assistant (1.5.4).
 
+**Sichtbar für einzelne Benutzer** (1.5.8): Das Auge blendet einen Eintrag für
+alle aus. Unter *Einträge* hat jeder Eintrag – Seiten von Home Assistant,
+Zwischenüberschriften, Links und PopUps – zusätzlich den Block **Sichtbar für**
+mit allen Benutzern von Home Assistant (wie unter *Einstellungen › Personen ›
+Benutzer*, ohne die Systembenutzer). Nimmst du bei einem Benutzer den Haken weg,
+ist der Eintrag nur für ihn ausgeblendet, in jedem Browser, in dem er sich
+anmeldet; Benutzer, die später dazukommen, sehen ihn. Gedacht ist das für die
+Einträge, die der Sidebar-Editor von Home Assistant nicht kennt –
+Überschriften, Links und PopUps von HA Style Hub –, damit ein Benutzer ohne
+Adminrechte nicht mit Einträgen dasteht, die ihm nichts nützen. In der Liste
+zeigt der Eintrag *für 2 ausgeblendet*; die Vorschau zeigt die Seitenleiste so,
+wie **du** sie siehst. Eine **Zwischenüberschrift**, unter der für einen
+Benutzer kein Eintrag mehr übrig ist – hier ausgeblendet, vom Benutzer im
+Sidebar-Editor von Home Assistant ausgeblendet oder für ihn nicht verfügbar –,
+verschwindet von selbst, damit keine leeren Überschriften stehen bleiben.
+Ausblenden ist eine Frage der Ansicht, keine Berechtigung: Die Seiten selbst
+bleiben über ihre Adresse erreichbar wie bisher.
+
 **PopUp-Links in der Seitenleiste** (1.5.1): die dritte Möglichkeit im Dialog,
 *PopUp Link*. Einen Namen vergeben, nacheinander Seiten aufnehmen — zuerst die
 Dashboards und Seiten deiner Seitenleiste, dann die Seiten von Home Assistant
@@ -402,7 +439,13 @@ Kopfzeile*); sie gilt für die ganze Kopfzeile.
 > **Einstellungen, Benachrichtigungen und Profil**
 > Diese drei Einträge lassen sich erst sortieren, wenn im Reiter **Layout** die
 > Option *„Einstellungen, Benachrichtigungen und Profil ins Raster übernehmen“*
-> aktiv ist. Ohne sie hält Home Assistant sie am unteren Rand fest.
+> aktiv ist. Ohne sie hält Home Assistant sie am unteren Rand fest. Seit 1.5.8
+> musst du sie nicht suchen: Verschiebst du einen der drei (Pfeile, Ziehen in
+> der Liste oder in der Vorschau), geht die Option von selbst an, und eine
+> Meldung sagt es; *Verwerfen* oder `Strg Z` nimmt es zurück. Am Eintrag selbst
+> steht außerdem ein Hinweis mit dem Knopf *Verschiebbar machen*. Es bleiben die
+> Einträge von Home Assistant – die Zähler für Reparaturen, Updates und
+> Benachrichtigungen bleiben also, anders als bei einem Link auf `/config`.
 
 ### Das Theme
 
@@ -591,6 +634,10 @@ Assistant hinter jedes Symbol einen farbigen Kreis.
     Ausblenden gelten nur für die Einstellungsseite.
   * **Menüpunkte als Kacheln anzeigen** — das Symbol steht über dem Namen,
     Beschreibung und Pfeil entfallen.
+  * **Abstand zwischen den Menüpunkten** (1.5.8, px) — Platz zwischen den
+    Einträgen innerhalb einer Karte, praktisch, wenn jeder Eintrag einen Rahmen
+    hat; 0 ist das Aussehen von Home Assistant ohne Abstand. Mit Spalten gilt er
+    in beide Richtungen.
 
 **Einstellungsseite: Reihenfolge und Favoriten.** In dieser Karte geht es um
 die Einstellungsseite von Home Assistant selbst (`/config`).

@@ -1,6 +1,6 @@
 /*
  * HA Style Hub - ha-style-hub.js
- * Version: 1.5.7
+ * Version: 1.5.8
  *
  * Runtime patcher for the Home Assistant sidebar (ha-sidebar).
  *
@@ -26,7 +26,7 @@
 (() => {
   "use strict";
 
-  const VERSION = "1.5.7";
+  const VERSION = "1.5.8";
   const TAG = "[HA Style Hub]";
 
   const EVENT_UPDATED = "ha_style_hub_updated";
@@ -198,6 +198,7 @@
     menu_order: [],
     menu_hidden: [],
     menu_columns: 1,
+    menu_gap: 0,
     menu_tiles: false,
     favorites: [],
     favorites_place: "page",
@@ -405,6 +406,23 @@
     const n = Math.max(1, count);
     return n <= max ? n : Math.ceil(n / Math.ceil(n / max));
   };
+  /**
+   * Benutzer, fuer die ein Eintrag ausgeblendet ist (1.5.8): IDs von Home
+   * Assistant, ohne Doppelte, hoechstens 100 - wie _clean_user_ids im Backend.
+   */
+  const USER_ID = /^[A-Za-z0-9_-]{1,64}$/;
+  const cleanUserIds = (raw) => {
+    const ids = [];
+    if (Array.isArray(raw)) {
+      raw.forEach((one) => {
+        if (ids.length < 100 && typeof one === "string" && USER_ID.test(one) && ids.indexOf(one) < 0) {
+          ids.push(one);
+        }
+      });
+    }
+    return ids;
+  };
+
   const cleanPopupLinks = (raw) => {
     const links = [];
     const seen = new Set();
@@ -1220,6 +1238,7 @@
     height: 0,
     uppercase: true,
     collapsible: false,
+    hide_for: [],
   };
 
   // Ein PopUp-Link (1.5.1): wie ein Eintrag, dazu seine Links.
@@ -1233,6 +1252,8 @@
     icon_color: "",
     background: "",
     parent: "",
+    // 1.5.8: fuer diese Benutzer ausgeblendet (IDs von Home Assistant)
+    hide_for: [],
   };
   const DEFAULT_POPUP = Object.assign({}, DEFAULT_ITEM, {
     links: DEFAULT_POPUP_LINKS,
@@ -1355,6 +1376,7 @@
           key.indexOf(HEADING_PREFIX) === 0 ? DEFAULT_HEADING : isPopupKey(key) ? DEFAULT_POPUP : DEFAULT_ITEM,
           data.items[key]
         );
+        items[key].hide_for = cleanUserIds(isObject(data.items[key]) ? data.items[key].hide_for : null);
         if (isPopupKey(key)) {
           items[key].links = cleanPopupLinks(isObject(data.items[key]) ? data.items[key].links : null);
           cleanPopupCard(items[key]);
@@ -2726,11 +2748,20 @@
       out.push(`ha-list-item-button[data-sh-menu="${quote(path)}"] { display: none !important; }`);
     });
     const columns = clamp(Math.round(number(s.menu_columns, 1)), 1, 3);
+    // 1.5.8: Abstand zwischen den Menuepunkten. Er muss in die Breite einer
+    // Spalte eingerechnet werden - sonst passen zwei Spalten plus Luecke
+    // nicht mehr in die Zeile, und auto-fill macht daraus eine einzige.
+    const gap = clamp(Math.round(number(s.menu_gap, 0)), 0, 40);
     if (columns > 1) {
       out.push(
         "ha-list-nav::part(base) { display: grid !important; " +
           `grid-template-columns: repeat(auto-fill, minmax(max(min(100%, ${MENU_COLUMN_MIN}px), ` +
-          `calc(100% / ${columns} - 0.5px)), 1fr)) !important; }`
+          `calc((100% - ${(columns - 1) * gap}px) / ${columns} - 0.5px)), 1fr)) !important;` +
+          `${gap > 0 ? ` gap: ${gap}px !important;` : ""} }`
+      );
+    } else if (gap > 0) {
+      out.push(
+        `ha-list-nav::part(base) { display: flex !important; flex-direction: column !important; gap: ${gap}px !important; }`
       );
     }
     if (s.menu_tiles === true) {
@@ -3660,7 +3691,9 @@
       "  align-items: center !important;",
       "  gap: 8px !important;",
       "  box-sizing: border-box !important;",
-      "  padding: 14px 12px 4px !important;",
+      // 1.5.8: oben und unten gleich viel - der Text steht immer mittig,
+      // auch mit Hintergrund oder Rahmen (vorher 14 px oben, 4 px unten).
+      "  padding: 9px 12px !important;",
       "  margin: 0 !important;",
       "  font-size: 11px !important;",
       "  font-weight: 500 !important;",
@@ -3738,12 +3771,10 @@
         }
         const rules = [];
 
-        // Hoehe der Zeile. Ohne Angabe bestimmt der Text sie, und die
-        // Grundregel setzt oben mehr Polsterung als unten - so sitzt eine
-        // Ueberschrift dicht ueber "ihren" Eintraegen und mit Abstand zu
-        // denen darueber. Wird eine Hoehe gesetzt, faellt die Polsterung
-        // weg und der Text steht mittig darin (align-items: center steht
-        // schon in der Grundregel).
+        // Hoehe der Zeile. Ohne Angabe bestimmt der Text sie (mit gleicher
+        // Polsterung oben und unten, 1.5.8). Wird eine Hoehe gesetzt, faellt
+        // die Polsterung weg und der Text steht mittig darin (align-items:
+        // center steht schon in der Grundregel).
         const height = Math.max(0, Math.round(number(entry.height, 0)));
         if (height > 0) {
           rules.push(`  height: ${height}px !important;`);
@@ -7957,12 +7988,65 @@
       });
     }
 
+    /**
+     * Die Eintraege, wie dieser Benutzer sie sieht (1.5.8):
+     *  - Was fuer ihn ausgeblendet ist (hide_for), gilt als ausgeblendet -
+     *    dieselben Regeln wie beim Auge, also fuer jede Art Eintrag.
+     *  - Eine Ueberschrift, unter der kein Eintrag mehr zu sehen ist, faellt
+     *    mit weg. "Zu sehen" heisst: nicht ausgeblendet und wirklich in der
+     *    Seitenleiste - Seiten, die der Benutzer in Home Assistant selbst
+     *    ausgeblendet hat, zeichnet Home Assistant gar nicht erst.
+     * Solange Home Assistant den Benutzer noch nicht kennt, bleibt alles mit
+     * hide_for verborgen (lieber kurz zu wenig als kurz zu viel), und es wird
+     * gleich noch einmal nachgesehen.
+     */
+    userView(root) {
+      const hass = this.root && this.root.hass;
+      const uid = hass && hass.user && typeof hass.user.id === "string" ? hass.user.id : "";
+      const source = this.config.items || {};
+      const items = {};
+      let changed = false;
+      let waiting = false;
+      Object.keys(source).forEach((key) => {
+        const entry = source[key];
+        const hideFor = Array.isArray(entry.hide_for) ? entry.hide_for : [];
+        if (!entry.hidden && hideFor.length && (!uid || hideFor.indexOf(uid) >= 0)) {
+          items[key] = Object.assign({}, entry, { hidden: true });
+          changed = true;
+          waiting = waiting || !uid;
+        } else {
+          items[key] = entry;
+        }
+      });
+      const present = new Set();
+      if (root) {
+        root.querySelectorAll("[data-sh-key]").forEach((node) => present.add(node.dataset.shKey));
+      }
+      Object.keys(items).forEach((head) => {
+        if (head.indexOf(HEADING_PREFIX) !== 0 || items[head].hidden) {
+          return;
+        }
+        const children = Object.keys(items).filter(
+          (key) => key.indexOf(HEADING_PREFIX) !== 0 && items[key].parent === head
+        );
+        if (children.length && children.every((key) => items[key].hidden || !present.has(key))) {
+          items[head] = Object.assign({}, items[head], { hidden: true });
+          changed = true;
+        }
+      });
+      if (waiting && (this.userRetries || 0) < 20) {
+        this.userRetries = (this.userRetries || 0) + 1;
+        window.setTimeout(() => this.schedule(), 500);
+      }
+      return changed ? Object.assign({}, this.config, { items }) : this.config;
+    }
+
     applySheets(root, generation) {
       const merge = this.config.layout.merge_fixed !== false && generation.gen > 1;
 
-      // 1. the sidebar itself
+      // 1. the sidebar itself - mit den Eintraegen, wie dieser Benutzer sie sieht
       this.sheet(root, "sidebar").write(
-        buildSidebarCss(this.config, generation, merge)
+        buildSidebarCss(this.userView(root), generation, merge)
       );
 
       // 1b. free CSS in a sheet of its own - a typo in there must not be able

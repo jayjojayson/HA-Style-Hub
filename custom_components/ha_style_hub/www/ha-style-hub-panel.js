@@ -1,6 +1,6 @@
 /*
  * HA Style Hub - ha-style-hub-panel.js
- * Version: 1.5.7
+ * Version: 1.5.8
  *
  * Configuration panel for the sidebar. Registered by the Python part of the
  * integration through panel_custom, so Home Assistant sets the properties
@@ -22,7 +22,7 @@
 (() => {
   "use strict";
 
-  const VERSION = "1.5.7";
+  const VERSION = "1.5.8";
   // Das Logo liegt neben dieser Datei im Ordner www (siehe URL_BASE in const.py).
   const LOGO_URL = `/ha_style_hub-static/ha-style-hub-logo.png?v=${VERSION}`;
   const EVENT_PREVIEW = "ha-style-hub-preview";
@@ -201,6 +201,7 @@
     menu_order: [],
     menu_hidden: [],
     menu_columns: 1,
+    menu_gap: 0,
     menu_tiles: false,
     favorites: [],
     favorites_place: "page",
@@ -313,6 +314,8 @@
     icon_color: "",
     background: "",
     parent: "",
+    // 1.5.8: fuer diese Benutzer ausgeblendet (IDs von Home Assistant)
+    hide_for: [],
   };
 
   const DEFAULT_THEME = {
@@ -390,6 +393,122 @@
         radius_tr: 0,
         radius_br: 18,
         radius_bl: 18,
+      },
+    },
+  ];
+
+  /**
+   * Vorlagen fuer die Seitenleiste (1.5.8): Raster und Aussehen. Die Farben
+   * kommen aus den Variablen des aktiven Themes (Primaerfarbe, Text, Karte),
+   * darum passen die Vorlagen zu jedem Theme und zu Hell wie Dunkel.
+   * Uebernommen werden nur die Felder, die das Aussehen machen - Titel,
+   * eigenes CSS, die Benachrichtigungen, die Breite eingeklappt und alles
+   * unter Layout > Verhalten bleiben, ebenso alles an den Eintraegen.
+   */
+  const SIDEBAR_PRESET_LAYOUT = [
+    "columns", "columns_collapsed", "item_style", "gap", "tile_gap", "tile_height",
+    "tile_height_collapsed", "row_height", "row_height_collapsed", "width",
+  ];
+  const SIDEBAR_PRESET_KEEP = [
+    "title", "title_color", "hide_title", "hide_toggle", "hide_labels_collapsed", "custom_css",
+    "style_notifications", "notif_text_color", "notif_header_color", "font_family",
+  ];
+  const SP_TINT = (percent) => `color-mix(in srgb, var(--primary-color) ${percent}%, transparent)`;
+  const SP_GRADIENT_TOP = "color-mix(in srgb, var(--primary-color) 24%, var(--sidebar-background-color, var(--card-background-color, #1c1c1c)))";
+  const SP_GRADIENT_END = "var(--sidebar-background-color, var(--card-background-color, #1c1c1c))";
+  const SP_ON_PRIMARY = "var(--text-primary-color, #ffffff)";
+  const SIDEBAR_PRESETS = [
+    {
+      id: "rows_calm",
+      de: "Zeilen \u00b7 Dezent",
+      en: "Rows \u00b7 Calm",
+      de_hint: "Ruhige Zeilen, die aktive Seite leicht in der Primärfarbe getönt",
+      en_hint: "Quiet rows, the active page lightly tinted in the primary colour",
+      layout: { columns: 1, columns_collapsed: 1, item_style: "row", gap: 4, row_height: 40 },
+      appearance: {
+        item_radius: 10,
+        item_background_selected: SP_TINT(14),
+        text_color_selected: "var(--primary-color)",
+        icon_color_selected: "var(--primary-color)",
+        hover_background: "var(--primary-color)",
+        hover_opacity: 8,
+        font_size: 13,
+        font_weight: "500",
+        icon_size: 22,
+      },
+    },
+    {
+      id: "rows_bold",
+      de: "Zeilen \u00b7 Kräftig",
+      en: "Rows \u00b7 Bold",
+      de_hint: "Farbverlauf oben, farbige Icons, die aktive Seite voll in der Primärfarbe",
+      en_hint: "Gradient at the top, coloured icons, the active page filled with the primary colour",
+      layout: { columns: 1, columns_collapsed: 1, item_style: "row", gap: 6, row_height: 44 },
+      appearance: {
+        background: SP_GRADIENT_TOP,
+        background_gradient: true,
+        background_color2: SP_GRADIENT_END,
+        gradient_direction: "to bottom",
+        item_background: "color-mix(in srgb, var(--primary-text-color) 4%, transparent)",
+        item_background_selected: "var(--primary-color)",
+        text_color_selected: SP_ON_PRIMARY,
+        icon_color_selected: SP_ON_PRIMARY,
+        icon_color: "var(--primary-color)",
+        hover_background: "var(--primary-color)",
+        hover_opacity: 18,
+        item_radius: 12,
+        font_size: 13,
+        font_weight: "600",
+        icon_size: 22,
+        badge_background: "var(--accent-color, var(--primary-color))",
+      },
+    },
+    {
+      id: "tiles_calm",
+      de: "Kacheln \u00b7 Dezent",
+      en: "Tiles \u00b7 Calm",
+      de_hint: "Zwei Spalten mit hellen Kacheln, ruhig und aufgeräumt",
+      en_hint: "Two columns of soft tiles, calm and tidy",
+      layout: { columns: 2, columns_collapsed: 1, item_style: "tile", gap: 6, tile_gap: 4, tile_height: 72, width: 272 },
+      appearance: {
+        item_background: "color-mix(in srgb, var(--primary-text-color) 5%, transparent)",
+        item_background_selected: SP_TINT(16),
+        text_color_selected: "var(--primary-color)",
+        icon_color_selected: "var(--primary-color)",
+        hover_background: "var(--primary-color)",
+        hover_opacity: 10,
+        item_radius: 14,
+        font_size: 11,
+        font_weight: "500",
+        icon_size: 26,
+      },
+    },
+    {
+      id: "tiles_bold",
+      de: "Kacheln \u00b7 Kräftig",
+      en: "Tiles \u00b7 Bold",
+      de_hint: "Drei Spalten, getönte Kacheln mit Rahmen, Farbverlauf und farbige Icons",
+      en_hint: "Three columns, tinted tiles with a border, a gradient and coloured icons",
+      layout: { columns: 3, columns_collapsed: 1, item_style: "tile", gap: 8, tile_gap: 4, tile_height: 76, width: 320 },
+      appearance: {
+        background: SP_GRADIENT_TOP,
+        background_gradient: true,
+        background_color2: SP_GRADIENT_END,
+        gradient_direction: "to bottom",
+        item_background: SP_TINT(12),
+        item_border_width: 1,
+        item_border_color: SP_TINT(35),
+        item_background_selected: "var(--primary-color)",
+        text_color_selected: SP_ON_PRIMARY,
+        icon_color_selected: SP_ON_PRIMARY,
+        icon_color: "var(--primary-color)",
+        hover_background: "var(--primary-color)",
+        hover_opacity: 22,
+        item_radius: 16,
+        font_size: 11,
+        font_weight: "600",
+        icon_size: 28,
+        badge_background: "var(--accent-color, var(--primary-color))",
       },
     },
   ];
@@ -2327,6 +2446,7 @@
     height: 0,
     uppercase: true,
     collapsible: false,
+    hide_for: [],
   };
 
   const isHeading = (key) => String(key).indexOf(HEADING_PREFIX) === 0;
@@ -2803,6 +2923,8 @@
       layout_sizes: "Sizes",
       layout_behaviour: "Behaviour",
       entry_add_short: "Heading, link, popup",
+      heading_fold: "Fold in the preview",
+      heading_unfold: "Unfold in the preview",
       inspector_empty: "Pick an entry.",
       heading_meta: "Heading · {n}",
       hidden_short: "hidden",
@@ -2819,6 +2941,17 @@
       text_short: "Text",
       item_background_short: "Background",
       hide_in_sidebar: "Hide in the sidebar",
+      users_title: "Visible for",
+      users_hint:
+        "Untick a user to hide this entry for them only - like the eye, but per person. Users added later see it. Applies in every browser the user signs in with.",
+      users_hint_heading:
+        "Untick a user to hide this heading for them. The entries below it stay; if none of them is left for a user, the heading disappears by itself.",
+      users_admin: "Admin",
+      users_owner: "Owner",
+      users_me: "you",
+      users_failed: "The list of users could not be loaded.",
+      users_off_note: "The entry is hidden for everyone (eye) - the choice here applies again once it is shown.",
+      hidden_for_n: "hidden for {n}",
       move_up: "Up",
       move_down: "Down",
       theme_empty: "empty",
@@ -3320,6 +3453,8 @@
       header_preset_confirm:
         "Fill the header fields with this template? What is in there now is lost.",
       header_preset_done: "Template {name} taken over",
+      sidebar_presets_hint:
+        "A finished look for the sidebar with one click - grid and appearance. The colours come from your theme (primary colour, text, cards), so every template fits light and dark. Title, own CSS, the notifications, Layout › Behaviour and everything set on single entries stay as they are. Nothing is saved until you press Save; Discard or Ctrl Z takes it back.",
       header_transfer_hint:
         "Export saves these header settings as a .json file - handy as a backup or to pass a look on to somebody else. Import reads such a file back in. Only the header is touched; the sidebar and the theme stay as they are.",
       header_import_title: "Import header settings",
@@ -3444,6 +3579,8 @@
       table_font_size: "Font size (px)",
       favorite_icon_only: "Show the icon only, hide the text",
       menu_columns: "Columns",
+      menu_gap: "Gap between the menu entries (px)",
+      menu_gap_hint: "Space between the entries inside one card - handy when each entry has a border. 0 = like Home Assistant (no gap); with columns it applies both ways.",
       menu_tiles: "Show the entries as tiles",
       menu_tiles_hint:
         "Icon above the name, without the description and the arrow. With two or three columns the page gets wider; on a narrow screen the columns drop by themselves.",
@@ -3587,10 +3724,13 @@
         "The list still scrolls, only the bar itself disappears.",
       merge_fixed: "Move Settings, Notifications and the user entry into the grid",
       merge_fixed_hint:
-        "Only then can those three entries be sorted freely. Without it Home Assistant keeps them pinned to the bottom of the sidebar.",
+        "Only then can those three entries be sorted freely. Without it Home Assistant keeps them pinned to the bottom of the sidebar. Moving one of them switches this on by itself.",
+      merge_fixed_auto: "“Move Settings, Notifications and the user entry into the grid” is now on (Layout › Behaviour) - only so can the entry move. Discard or Ctrl Z undoes it.",
+      merge_fixed_note: "Home Assistant keeps this entry pinned to the bottom of the sidebar. To move it, Settings, Notifications and the user entry have to join the grid of the other entries (Layout › Behaviour) - moving it switches that on by itself. Home Assistant's own badges (repairs, updates, notifications) stay.",
+      merge_fixed_on: "Make it movable",
       heading_height: "Height (px)",
       heading_height_hint:
-        "0 lets the text decide the height. A heading then sits close above its own entries and further away from the ones before them. Any other value gives the line exactly that height and centres the text in it.",
+        "0 lets the text decide the height (with the same space above and below). Any other value gives the line exactly that height. Either way the text stays centred vertically.",
       heading_uppercase: "Capital letters",
       hide_sidebar: "Hide the sidebar (kiosk mode)",
       hide_sidebar_hint:
@@ -3772,6 +3912,8 @@
       layout_sizes: "Größen",
       layout_behaviour: "Verhalten",
       entry_add_short: "Überschrift, Link, PopUp",
+      heading_fold: "In der Vorschau einklappen",
+      heading_unfold: "In der Vorschau ausklappen",
       inspector_empty: "Wähle einen Eintrag aus.",
       heading_meta: "Überschrift · {n}",
       hidden_short: "ausgeblendet",
@@ -3788,6 +3930,17 @@
       text_short: "Text",
       item_background_short: "Hintergrund",
       hide_in_sidebar: "In der Seitenleiste ausblenden",
+      users_title: "Sichtbar für",
+      users_hint:
+        "Haken weg = dieser Eintrag ist für diesen Benutzer ausgeblendet \u2013 wie das Auge, aber je Person. Benutzer, die später dazukommen, sehen ihn. Gilt in jedem Browser, in dem sich der Benutzer anmeldet.",
+      users_hint_heading:
+        "Haken weg = diese Überschrift ist für diesen Benutzer ausgeblendet. Die Einträge darunter bleiben; ist für einen Benutzer keiner mehr übrig, verschwindet die Überschrift von selbst.",
+      users_admin: "Admin",
+      users_owner: "Besitzer",
+      users_me: "du",
+      users_failed: "Die Liste der Benutzer ließ sich nicht laden.",
+      users_off_note: "Der Eintrag ist für alle ausgeblendet (Auge) \u2013 die Auswahl hier gilt wieder, sobald er eingeblendet ist.",
+      hidden_for_n: "für {n} ausgeblendet",
       move_up: "Nach oben",
       move_down: "Nach unten",
       theme_empty: "leer",
@@ -4289,6 +4442,8 @@
       header_preset_confirm:
         "Die Felder der Kopfzeile mit dieser Vorlage f\u00fcllen? Was jetzt drinsteht, geht dabei verloren.",
       header_preset_done: "Vorlage {name} \u00fcbernommen",
+      sidebar_presets_hint:
+        "Ein fertiges Aussehen für die Seitenleiste mit einem Klick \u2013 Raster und Aussehen. Die Farben kommen aus deinem Theme (Primärfarbe, Text, Karten), darum passt jede Vorlage zu Hell und Dunkel. Titel, eigenes CSS, die Benachrichtigungen, Layout › Verhalten und alles, was an einzelnen Einträgen eingestellt ist, bleiben, wie sie sind. Gespeichert wird erst mit „Speichern“; Verwerfen oder Strg Z nimmt es zurück.",
       header_transfer_hint:
         "Exportieren speichert diese Einstellungen als .json-Datei - praktisch als Sicherung oder um ein Aussehen weiterzugeben. Importieren liest so eine Datei wieder ein. Betroffen ist nur die Kopfzeile, Seitenleiste und Theme bleiben unber\u00fchrt.",
       header_import_title: "Kopfzeile importieren",
@@ -4413,6 +4568,8 @@
       table_font_size: "Schriftgr\u00f6\u00dfe (px)",
       favorite_icon_only: "Nur Icon anzeigen, Text ausblenden",
       menu_columns: "Spalten",
+      menu_gap: "Abstand zwischen den Menüpunkten (px)",
+      menu_gap_hint: "Platz zwischen den Einträgen innerhalb einer Karte – praktisch, wenn jeder Eintrag einen Rahmen hat. 0 = wie Home Assistant (ohne Abstand); mit Spalten gilt er in beide Richtungen.",
       menu_tiles: "Men\u00fcpunkte als Kacheln anzeigen",
       menu_tiles_hint:
         "Symbol \u00fcber dem Namen, ohne Beschreibung und Pfeil. Mit zwei oder drei Spalten wird die Seite breiter; auf einem schmalen Bildschirm werden es von selbst weniger Spalten.",
@@ -4557,10 +4714,13 @@
       merge_fixed:
         "Einstellungen, Benachrichtigungen und Profil ins Raster übernehmen",
       merge_fixed_hint:
-        "Nur so lassen sich diese drei Einträge frei sortieren. Ohne die Option bleiben sie unten verankert.",
+        "Nur so lassen sich diese drei Einträge frei sortieren. Ohne die Option bleiben sie unten verankert. Verschiebst du einen davon, geht die Option von selbst an.",
+      merge_fixed_auto: "„Einstellungen, Benachrichtigungen und Profil ins Raster übernehmen“ ist jetzt an (Layout › Verhalten) \u2013 nur so lässt sich der Eintrag verschieben. Verwerfen oder Strg Z nimmt es zurück.",
+      merge_fixed_note: "Home Assistant hält diesen Eintrag unten in der Seitenleiste fest. Damit er sich verschieben lässt, müssen Einstellungen, Benachrichtigungen und Profil ins Raster der anderen Einträge (Layout › Verhalten) \u2013 verschiebst du ihn, geht das von selbst an. Die Zähler von Home Assistant (Reparaturen, Updates, Benachrichtigungen) bleiben.",
+      merge_fixed_on: "Verschiebbar machen",
       heading_height: "H\u00f6he (px)",
       heading_height_hint:
-        "Bei 0 bestimmt der Text die H\u00f6he. Die \u00dcberschrift sitzt dann dicht \u00fcber ihren eigenen Eintr\u00e4gen und mit mehr Abstand zu denen dar\u00fcber. Jeder andere Wert gibt der Zeile genau diese H\u00f6he und stellt den Text mittig hinein.",
+        "Bei 0 bestimmt der Text die H\u00f6he (mit gleich viel Abstand oben und unten). Jeder andere Wert gibt der Zeile genau diese H\u00f6he. Der Text steht in beiden F\u00e4llen senkrecht mittig.",
       heading_uppercase: "Gro\u00dfbuchstaben",
       hide_sidebar: "Sidebar ausblenden (kiosk-mode)",
       hide_sidebar_hint:
@@ -4788,12 +4948,26 @@
     return out;
   };
 
+  /** Benutzer-IDs eines Eintrags (1.5.8) - wie cleanUserIds im Injector. */
+  const cleanUserIds = (raw) => {
+    const ids = [];
+    if (Array.isArray(raw)) {
+      raw.forEach((one) => {
+        if (ids.length < 100 && typeof one === "string" && /^[A-Za-z0-9_-]{1,64}$/.test(one) && ids.indexOf(one) < 0) {
+          ids.push(one);
+        }
+      });
+    }
+    return ids;
+  };
+
   const normalize = (raw) => {
     const data = isObject(raw) ? raw : {};
     const items = {};
     if (isObject(data.items)) {
       Object.keys(data.items).forEach((key) => {
         items[key] = section(itemDefaults(key), data.items[key]);
+        items[key].hide_for = cleanUserIds(isObject(data.items[key]) ? data.items[key].hide_for : null);
         if (isPopup(key)) {
           items[key].links = cleanPopupLinks(isObject(data.items[key]) ? data.items[key].links : null);
           cleanPopupCard(items[key]);
@@ -5941,11 +6115,19 @@
     .sbp[data-closed] .sbp-hd { display: none; }
     .sbp[data-nolabels] .sbp-it .lbl { display: none; }
     .sbp[data-nolabels] .sbp-it { justify-content: center; }
+    /* Der aktive Eintrag (1.5.8: dieselbe Rangfolge wie im Injector): eigener
+       Hintergrund und eigene Textfarbe aus Aussehen > aktiver Eintrag gehen vor,
+       sonst bleiben die Farben des Eintrags - unter dem leichten Schleier, den
+       Home Assistant ueber die aktive Seite legt. Eine eigene Iconfarbe des
+       Eintrags gilt immer. */
     .sbp-it[data-current] {
-      background: var(--sbp-sel-bg, color-mix(in srgb, var(--sidebar-selected-icon-color, var(--primary-color, var(--sh-accent))) 14%, transparent));
-      color: var(--sbp-sel-text, var(--sidebar-selected-icon-color, var(--primary-color, var(--sh-accent))));
+      background: var(--sbp-sel-bg,
+        linear-gradient(color-mix(in srgb, var(--sidebar-selected-icon-color, var(--primary-color, var(--sh-accent))) 14%, transparent),
+          color-mix(in srgb, var(--sidebar-selected-icon-color, var(--primary-color, var(--sh-accent))) 14%, transparent)),
+        var(--ibg, var(--sbp-ibg, transparent)));
+      color: var(--sbp-sel-text, var(--tc, var(--sidebar-selected-icon-color, var(--primary-color, var(--sh-accent)))));
     }
-    .sbp-it[data-current] ha-icon { color: var(--sbp-sel-icon, var(--sidebar-selected-icon-color, var(--primary-color, var(--sh-accent)))); }
+    .sbp-it[data-current] ha-icon { color: var(--ic, var(--sbp-sel-icon, var(--sidebar-selected-icon-color, var(--primary-color, var(--sh-accent))))); }
     /* Maus-Hover wie in Home Assistant (eigene Farben aus Aussehen > Hover) */
     .sbp-it:hover, .sbp-it[data-hover] { background-image: var(--sbp-hover, none); }
     .sbp[data-hover-text] .sbp-it:hover, .sbp[data-hover-text] .sbp-it[data-hover] { color: var(--sbp-hover-text); }
@@ -5966,7 +6148,7 @@
     .sbp[data-tiles] .sbp-badge { left: calc(50% + 4px); }
     .sbp-hd {
       grid-column: 1 / -1; align-self: start; display: flex; align-items: center; gap: 8px;
-      box-sizing: border-box; padding: 14px 12px 4px; font-size: 11px; font-weight: 500; line-height: 1.2;
+      box-sizing: border-box; padding: 9px 12px; font-size: 11px; font-weight: 500; line-height: 1.2;
       white-space: nowrap; overflow: hidden; opacity: .75; color: var(--hc, inherit);
       background: var(--hbg, transparent); border-radius: var(--hr, 0);
       border-style: solid; border-width: var(--hbw, 0px); border-color: var(--hbc, currentColor);
@@ -5977,7 +6159,12 @@
     .sbp-hd[data-upper] { text-transform: uppercase; letter-spacing: .06em; }
     .sbp-hd ha-icon { --mdc-icon-size: 16px; flex: 0 0 auto; color: var(--hic, inherit); }
     .sbp-hd .hd-text { overflow: hidden; text-overflow: ellipsis; }
-    .sbp-hd .hd-caret { margin-left: auto; font-size: 10px; line-height: 1; flex: 0 0 auto; }
+    .sbp-hd .hd-caret {
+      margin: -6px -8px -6px auto; padding: 6px 8px; font-size: 10px; line-height: 1; flex: 0 0 auto;
+      cursor: pointer; border-radius: 6px; transition: transform .15s ease;
+    }
+    .sbp-hd .hd-caret:hover { background: color-mix(in srgb, currentColor 14%, transparent); }
+    .sbp-hd[data-folded] .hd-caret { transform: rotate(-90deg); }
     .sbp[data-zone="head"] .sbp-head, .sbp[data-zone="all"] { outline: 2px solid var(--sh-accent); outline-offset: -2px; }
     .sbp[data-zone="items"] .sbp-it:not([data-current]) { box-shadow: inset 0 0 0 1px color-mix(in srgb, var(--sh-accent) 55%, transparent); }
 
@@ -6146,7 +6333,9 @@
     .stage .lpv-card { background: var(--card-background-color); border-color: var(--divider-color); }
     .spv { display: flex; flex-direction: column; gap: 10px; border-radius: 12px; }
     .spv .spm-block { display: flex; flex-direction: column; }
-    .spv[data-cols] .spm-block { display: grid; grid-template-columns: repeat(var(--mcols, 1), minmax(0, 1fr)); column-gap: 6px; }
+    .spv[data-cols] .spm-block { display: grid; grid-template-columns: repeat(var(--mcols, 1), minmax(0, 1fr)); column-gap: var(--mgap, 6px); }
+    /* 1.5.8: Abstand zwischen den Menuepunkten einer Karte */
+    .spv .spm-block { row-gap: var(--mgap, 0px); }
     .spv[data-cols] .spv-row + .spv-row { border-top: 0; }
     .spv-text strong { font-weight: 400; font-size: 14px; }
     .stage .spv-row + .spv-row { border-top-color: var(--divider-color); }
@@ -6549,6 +6738,24 @@
       letter-spacing: .08em; color: var(--sh-muted);
     }
     .modal-card h3.add-title + .hint { margin-bottom: 10px; }
+    /* 1.5.8: die drei Rubriken des Dialogs farbig und durch Linien getrennt */
+    .modal-card h3.add-title[class*="add-sec-"] { display: flex; align-items: center; gap: 8px; color: var(--sec, var(--sh-muted)); }
+    .modal-card h3.add-title[class*="add-sec-"]::before {
+      content: ""; flex: 0 0 auto; width: 4px; height: 14px; border-radius: 2px; background: currentColor;
+    }
+    .modal-card h3.add-sec-heading { --sec: color-mix(in srgb, #e8930c 80%, var(--sh-text)); margin-top: 6px; }
+    .modal-card h3.add-sec-link {
+      --sec: color-mix(in srgb, #2f9fe0 78%, var(--sh-text));
+      margin-top: 18px; padding-top: 16px; border-top: 1px solid var(--sh-line);
+    }
+    .modal-card h3.add-sec-popup { --sec: color-mix(in srgb, #9b6cf0 78%, var(--sh-text)); }
+    /* 1.5.8: der Knopf zum Hinzufuegen - leicht betont, damit er nicht untergeht */
+    #add-heading {
+      border-color: color-mix(in srgb, var(--sh-accent) 55%, var(--sh-line));
+      background: color-mix(in srgb, var(--sh-accent) 10%, transparent);
+    }
+    #add-heading:hover { background: color-mix(in srgb, var(--sh-accent) 18%, transparent); }
+    #add-heading ha-icon, #add-heading svg { color: var(--sh-accent); }
     #add-modal label.field { margin-top: 10px; }
     .modal-actions { display: flex; justify-content: flex-end; gap: 10px; margin-top: 18px; }
     .modal-error, .palette-error, .history-error { margin: 12px 0 0; font-size: 13px; color: var(--sh-err); }
@@ -6607,6 +6814,18 @@
     .preset .sw-in.hp i { width: auto; }
     .preset .sw-in.hp .hp-body { flex: 1; border-radius: 6px; background: #252a33; }
     .preset[data-current] strong::after { content: " ✓"; color: var(--sh-accent); }
+    /* 1.5.8: Mini-Seitenleiste in den Vorlagen der Sidebar */
+    .preset .sw-in.sp {
+      display: grid; grid-template-columns: repeat(var(--sp-cols, 1), minmax(0, 1fr)); gap: 4px;
+      align-content: start; justify-content: stretch; height: 96px; padding: 8px; width: 46%; margin-inline: auto;
+      box-sizing: border-box;
+    }
+    .preset .sw-in.sp .sp-it { display: flex; align-items: center; gap: 5px; height: 16px; padding: 0 5px; box-sizing: border-box; }
+    .preset .sw-in.sp .sp-it em { width: 7px; height: 7px; border-radius: 2px; background: var(--sp-ink); flex: 0 0 auto; }
+    .preset .sw-in.sp .sp-it u { flex: 1; height: 3px; border-radius: 2px; background: var(--sp-line); opacity: .7; text-decoration: none; }
+    .preset .sw-in.sp.sp-tiles .sp-it { flex-direction: column; justify-content: center; gap: 4px; height: 36px; padding: 0 4px; }
+    .preset .sw-in.sp.sp-tiles .sp-it em { width: 9px; height: 9px; }
+    .preset .sw-in.sp.sp-tiles .sp-it u { flex: 0 0 auto; width: 70%; }
     .preset-confirm { margin: 14px 0 0; padding: 12px 14px; border-radius: 10px; background: var(--sh-row); font-size: 14px; line-height: 1.45; }
 
     /* ---------------------------------------------------- Handy-Leiste */
@@ -6742,6 +6961,13 @@
     .shadow-box { display: flex; flex-direction: column; gap: 8px; }
     .shadow-box .shadow-body { display: none; flex-direction: column; gap: 8px; }
     .shadow-box[data-open] .shadow-body { display: flex; }
+    .fixed-note { display: flex; flex-direction: column; align-items: flex-start; gap: 8px; }
+    /* 1.5.8: "Sichtbar fuer" im Inspektor eines Eintrags */
+    .users-box { display: flex; flex-direction: column; gap: 8px; }
+    .user-grid { display: flex; flex-direction: column; gap: 2px; }
+    .user-check { margin: 0; }
+    .user-check small { color: var(--sh-muted); font-size: 11px; }
+    .user-check[data-inactive] { opacity: .6; }
     .shadow-head { display: flex; align-items: center; justify-content: space-between; gap: 12px; }
     .shadow-head .hint { margin: 0; }
     .shadow-demo { flex: 0 0 auto; width: 54px; height: 30px; border-radius: 8px; margin: 6px 10px 10px 0;
@@ -7536,6 +7762,8 @@
           type: "ha_style_hub/get",
         });
         this._config = normalize(result && result.config);
+        // 1.5.8: die Benutzer fuer "Sichtbar fuer" - nebenher
+        this._loadUsers();
         // Nebenher, ohne das Laden der Seite aufzuhalten
         this._loadIconPicker().then((ok) => {
           this._iconPicker = ok;
@@ -7568,6 +7796,86 @@
       this._undoReset();
       this._fillInputs();
       this._updateFooter();
+    }
+
+    /**
+     * Die Benutzer von Home Assistant (1.5.8) fuer "Sichtbar fuer" - dieselbe
+     * Liste wie unter Einstellungen > Personen > Benutzer, ohne die
+     * Systembenutzer (Supervisor, Cloud, ...). Nur fuer Administratoren
+     * abrufbar; das Panel ist ohnehin nur fuer sie.
+     */
+    async _loadUsers() {
+      try {
+        const list = await this._hass.connection.sendMessagePromise({ type: "config/auth/list" });
+        this._users = (Array.isArray(list) ? list : [])
+          .filter((one) => one && typeof one.id === "string" && !one.system_generated)
+          .map((one) => ({
+            id: one.id,
+            name: String(one.name || one.username || one.id),
+            admin: Array.isArray(one.group_ids) && one.group_ids.indexOf("system-admin") >= 0,
+            owner: one.is_owner === true,
+            active: one.is_active !== false,
+          }))
+          .sort((a, b) => (b.owner - a.owner) || a.name.localeCompare(b.name));
+      } catch (err) {
+        console.warn("[HA Style Hub]", "could not read the users", err);
+        this._users = null;
+      }
+      if (this._ready) {
+        this._renderInspector();
+      }
+    }
+
+    /** Die eigene Benutzer-ID - fuer die Vorschau (sie zeigt, was du siehst). */
+    get _userId() {
+      return (this._hass && this._hass.user && this._hass.user.id) || "";
+    }
+
+    /** Der Block "Sichtbar fuer" im Inspektor eines Eintrags (1.5.8). */
+    _usersBlock(key, cfg, heading) {
+      const t = this._t;
+      const k = escapeHtml(key);
+      if (this._users === undefined) {
+        return "";
+      }
+      if (!this._users) {
+        return `<div class="sub-box users-box"><span class="cap">${escapeHtml(t.users_title)}</span><small class="field-hint">${escapeHtml(t.users_failed)}</small></div>`;
+      }
+      const hidden = Array.isArray(cfg.hide_for) ? cfg.hide_for : [];
+      const me = this._userId;
+      const rows = this._users
+        .map((user) => {
+          const tags = [];
+          if (user.id === me) tags.push(t.users_me);
+          if (user.owner) tags.push(t.users_owner);
+          else if (user.admin) tags.push(t.users_admin);
+          return `
+          <label class="check user-check"${user.active ? "" : " data-inactive"}>
+            <input type="checkbox" data-hide-user="${escapeHtml(user.id)}" data-item-user="${k}"${hidden.indexOf(user.id) >= 0 ? "" : " checked"} />
+            <span>${escapeHtml(user.name)}${tags.length ? ` <small>${escapeHtml(tags.join(" · "))}</small>` : ""}</span>
+          </label>`;
+        })
+        .join("");
+      return `
+        <div class="sub-box users-box" data-users-for="${k}">
+          <span class="cap">${escapeHtml(t.users_title)}</span>
+          <div class="user-grid">${rows}</div>
+          ${cfg.hidden ? `<small class="field-hint">${escapeHtml(t.users_off_note)}</small>` : ""}
+          <small class="field-hint">${escapeHtml(heading ? t.users_hint_heading : t.users_hint)}</small>
+        </div>`;
+    }
+
+    /** Einen Benutzer fuer einen Eintrag ein- oder ausblenden (1.5.8). */
+    _setUserHidden(key, id, hide) {
+      const cfg = this._itemConfig(key);
+      const list = (Array.isArray(cfg.hide_for) ? cfg.hide_for : []).filter((one) => one !== id);
+      if (hide) {
+        list.push(id);
+      }
+      // Immer eine neue Liste: die Vorgabe (leere Liste) darf nie veraendert werden.
+      cfg.hide_for = list;
+      this._renderItems();
+      this._touch();
     }
 
     async _save() {
@@ -7922,8 +8230,34 @@
         .slice(0, target)
         .concat(block, this._entries.slice(target));
       this._leaveGroup(key);
+      this._fixedMoved(key);
       this._renderItems();
       this._touch();
+    }
+
+    /**
+     * 1.5.8: Einstellungen, Benachrichtigungen und Profil haelt Home Assistant
+     * unten in der Seitenleiste fest - verschieben laesst sich ein solcher
+     * Eintrag nur mit "... ins Raster uebernehmen" (Layout > Verhalten). Wer
+     * einen davon verschiebt, will genau das: Die Option geht dann von selbst
+     * an (ungespeichert, wie jede Aenderung - Verwerfen oder Strg Z nimmt sie
+     * zurueck), und eine Meldung sagt es.
+     */
+    _fixedMoved(key) {
+      if (!FIXED_ENTRIES.some((one) => one.key === key)) {
+        return;
+      }
+      const layout = this._config.layout || (this._config.layout = {});
+      if (layout.merge_fixed === true) {
+        return;
+      }
+      layout.merge_fixed = true;
+      const box = this.shadowRoot.querySelector('[data-bind="layout.merge_fixed"]');
+      if (box) {
+        box.checked = true;
+      }
+      this._applyConditionals();
+      this._flash(this._t.merge_fixed_auto);
     }
 
     /**
@@ -8011,6 +8345,7 @@
       if (!block[0].heading) {
         this._assign(dragKey, indent);
       }
+      this._fixedMoved(dragKey);
       this._renderItems();
       this._touch();
     }
@@ -8258,7 +8593,7 @@
       return `
         <section class="page stage-page" data-page="layout">
           ${this._sidebarStage("layout")}
-          ${this._fieldsCol(this._sidebarHead(), body, foot)}
+          ${this._fieldsCol(this._sidebarHead(false, true), body, foot)}
         </section>`;
     }
 
@@ -8298,7 +8633,7 @@
       return `
         <section class="page stage-page" data-page="look">
           ${this._sidebarStage("look")}
-          ${this._fieldsCol(this._sidebarHead(true), body, "", ' data-fields="look"')}
+          ${this._fieldsCol(this._sidebarHead(true, true), body, "", ' data-fields="look"')}
         </section>`;
     }
 
@@ -8945,6 +9280,8 @@
             ${this._field("settings.icon_size", t.settings_icon_size, "number", 'min="0" max="64"')}
           </div>
           ${this._seg("settings.menu_columns", t.menu_columns, [["1", "1"], ["2", "2"], ["3", "3"]])}
+          ${this._field("settings.menu_gap", t.menu_gap, "number", 'min="0" max="40"')}
+          <small class="field-hint">${escapeHtml(t.menu_gap_hint)}</small>
           ${this._check("settings.menu_tiles", t.menu_tiles, t.menu_tiles_hint)}
           ${this._check("settings.hide_tip", t.settings_hide_tip, t.settings_hide_tip_hint)}
           ${this._check("settings.profile_page", t.settings_profile_page, t.settings_profile_page_hint)}
@@ -9272,6 +9609,8 @@
         );
         const cols = Math.min(3, Math.max(1, Math.round(Number(cfg.menu_columns) || 1)));
         set(rows, "--mcols", cols > 1 ? String(cols) : "");
+        const menuGap = Math.min(40, Math.max(0, Math.round(Number(cfg.menu_gap) || 0)));
+        set(rows, "--mgap", menuGap > 0 ? `${menuGap}px` : "");
         rows.toggleAttribute("data-cols", cols > 1);
         rows.toggleAttribute("data-tiles", cfg.menu_tiles === true);
       }
@@ -10552,9 +10891,12 @@
               </li>${after}`;
           }
           const span = Number(cfg.span || 1);
+          const hiddenFor = Array.isArray(cfg.hide_for) ? cfg.hide_for.length : 0;
           const meta = selected
             ? entry.sub
-            : cfg.hidden ? t.hidden_short : (span === 1 ? t.span_one : t.span_many).replace("{n}", span);
+            : cfg.hidden ? t.hidden_short
+            : hiddenFor ? t.hidden_for_n.replace("{n}", hiddenFor)
+            : (span === 1 ? t.span_one : t.span_many).replace("{n}", span);
           return `
             <li class="item" ${attrs}>
               <span class="handle" title="drag">${glyph("mdi:drag", "&#8942;")}</span>
@@ -11109,6 +11451,27 @@
 
       // Kopfzeile: Vorlagen-Dialog
       on("open-header-presets", "click", () => this._openHeaderPresets());
+      // 1.5.8: Vorlagen der Seitenleiste (Knopf auf Layout und Aussehen)
+      root.querySelectorAll("[data-open-spresets]").forEach((button) => {
+        button.addEventListener("click", () => this._openSidebarPresets());
+      });
+      on("spresets-cancel", "click", () => {
+        root.getElementById("spresets-modal").hidden = true;
+      });
+      root.querySelectorAll("#spresets-modal [data-spreset]").forEach((button) => {
+        button.addEventListener("click", () => this._pickSidebarPreset(button.dataset.spreset));
+        button.addEventListener("dblclick", () => {
+          root.getElementById("spresets-modal").hidden = true;
+          this._applySidebarPreset(button.dataset.spreset);
+        });
+      });
+      on("spreset-apply", "click", () => {
+        if (!this._spresetPick) {
+          return;
+        }
+        root.getElementById("spresets-modal").hidden = true;
+        this._applySidebarPreset(this._spresetPick);
+      });
       on("hpresets-cancel", "click", () => {
         root.getElementById("hpresets-modal").hidden = true;
       });
@@ -11509,6 +11872,10 @@
 
       inspector.addEventListener("change", (event) => {
         const input = event.target;
+        if (input.dataset && input.dataset.hideUser && input.dataset.itemUser) {
+          this._setUserHidden(input.dataset.itemUser, input.dataset.hideUser, !input.checked);
+          return;
+        }
         if (input.tagName === "SELECT" && input.dataset.item) {
           this._itemConfig(input.dataset.item).span = parseInt(input.value, 10) || 1;
           this._renderItems();
@@ -11550,6 +11917,12 @@
           return;
         }
         const action = button.dataset.action;
+        if (action === "merge-fixed") {
+          this._fixedMoved(key);
+          this._renderItems();
+          this._touch();
+          return;
+        }
         if (action === "up") {
           this._move(key, -1);
         } else if (action === "down") {
@@ -12848,7 +13221,52 @@
           this._de ? preset.de_hint : preset.en_hint,
           `<span class="sw-in hp">${bar}<i class="hp-body"></i></span>`);
       }).join("");
+      // 1.5.8: Vorlagen der Seitenleiste - ein Mini-Bild aus den Werten
+      // Im Mini-Bild bekommen die Theme-Variablen einen Ersatzwert - der
+      // Dialog liegt nicht in jedem Fall unter einem Theme, das sie setzt.
+      const swv = (value) =>
+        String(value || "")
+          .replace(/var\(--primary-color\)/g, "var(--primary-color, #03a9f4)")
+          .replace(/var\(--primary-text-color\)/g, "var(--primary-text-color, #8a8a8a)")
+          .replace(/var\(--secondary-text-color\)/g, "var(--secondary-text-color, #8a8a8a)");
+      const sidebarTiles = SIDEBAR_PRESETS.map((preset) => {
+        const raw = preset.appearance || {};
+        const a = {};
+        Object.keys(raw).forEach((key) => {
+          a[key] = typeof raw[key] === "string" ? swv(raw[key]) : raw[key];
+        });
+        const l = preset.layout || {};
+        const tilesLook = l.item_style === "tile";
+        const cols = tilesLook ? Math.min(3, l.columns || 2) : 1;
+        const bg = a.background
+          ? (a.background_gradient ? `linear-gradient(to bottom, ${a.background}, ${a.background_color2 || a.background})` : a.background)
+          : "var(--sidebar-background-color, var(--card-background-color, #1c1c1c))";
+        const item = (selected) => {
+          const back = selected ? a.item_background_selected : a.item_background;
+          const ink = selected ? (a.icon_color_selected || swv("var(--primary-color)")) : (a.icon_color || swv("var(--secondary-text-color)"));
+          const line = selected ? (a.text_color_selected || swv("var(--primary-color)")) : swv("var(--secondary-text-color)");
+          const border = Number(a.item_border_width) > 0 ? `border:1px solid ${a.item_border_color || "transparent"};` : "";
+          const style = `background:${back || "transparent"};border-radius:${Math.min(8, Number(a.item_radius) || 6)}px;${border}--sp-ink:${ink};--sp-line:${line}`;
+          return `<b class="sp-it" style="${escapeHtml(style)}"><em></em><u></u></b>`;
+        };
+        const count = tilesLook ? cols * 2 : 4;
+        const items = Array.from({ length: count }, (x, i) => item(i === 0)).join("");
+        return this._presetTile("data-spreset", preset.id, this._de ? preset.de : preset.en,
+          this._de ? preset.de_hint : preset.en_hint,
+          `<span class="sw-in sp${tilesLook ? " sp-tiles" : ""}" style="${escapeHtml(`background:${bg};--sp-cols:${cols}`)}">${items}</span>`);
+      }).join("");
       return `
+        <div class="modal" id="spresets-modal" hidden>
+          <div class="modal-card xwide" role="dialog" aria-modal="true">
+            <h2><span>${escapeHtml(t.theme_presets)}</span><small class="h2-sub">${escapeHtml(t.tab_sidebar)}</small></h2>
+            <p class="hint">${escapeHtml(t.sidebar_presets_hint)}</p>
+            <div class="presets">${sidebarTiles}</div>
+            <div class="modal-actions">
+              <button class="flat" id="spresets-cancel">${escapeHtml(t.cancel)}</button>
+              <button class="primary" id="spreset-apply" disabled>${escapeHtml(t.preset_apply)}</button>
+            </div>
+          </div>
+        </div>
         <div class="modal" id="changes-modal" hidden>
           <div class="modal-card xwide" role="dialog" aria-modal="true">
             <h2>${glyph("mdi:format-list-checks", "")}<span class="grow">${escapeHtml(t.changes_title)} <span class="h2-sub" id="changes-count"></span></span></h2>
@@ -12910,10 +13328,10 @@
           <div class="modal-card" role="dialog" aria-modal="true">
             <h2 id="add-modal-title">${escapeHtml(t.add_title)}</h2>
             <div id="add-heading-part">
-              <h3 class="add-title">${escapeHtml(t.add_heading_title)}</h3>
+              <h3 class="add-title add-sec-heading">${escapeHtml(t.add_heading_title)}</h3>
               <p class="hint">${escapeHtml(t.add_heading_hint)}</p>
               <button class="flat" id="add-heading-ok">${escapeHtml(t.add_heading_button)}</button>
-              <h3 class="add-title">${escapeHtml(t.add_link_title)}</h3>
+              <h3 class="add-title add-sec-link">${escapeHtml(t.add_link_title)}</h3>
             </div>
             <p class="hint" id="add-link-hint">${escapeHtml(t.add_link_hint)}</p>
             <div class="field add-link-kind" id="add-link-kind-field" hidden>
@@ -12958,7 +13376,7 @@
               <button class="primary" id="add-link-ok">${escapeHtml(t.add_link_button)}</button>
             </div>
             <div id="add-popup-part">
-              <h3 class="add-title">${escapeHtml(t.add_popup_title)}</h3>
+              <h3 class="add-title add-sec-popup">${escapeHtml(t.add_popup_title)}</h3>
               <p class="hint">${escapeHtml(t.add_popup_hint)}</p>
               <p class="hint add-popup-use">${glyph("mdi:gesture-tap", "&#9757;")}<span>${escapeHtml(t.popup_use_hint)}</span></p>
               <label class="field">
@@ -13184,7 +13602,7 @@
     }
 
     /** Kopf der Feldspalte der Seitenleiste: Titel und die drei Unterseiten. */
-    _sidebarHead(withAccordion) {
+    _sidebarHead(withAccordion, withPresets) {
       const t = this._t;
       const sub = (tab, label) =>
         `<button type="button" data-tab="${tab}"><span>${escapeHtml(label)}</span><span class="dot" data-dot="${tab}" hidden></span></button>`;
@@ -13195,7 +13613,8 @@
           ${sub("layout", t.tab_layout)}
           ${sub("items", t.tab_items)}
           ${sub("look", t.tab_look)}
-        </div>`;
+        </div>
+        ${withPresets ? `<div class="fields-tools"><button type="button" class="btn wide" data-open-spresets>${escapeHtml(t.theme_presets)}</button></div>` : ""}`;
     }
 
     /**
@@ -14058,6 +14477,11 @@ ${[
             <input type="checkbox" data-item="${k}" data-prop="hidden"${cfg.hidden ? " checked" : ""} />
             <span>${escapeHtml(t.hide_in_sidebar)}</span>
           </label>`}
+          ${this._usersBlock(key, cfg, entry.heading)}
+          ${FIXED_ENTRIES.some((one) => one.key === key) && this._config.layout.merge_fixed !== true
+            ? `<div class="sub-box fixed-note"><small class="field-hint">${escapeHtml(t.merge_fixed_note)}</small>
+                <button type="button" class="btn sm" data-action="merge-fixed">${escapeHtml(t.merge_fixed_on)}</button></div>`
+            : ""}
           <div class="insp-moves">
             <button type="button" class="btn sm" data-action="up" ${index <= 0 ? "disabled" : ""}>${glyph("mdi:arrow-up", "&#9650;")}${escapeHtml(t.move_up)}</button>
             <button type="button" class="btn sm" data-action="down" ${index >= this._entries.length - 1 ? "disabled" : ""}>${glyph("mdi:arrow-down", "&#9660;")}${escapeHtml(t.move_down)}</button>
@@ -14290,7 +14714,31 @@ ${[
             .map((key) => this._entries.find((entry) => entry.key === key))
             .filter((entry) => entry && (!(isHeading(entry.key) || isLink(entry.key) || isPopup(entry.key)) || items[entry.key]))
         : this._entries;
-      const visible = entries.filter((entry) => !(items[entry.key] || {}).hidden);
+      // 1.5.8: wie im Injector - was fuer dich ausgeblendet ist, fehlt, und
+      // eine Ueberschrift ohne sichtbaren Eintrag faellt mit weg.
+      const me = this._userId;
+      const gone = (key) => {
+        const one = items[key] || {};
+        return !!one.hidden || (Array.isArray(one.hide_for) && one.hide_for.length > 0 && (!me || one.hide_for.indexOf(me) >= 0));
+      };
+      const emptyHeading = (key) => {
+        const kids = entries.filter((one) => !one.heading && (items[one.key] || {}).parent === key);
+        return kids.length > 0 && kids.every((one) => gone(one.key));
+      };
+      // 1.5.8: in der Vorschau zugeklappte Ueberschriften (nur dieses Bild,
+      // nichts davon wird gespeichert) - wie im Injector nur ausgeklappt.
+      const folded = new Set(
+        closed ? [] : Array.from(this._pvFolded || []).filter((key) => {
+          const head = items[key] || {};
+          return isHeading(key) && head.collapsible === true;
+        })
+      );
+      const visible = entries.filter(
+        (entry) =>
+          !gone(entry.key) &&
+          !(entry.heading && emptyHeading(entry.key)) &&
+          !(!entry.heading && folded.has((items[entry.key] || {}).parent || ""))
+      );
       let current = null;
       const icon = (name) =>
         customElements.get("ha-icon") ? `<ha-icon icon="${escapeHtml(name)}"></ha-icon>` : "";
@@ -14327,10 +14775,11 @@ ${[
             : Number(cfg.radius) > 0 ? px(cfg.radius) : "";
           if (radius && radius !== "0px" && radius !== "0px 0px 0px 0px") h.push(`--hr:${radius}`);
           if (cfg.uppercase !== false) flags.push("data-upper");
+          if (folded.has(entry.key)) flags.push("data-folded");
           return `<div class="sbp-hd" tabindex="0" data-key="${k}"${mark}${drag} ${flags.join(" ")} style="${escapeHtml(h.join(";"))}">${
             text(cfg.icon) ? icon(cfg.icon) : ""
           }<span class="hd-text">${escapeHtml(this._entryName(entry, items))}</span>${
-            cfg.collapsible ? '<span class="hd-caret">&#9660;</span>' : ""
+            cfg.collapsible ? `<span class="hd-caret" data-hd-toggle title="${escapeHtml(folded.has(entry.key) ? t.heading_unfold : t.heading_fold)}">&#9660;</span>` : ""
           }</div>`;
         }
         const s = [];
@@ -14342,7 +14791,12 @@ ${[
         let extra = "";
         if (!current && entry.key.indexOf("panel:") === 0) {
           current = entry.key;
-          extra += " data-current";
+          // 1.5.8: Im Reiter Eintraege zeigt der bearbeitete Eintrag seine
+          // eigenen Farben - nicht die der aktiven Seite (die stellt man
+          // unter Aussehen ein).
+          if (!(onItems && entry.key === this._selKey)) {
+            extra += " data-current";
+          }
         } else if (zone === "hover" && !this._sbpHoverDone) {
           this._sbpHoverDone = true;
           extra += " data-hover data-mark";
@@ -15471,6 +15925,86 @@ ${[
       root.getElementById("hpresets-modal").hidden = false;
     }
 
+    /* 1.5.8: Vorlagen der Seitenleiste */
+    _openSidebarPresets() {
+      const root = this.shadowRoot;
+      this._spresetPick = null;
+      root.querySelectorAll("#spresets-modal [data-spreset]").forEach((button) => button.removeAttribute("data-active"));
+      const apply = root.getElementById("spreset-apply");
+      apply.disabled = true;
+      apply.textContent = this._t.preset_apply;
+      this._syncSidebarPresets();
+      root.getElementById("spresets-modal").hidden = false;
+    }
+
+    _pickSidebarPreset(id) {
+      const preset = SIDEBAR_PRESETS.find((one) => one.id === id);
+      if (!preset) {
+        return;
+      }
+      this._spresetPick = id;
+      const root = this.shadowRoot;
+      root.querySelectorAll("#spresets-modal [data-spreset]").forEach((button) => {
+        button.toggleAttribute("data-active", button.dataset.spreset === id);
+      });
+      const apply = root.getElementById("spreset-apply");
+      apply.disabled = false;
+      apply.textContent = this._t.preset_apply_name.replace("{name}", this._de ? preset.de : preset.en);
+    }
+
+    /** Die Werte einer Vorlage, wie sie nach dem Uebernehmen dastehen. */
+    _sidebarPresetValues(preset) {
+      const layout = Object.assign({}, this._config.layout || {});
+      SIDEBAR_PRESET_LAYOUT.forEach((key) => {
+        layout[key] = key in preset.layout ? preset.layout[key] : DEFAULT_LAYOUT[key];
+      });
+      const now = this._config.appearance || {};
+      const appearance = Object.assign({}, DEFAULT_APPEARANCE, preset.appearance);
+      SIDEBAR_PRESET_KEEP.forEach((key) => {
+        if (key in now) {
+          appearance[key] = now[key];
+        }
+      });
+      return { layout, appearance };
+    }
+
+    /**
+     * Eine Vorlage uebernehmen: das Raster und das Aussehen der Seitenleiste.
+     * Wie bei Theme und Kopfzeile: erst alles auf den Standard, dann die
+     * Vorlage darauf - sonst bliebe stehen, was die Vorlage nicht setzt.
+     * Ungespeichert; Verwerfen oder Strg Z nimmt es zurueck.
+     */
+    _applySidebarPreset(id) {
+      const preset = SIDEBAR_PRESETS.find((one) => one.id === id);
+      if (!preset) {
+        return;
+      }
+      const values = this._sidebarPresetValues(preset);
+      this._config.layout = values.layout;
+      this._config.appearance = values.appearance;
+      this._fillInputs();
+      this._applyConditionals();
+      this._renderItems();
+      this._touch();
+      this._flash(this._t.header_preset_done.replace("{name}", this._de ? preset.de : preset.en));
+    }
+
+    _syncSidebarPresets() {
+      this.shadowRoot.querySelectorAll("button[data-spreset]").forEach((button) => {
+        const preset = SIDEBAR_PRESETS.find((one) => one.id === button.dataset.spreset);
+        let same = false;
+        if (preset) {
+          const values = this._sidebarPresetValues(preset);
+          same =
+            SIDEBAR_PRESET_LAYOUT.every((key) => stableJson(values.layout[key]) === stableJson((this._config.layout || {})[key])) &&
+            Object.keys(DEFAULT_APPEARANCE).every(
+              (key) => stableJson(values.appearance[key]) === stableJson((this._config.appearance || {})[key])
+            );
+        }
+        button.toggleAttribute("data-current", same);
+      });
+    }
+
     _pickHeaderPreset(id) {
       const preset = HEADER_PRESETS.find((one) => one.id === id);
       if (!preset) {
@@ -16245,6 +16779,22 @@ ${[
       }
       const kind = stage.dataset.stage;
       const side = target.closest(".hm-side");
+      // 1.5.8: der Pfeil einer zusammenklappbaren Ueberschrift klappt sie in
+      // der Vorschau auf und zu - zum Ausprobieren, gespeichert wird nichts.
+      const caret = side && target.closest("[data-hd-toggle]");
+      if (caret) {
+        const head = caret.closest("[data-key]");
+        if (head) {
+          this._pvFolded = this._pvFolded || new Set();
+          if (this._pvFolded.has(head.dataset.key)) {
+            this._pvFolded.delete(head.dataset.key);
+          } else {
+            this._pvFolded.add(head.dataset.key);
+          }
+          this._renderSidebarPreview();
+        }
+        return true;
+      }
       if (side) {
         const tile = target.closest(".sbp-host [data-key]");
         if (kind !== "sidebar") {

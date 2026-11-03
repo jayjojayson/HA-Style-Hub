@@ -7,7 +7,97 @@ englische Fassung steht in [changelog.md](changelog.md).
 Die Versionsnummern zählen bis `.9` und springen dann auf die nächste
 Nebenversion (1.2.9 → 1.3.0 → 1.3.1 → 1.3.2 → 1.3.3 → 1.3.4 → 1.3.5 → 1.3.6 →
 1.3.7 → 1.3.8 → 1.3.9 → 1.4.0 → 1.4.1 → 1.4.2 → 1.4.3 → 1.4.4 → 1.4.5 →
-1.4.6 → 1.4.7 → 1.4.8 → 1.4.9 → 1.5.0 → 1.5.1 → 1.5.2 → 1.5.3 → 1.5.4 → 1.5.5 → 1.5.6 → 1.5.7).
+1.4.6 → 1.4.7 → 1.4.8 → 1.4.9 → 1.5.0 → 1.5.1 → 1.5.2 → 1.5.3 → 1.5.4 → 1.5.5 → 1.5.6 → 1.5.7 → 1.5.8).
+
+## 1.5.8
+
+* **Einträge für einzelne Benutzer ausblenden** ([#1](https://github.com/jayjojayson/HA-Style-Hub/issues/1)).
+  Jeder Eintrag der Sidebar – Seiten von Home Assistant, Zwischenüberschriften,
+  Links und PopUps – bekommt unter *Einträge* den Block *Sichtbar für*: ein
+  Haken je Benutzer von Home Assistant (`config/auth/list`, ohne
+  Systembenutzer; Besitzer zuerst, dann nach Namen, der eigene mit *du*
+  markiert). Ein Benutzer ohne Haken landet im neuen Schlüssel
+  `items.<key>.hide_for` (Liste von Benutzer-IDs, leer = für alle, damit auch
+  später angelegte Benutzer den Eintrag sehen). Der Injector behandelt den
+  Eintrag für genau diese Benutzer als ausgeblendet – dieselbe Regel wie beim
+  Auge, sie greift also ohne Sonderfall für jede Art Eintrag. Solange Home
+  Assistant den Benutzer noch nicht kennt, bleiben Einträge mit `hide_for`
+  verborgen, und die Sidebar wird kurz darauf erneut geprüft (höchstens 20-mal
+  alle 0,5 s).
+  * **Leere Überschriften verschwinden.** Eine Zwischenüberschrift, deren
+    Einträge (`parent`) für den aktuellen Benutzer alle weg sind – per Auge
+    oder `hide_for` ausgeblendet, vom Benutzer im Sidebar-Editor von Home
+    Assistant ausgeblendet (die zeichnet Home Assistant gar nicht erst) oder
+    nicht verfügbar (z. B. ein PopUp ohne Inhalt) –, wird ebenfalls
+    ausgeblendet. Eine Überschrift ohne zugeordnete Einträge bleibt, wie sie
+    ist.
+  * Panel: Die Liste zeigt *für n ausgeblendet*; die Vorschau der Sidebar
+    zeigt sie so, wie der angemeldete Benutzer sie sieht, samt der leeren
+    Überschriften. Lässt sich die Benutzerliste nicht laden, sagt der Block das,
+    statt Felder zu zeigen.
+  * Backend: `hide_for` in `DEFAULT_ITEM` / `DEFAULT_HEADING` (PopUps erben
+    es), `_clean_user_ids` behält nur IDs aus `[A-Za-z0-9_-]{1,64}` ohne
+    Doppelte, höchstens 100 (`HIDE_FOR_MAX`) – dieselbe Regel wie
+    `cleanUserIds` in Injector und Panel. Ältere Konfigurationen bleiben
+    gültig (leere Liste).
+  * Ausblenden ist eine Frage der Ansicht, keine Berechtigung: Die Seiten
+    bleiben über ihre Adresse erreichbar, wie beim Auge.
+* **Einstellungen, Benachrichtigungen und Profil lassen sich einfach
+  verschieben.** Home Assistant hält diese drei unten in der Seitenleiste fest;
+  sortieren ließen sie sich nur mit *Einstellungen, Benachrichtigungen und
+  Profil ins Raster übernehmen* (`layout.merge_fixed`), was leicht zu übersehen
+  war – ohne die Option blieb ein Verschieben wirkungslos. Jetzt schaltet das
+  Verschieben eines der drei (Pfeile, Ziehen in der Liste oder in der Vorschau)
+  die Option von selbst ein, ungespeichert wie jede Änderung, mit einer Meldung;
+  *Verwerfen* oder `Strg Z` nimmt beides in einem Schritt zurück. Solange die
+  Option aus ist, erklärt der Inspektor der drei Einträge das und bietet den
+  Knopf *Verschiebbar machen*. Es bleiben die Einträge von Home Assistant – die
+  Zähler für Reparaturen, Updates und Benachrichtigungen bleiben also, anders
+  als bei einem Link auf `/config`.
+
+* **Vorlagen für die Sidebar.** Ein Knopf *Vorlagen* unter *Layout* und
+  *Aussehen* öffnet vier fertige Looks, wie auf den Seiten Theme und Header:
+  *Zeilen · Dezent*, *Zeilen · Kräftig*, *Kacheln · Dezent* (2 Spalten) und
+  *Kacheln · Kräftig* (3 Spalten, Rahmen, Farbverlauf). Eine Vorlage setzt die
+  Schlüssel des Rasters (`columns`, `columns_collapsed`, `item_style`, `gap`,
+  `tile_gap`, `tile_height(_collapsed)`, `row_height(_collapsed)`, `width`) und
+  das Aussehen auf den Standard zurück und legt ihre eigenen Werte darauf. Alle
+  Farben sind Theme-Variablen (`var(--primary-color)`, `color-mix(...)` mit
+  `--primary-text-color`, `--sidebar-background-color`,
+  `--text-primary-color`), die Vorlagen folgen also dem aktiven Theme in Hell
+  und Dunkel. Erhalten bleiben: Titel und seine Farbe, Ausblenden von Titel /
+  Menüknopf / Beschriftungen, eigenes CSS, das Benachrichtigungsfenster, die
+  Schriftart, *Layout › Verhalten*, die Breite im eingeklappten Zustand und
+  alles an einzelnen Einträgen. Ungespeichert wie jede Änderung, ein Schritt
+  für `Strg Z`; der Dialog markiert die passende Vorlage.
+* **Vorschau des aktiven Eintrags.** Die Vorschau nimmt für die geöffnete Seite
+  jetzt dieselbe Rangfolge wie der Injector: eigener Hintergrund und eigene
+  Textfarbe für den *aktiven Eintrag* (Aussehen) zuerst, sonst der eigene
+  Hintergrund des Eintrags unter dem leichten Schleier von Home Assistant und
+  seine eigene Textfarbe; eine eigene Iconfarbe des Eintrags gewinnt immer.
+  Unter *Einträge* wird der gerade bearbeitete Eintrag nie als aktive Seite
+  gezeichnet, seine eigenen Farben sind dort also immer zu sehen.
+* **Überschriften in der Vorschau einklappen.** Der Pfeil einer Überschrift mit
+  *Lässt sich zusammenklappen* klappt ihre Einträge in der Vorschau ein und aus
+  (nur bei ausgeklappter Seitenleiste, wie in Home Assistant). Das ist nur ein
+  Zustand der Vorschau – gespeichert wird nichts, und die Auswahl bleibt.
+* **Überschriften immer senkrecht mittig.** Ohne eigene Höhe hatte eine
+  Überschrift 14 px Abstand über und 4 px unter dem Text – mit Hintergrund oder
+  Rahmen saß der Text also unten; jetzt sind es 9 px auf beiden Seiten
+  (Injector und Vorschau). Mit eigener Höhe stand und steht der Text mittig.
+* **Dialog zum Hinzufügen übersichtlicher.** Die drei Teile *Zwischenüberschrift*,
+  *Link* und *PopUp Link* bekommen je eine eigene Farbe mit kleinem Balken davor,
+  und eine Linie trennt jetzt auch *Zwischenüberschrift* von *Link*. Der Knopf
+  *Überschrift, Link, PopUp* über der Liste ist leicht in der Akzentfarbe
+  getönt, damit er nicht übersehen wird.
+* **HA-Settings: Abstand zwischen den Menüpunkten.** Neues Feld *Abstand
+  zwischen den Menüpunkten (px)* unter den Spalten der Einstellungsseite,
+  Schlüssel `settings.menu_gap` (0–40, 0 = wie Home Assistant). Der Injector
+  setzt ihn an `ha-list-nav::part(base)` der Menülisten (eine Spalte:
+  Flex-Spalte mit `gap`; mit Spalten: `gap` des Rasters in beide Richtungen,
+  und die Abstände werden von der Spaltenbreite abgezogen – sonst passen zwei
+  Spalten plus Abstand nicht mehr in eine Zeile und `auto-fill` fällt auf eine
+  Spalte zurück), auch auf *Einstellungen › System*. Die Vorschau zeigt ihn.
 
 ## 1.5.7
 

@@ -7,7 +7,7 @@ from typing import Any, Final
 
 DOMAIN: Final = "ha_style_hub"
 NAME: Final = "HA Style Hub"
-VERSION: Final = "1.5.7"
+VERSION: Final = "1.5.8"
 
 # Storage
 STORAGE_KEY: Final = f"{DOMAIN}.config"
@@ -220,6 +220,8 @@ DEFAULT_HEADER: Final[dict[str, Any]] = {
 HEADER_LINKS_MAX: Final = 12
 # Hoechstens so viele Pfade in menu_order / menu_hidden.
 MENU_PATHS_MAX: Final = 80
+# Hoechstens so viele Benutzer je Eintrag in hide_for (1.5.8).
+HIDE_FOR_MAX: Final = 100
 # Hoechstens so lang darf der Schatten der Zeilen sein (1.5.7).
 LIST_SHADOW_MAX: Final = 300
 
@@ -329,6 +331,9 @@ DEFAULT_SETTINGS: Final[dict[str, Any]] = {
     # Die Punkte in einer, zwei oder drei Spalten, auf Wunsch als Kacheln
     # (Symbol ueber dem Text, ohne Beschreibung).
     "menu_columns": 1,
+    # 1.5.8: Abstand zwischen den Menuepunkten innerhalb einer Karte (px,
+    # 0 = wie Home Assistant, also ohne Abstand).
+    "menu_gap": 0,
     "menu_tiles": False,
     # Eigene Links oben auf der Einstellungsseite, eine Liste aus
     # {path, name, icon, color} wie die Links der Kopfzeile, dazu je Link sein
@@ -997,6 +1002,8 @@ DEFAULT_HEADING: Final[dict[str, Any]] = {
     # Eintraege, die dieser Ueberschrift zugeordnet sind, lassen sich mit
     # einem Klick auf sie zusammenklappen.
     "collapsible": False,
+    # 1.5.8: fuer diese Benutzer (IDs von Home Assistant) ausgeblendet.
+    "hide_for": [],
 }
 
 DEFAULT_ITEM: Final[dict[str, Any]] = {
@@ -1010,6 +1017,9 @@ DEFAULT_ITEM: Final[dict[str, Any]] = {
     # Schluessel der Zwischenueberschrift, unter der dieser Eintrag einsortiert
     # ist. Leer heisst: gehoert zu keiner.
     "parent": "",
+    # 1.5.8: fuer diese Benutzer (IDs von Home Assistant) ausgeblendet. Leer
+    # heisst: fuer alle sichtbar - auch fuer Benutzer, die spaeter dazukommen.
+    "hide_for": [],
 }
 
 

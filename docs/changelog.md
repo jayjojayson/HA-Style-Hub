@@ -7,7 +7,89 @@ called *Sidebar Hub*), newest first. A German version is in
 Version numbers count up to `.9` and then move on to the next minor (1.2.9 →
 1.3.0 → 1.3.1 → 1.3.2 → 1.3.3 → 1.3.4 → 1.3.5 → 1.3.6 → 1.3.7 →
 1.3.8 → 1.3.9 → 1.4.0 → 1.4.1 → 1.4.2 → 1.4.3 → 1.4.4 → 1.4.5 →
-1.4.6 → 1.4.7 → 1.4.8 → 1.4.9 → 1.5.0 → 1.5.1 → 1.5.2 → 1.5.3 → 1.5.4 → 1.5.5 → 1.5.6 → 1.5.7).
+1.4.6 → 1.4.7 → 1.4.8 → 1.4.9 → 1.5.0 → 1.5.1 → 1.5.2 → 1.5.3 → 1.5.4 → 1.5.5 → 1.5.6 → 1.5.7 → 1.5.8).
+
+## 1.5.8
+
+* **Hide entries for single users** ([#1](https://github.com/jayjojayson/HA-Style-Hub/issues/1)).
+  Every entry of the sidebar - pages of Home Assistant, section headings,
+  links and popups - gets the block *Visible for* under *Entries*: one
+  checkbox per user of Home Assistant (`config/auth/list`, without system
+  users; owner first, then by name, your own marked *you*). An unticked user
+  goes into the new key `items.<key>.hide_for` (list of user ids, empty = for
+  everyone, so users added later see the entry). The injector treats the entry
+  as hidden for exactly these users - the same rule as the eye, so it works for
+  every kind of entry without special cases. Until Home Assistant knows the
+  user, entries with `hide_for` stay hidden and the sidebar is checked again
+  shortly after (at most 20 times every 0.5 s).
+  * **Empty headings disappear.** A section heading whose entries (`parent`)
+    are all gone for the current user - hidden by the eye or by `hide_for`,
+    hidden by the user in Home Assistant's own sidebar editor (Home Assistant
+    does not draw them), or not available (e.g. a popup without content) -
+    is hidden as well. A heading without assigned entries stays as it is.
+  * Panel: the list shows *hidden for n*; the preview of the sidebar shows it
+    as the signed-in user sees it, including the empty headings. If the list
+    of users cannot be loaded, the block says so instead of showing fields.
+  * Backend: `hide_for` in `DEFAULT_ITEM` / `DEFAULT_HEADING` (popups inherit
+    it), `_clean_user_ids` keeps only ids of `[A-Za-z0-9_-]{1,64}` without
+    duplicates, at most 100 (`HIDE_FOR_MAX`) - the same rule as `cleanUserIds`
+    in the injector and the panel. Older configurations stay valid (empty
+    list).
+  * Hiding is a matter of the look, not a permission: pages stay reachable by
+    their address, as with the eye.
+* **Settings, Notifications and the user entry can simply be moved.** Home
+  Assistant pins these three to the bottom of the sidebar; they could only be
+  sorted with *Move Settings, Notifications and the user entry into the grid*
+  (`layout.merge_fixed`), which was easy to miss - moving them without it had
+  no effect. Now moving one of them (arrows, dragging in the list or in the
+  preview) switches the option on by itself, unsaved like every change, with a
+  message; *Discard* or `Ctrl Z` takes both back in one step. While the option
+  is off, the inspector of the three entries explains this and offers the
+  button *Make it movable*. They remain Home Assistant's own entries, so the
+  badges for repairs, updates and notifications stay - unlike a link to
+  `/config`.
+
+* **Templates for the sidebar.** A *Templates* button on *Layout* and
+  *Appearance* opens four finished looks, like on the Theme and Header pages:
+  *Rows · Calm*, *Rows · Bold*, *Tiles · Calm* (2 columns) and *Tiles · Bold*
+  (3 columns, border, gradient). A template resets the grid keys
+  (`columns`, `columns_collapsed`, `item_style`, `gap`, `tile_gap`,
+  `tile_height(_collapsed)`, `row_height(_collapsed)`, `width`) and the
+  appearance to the defaults and puts its own values on top. All colours are
+  theme variables (`var(--primary-color)`, `color-mix(...)` with
+  `--primary-text-color`, `--sidebar-background-color`, `--text-primary-color`),
+  so the templates follow the active theme in light and dark. Kept: title and
+  its colour, hiding title / toggle / labels, own CSS, the notification drawer,
+  the font family, *Layout › Behaviour*, the collapsed width and everything on
+  single entries. Unsaved like every change, one step for `Ctrl Z`; the dialog
+  marks the matching template.
+* **Preview of the active entry.** The preview now uses the same order as the
+  injector for the page that is open: own *active entry* background and text
+  colour (Appearance) first, otherwise the entry's own background under Home
+  Assistant's light tint and its own text colour; an own icon colour of the
+  entry always wins. On *Entries* the entry being edited is never drawn as the
+  active page, so its own colours are always visible there.
+* **Fold headings in the preview.** The arrow of a heading with *Can be
+  collapsed* folds and unfolds its entries in the preview (only while the
+  sidebar is expanded, like in Home Assistant). It is only a preview state -
+  nothing is saved and the selection does not change.
+* **Headings are always centred vertically.** Without an own height a heading
+  had 14 px space above and 4 px below the text, so with a background or a
+  border the text sat low; now it is 9 px on both sides (injector and
+  preview). With an own height the text was and is centred.
+* **Add dialog easier to read.** The three parts *Section heading*, *Link* and
+  *Popup link* get their own colour with a small bar in front, and a line now
+  separates *Section heading* from *Link* as well. The button *Heading, link,
+  popup* above the list is lightly tinted in the accent colour so it is not
+  overlooked.
+* **HA-Settings: gap between the menu entries.** New field *Gap between the
+  menu entries (px)* under the columns of the Settings page, key
+  `settings.menu_gap` (0-40, 0 = like Home Assistant). The injector puts it on
+  `ha-list-nav::part(base)` of the menu lists (one column: flex column with
+  `gap`; with columns: `gap` of the grid in both directions, and the gaps are
+  taken off the column width - otherwise two columns plus the gap no longer
+  fit in one row and `auto-fill` falls back to a single column), also on
+  *Settings › System*. The preview shows it.
 
 ## 1.5.7
 

@@ -23,42 +23,8 @@
       })();
     </script>
     <style>
+      /* Light is the default; dark only when chosen with the switch (stored per browser). */
       :root {
-        color-scheme: dark;
-        --bg: #0d141c;
-        --bg-soft: #131d28;
-        --card: #182431;
-        --card-hover: #1d2b3a;
-        --line: #263648;
-        --text: #e6edf3;
-        --muted: #9aabbc;
-        --accent: #41bdf5;
-        --accent-2: #8b7cf6;
-        --accent-soft: rgba(65, 189, 245, 0.12);
-        --on-accent: #04121c;
-        --code-bg: #0f1822;
-        --shadow: 0 10px 30px rgba(0, 0, 0, 0.35);
-        --radius: 14px;
-      }
-      @media (prefers-color-scheme: light) {
-        :root:not([data-theme="dark"]) {
-          color-scheme: light;
-          --bg: #f4f7fa;
-          --bg-soft: #e8eff6;
-          --card: #ffffff;
-          --card-hover: #f8fbfd;
-          --line: #d8e1ea;
-          --text: #16212d;
-          --muted: #566678;
-          --accent: #0a84c1;
-          --accent-2: #6a5be0;
-          --accent-soft: rgba(10, 132, 193, 0.1);
-          --on-accent: #ffffff;
-          --code-bg: #eef3f8;
-          --shadow: 0 10px 30px rgba(22, 33, 45, 0.12);
-        }
-      }
-      :root[data-theme="light"] {
         color-scheme: light;
         --bg: #f4f7fa;
         --bg-soft: #e8eff6;
@@ -73,6 +39,23 @@
         --on-accent: #ffffff;
         --code-bg: #eef3f8;
         --shadow: 0 10px 30px rgba(22, 33, 45, 0.12);
+        --radius: 14px;
+      }
+      :root[data-theme="dark"] {
+        color-scheme: dark;
+        --bg: #0d141c;
+        --bg-soft: #131d28;
+        --card: #182431;
+        --card-hover: #1d2b3a;
+        --line: #263648;
+        --text: #e6edf3;
+        --muted: #9aabbc;
+        --accent: #41bdf5;
+        --accent-2: #8b7cf6;
+        --accent-soft: rgba(65, 189, 245, 0.12);
+        --on-accent: #04121c;
+        --code-bg: #0f1822;
+        --shadow: 0 10px 30px rgba(0, 0, 0, 0.35);
       }
 
       * { box-sizing: border-box; }
@@ -334,7 +317,7 @@
               <a class="btn" href="#tour"><span data-en>▶ Watch the tour</span><span data-de>▶ Tour ansehen</span></a>
             </div>
             <div class="badges">
-              <span class="badge">Version 1.5.7</span>
+              <span class="badge">Version 1.5.8</span>
               <span class="badge">Home Assistant 2025.3+</span>
               <span class="badge">HACS</span>
               <span class="badge">MIT</span>
@@ -466,6 +449,11 @@
               <strong><span data-en>Templates</span><span data-de>Vorlagen</span></strong>
               <p data-en>Four finished looks fill both modes with one click and stay editable.</p>
               <p data-de>Vier fertige Looks füllen beide Modi mit einem Klick und bleiben änderbar.</p>
+            </div>
+            <div class="feature">
+              <strong><span data-en>Sidebar templates</span><span data-de>Sidebar-Vorlagen</span></strong>
+              <p data-en>Rows or tiles, calm or bold - grid and look of the sidebar with one click, in your theme's colours.</p>
+              <p data-de>Zeilen oder Kacheln, dezent oder kräftig - Raster und Aussehen der Seitenleiste mit einem Klick, in den Farben deines Themes.</p>
             </div>
             <div class="feature">
               <strong>Import / Export</strong>
@@ -698,6 +686,8 @@
               <li data-de>Ein Klick auf einen Eintrag im Bild wählt ihn aus, Ziehen dort sortiert um.</li>
               <li data-en>In the list on the right (drag and drop, eye) the chosen entry folds open: name, icon, column span, colors as tiles, hide, up / down, reset.</li>
               <li data-de>In der Liste rechts (Drag and Drop, Auge) klappt der gewählte Eintrag auf: Name, Icon, Spaltenbreite, Farben als Kacheln, Ausblenden, nach oben / unten, Zurücksetzen.</li>
+              <li data-en><em>Visible for</em> hides an entry - also headings, links and popups - for single users only. A heading with no entry left for a user disappears by itself.</li>
+              <li data-de><em>Sichtbar für</em> blendet einen Eintrag – auch Überschriften, Links und PopUps – nur für einzelne Benutzer aus. Eine Überschrift ohne übrigen Eintrag verschwindet für diesen Benutzer von selbst.</li>
               <li data-en>The <code>+</code> button adds a <strong>section heading</strong>, a <strong>link</strong> to a page of Home Assistant (automations, entities, tools … or an own path) or to any <strong>web address</strong> (opens in a new tab), or a <strong>popup link</strong>.</li>
               <li data-de>Der <code>+</code>-Knopf fügt eine <strong>Zwischenüberschrift</strong>, einen <strong>Link</strong> zu einer Seite von Home Assistant (Automatisierungen, Entitäten, Werkzeuge … oder eigener Pfad) oder zu einer beliebigen <strong>Webadresse</strong> (öffnet in einem neuen Tab) oder einen <strong>PopUp-Link</strong> ein.</li>
               <li data-en>A popup link opens a window with several pages or web addresses, with a card (YAML from the code editor of a dashboard card, at most 50 KB) or with the content of a website (shown like a small browser; many sites forbid embedding). Width and height can be set, 0 = automatic.</li>
@@ -740,14 +730,18 @@
             Home Assistant renders those three in a separate block pinned to the
             bottom. Switch on <em>“Move Settings, Notifications and the user
             entry into the grid”</em> in the <strong>Layout</strong> tab — only
-            then do they become part of the sortable grid.
+            then do they become part of the sortable grid. Since 1.5.8 simply moving
+            one of them switches the option on by itself; the badges for repairs and
+            updates stay.
           </p>
           <p data-de>
             <strong>Einstellungen, Benachrichtigungen und Profil verschieben:</strong>
             Home Assistant rendert diese drei in einem eigenen Block am unteren
             Rand. Im Reiter <strong>Layout</strong> die Option <em>„Einstellungen,
             Benachrichtigungen und Profil ins Raster übernehmen“</em> aktivieren —
-            erst dann werden sie Teil des sortierbaren Rasters.
+            erst dann werden sie Teil des sortierbaren Rasters. Seit 1.5.8 reicht es,
+            einen davon zu verschieben – die Option geht dann von selbst an; die
+            Zähler für Reparaturen und Updates bleiben.
           </p>
         </div>
 
@@ -861,8 +855,8 @@
             <ul>
               <li data-en><strong>Order:</strong> menu entries can be moved inside their block and hidden (a block in which everything is hidden disappears).</li>
               <li data-de><strong>Reihenfolge:</strong> Menüpunkte lassen sich innerhalb ihres Blocks verschieben und ausblenden (ein Block, in dem alles ausgeblendet ist, verschwindet).</li>
-              <li data-en><strong>Columns and tiles:</strong> one, two or three columns (the page gets 960 or 1040 px wide; <em>Settings › System</em> follows), tiles with the icon above the name.</li>
-              <li data-de><strong>Spalten und Kacheln:</strong> eine, zwei oder drei Spalten (die Seite wird 960 bzw. 1040 px breit; <em>Einstellungen › System</em> zieht mit), Kacheln mit dem Symbol über dem Namen.</li>
+              <li data-en><strong>Columns and tiles:</strong> one, two or three columns (the page gets 960 or 1040 px wide; <em>Settings › System</em> follows), tiles with the icon above the name, a gap between the entries of a card (1.5.8).</li>
+              <li data-de><strong>Spalten und Kacheln:</strong> eine, zwei oder drei Spalten (die Seite wird 960 bzw. 1040 px breit; <em>Einstellungen › System</em> zieht mit), Kacheln mit dem Symbol über dem Namen, ein Abstand zwischen den Einträgen einer Karte (1.5.8).</li>
               <li data-en><strong>Favourites bar:</strong> up to 12 own links as buttons, centred above the cards or in the header bar of the Settings page, each with its own look (colors, icon, height, border, corners, icon only).</li>
               <li data-de><strong>Favoriten-Leiste:</strong> bis zu 12 eigene Links als Buttons, mittig über den Karten oder in der Kopfleiste der Einstellungsseite, jeweils mit eigenem Aussehen (Farben, Icon, Höhe, Rahmen, Ecken, nur Icon).</li>
               <li data-en><strong>System monitor:</strong> processor, memory and storage at the top or at the end, optionally with graphs of the last 5 minutes and a storage bar.</li>
@@ -1245,8 +1239,8 @@ ha-list-item-button { text-transform: uppercase; }
         <details>
           <summary><span data-en>Settings and the user entry stay at the bottom</span><span data-de>Einstellungen und Profil bleiben unten</span></summary>
           <div class="dbody">
-            <p data-en>Switch on <em>“Move Settings, Notifications and the user entry into the grid”</em> in the <strong>Layout</strong> tab.</p>
-            <p data-de>Im Reiter <strong>Layout</strong> die Option <em>„Einstellungen, Benachrichtigungen und Profil ins Raster übernehmen“</em> aktivieren.</p>
+            <p data-en>Switch on <em>“Move Settings, Notifications and the user entry into the grid”</em> in the <strong>Layout</strong> tab - or simply move one of them (since 1.5.8), which switches it on by itself.</p>
+            <p data-de>Im Reiter <strong>Layout</strong> die Option <em>„Einstellungen, Benachrichtigungen und Profil ins Raster übernehmen“</em> aktivieren – oder einfach einen davon verschieben (seit 1.5.8), dann geht sie von selbst an.</p>
           </div>
         </details>
 
@@ -1296,7 +1290,7 @@ ha-list-item-button { text-transform: uppercase; }
     <footer>
       <div class="wrap row">
         <span>
-          HA Style Hub 1.5.7 ·
+          HA Style Hub 1.5.8 ·
           <a href="https://github.com/jayjojayson/HA-Style-Hub">github.com/jayjojayson/HA-Style-Hub</a>
           · MIT
         </span>
@@ -1333,9 +1327,9 @@ ha-list-item-button { text-transform: uppercase; }
 
         /* ----------------------------------------------- dark / light mode */
         var toggle = document.getElementById("theme-toggle");
-        var media = window.matchMedia("(prefers-color-scheme: light)");
+        // Light unless dark was chosen with the switch - the system setting does not decide.
         function current() {
-          return html.getAttribute("data-theme") || (media.matches ? "light" : "dark");
+          return html.getAttribute("data-theme") === "dark" ? "dark" : "light";
         }
         function paint() {
           var light = current() === "light";
@@ -1348,7 +1342,6 @@ ha-list-item-button { text-transform: uppercase; }
           try { localStorage.setItem("ha-style-hub-docs-theme", next); } catch (err) { /* private mode */ }
           paint();
         });
-        if (media.addEventListener) media.addEventListener("change", paint);
         paint();
 
         /* -------------------------------------------------------- lightbox */

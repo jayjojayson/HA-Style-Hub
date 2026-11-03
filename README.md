@@ -6,7 +6,7 @@
 
 <p align="center">
   <a href="https://hacs.xyz"><img src="https://img.shields.io/badge/HACS-custom-orange.svg" alt="HACS"></a>
-  <a href="https://github.com/jayjojayson/HA-Style-Hub/releases"><img src="https://img.shields.io/badge/version-1.5.7-blue.svg" alt="Version"></a>
+  <a href="https://github.com/jayjojayson/HA-Style-Hub/releases"><img src="https://img.shields.io/badge/version-1.5.8-blue.svg" alt="Version"></a>
   <a href="https://github.com/jayjojayson/HA-Style-Hub/actions/workflows/validate.yml"><img src="https://github.com/jayjojayson/HA-Style-Hub/actions/workflows/validate.yml/badge.svg" alt="Validate"></a>
   <a href="https://github.com/jayjojayson/HA-Style-Hub/releases"><img src="https://img.shields.io/github/downloads/jayjojayson/HA-Style-Hub/total.svg" alt="Downloads"></a>
   <a href="https://github.com/jayjojayson/HA-Style-Hub/blob/main/LICENSE"><img src="https://img.shields.io/github/license/jayjojayson/HA-Style-Hub.svg" alt="License"></a>
@@ -48,7 +48,7 @@ through a real theme built in the same panel.
 | 💡 **Hints on demand** | the explanations next to the fields can be folded away one by one with a small info icon (the browser remembers which); one tick on the Info page hides them all |
 | ✏️ **Rename** | give every entry your own label |
 | 🎨 **Own icons** | any `mdi:` icon per entry |
-| 👁️ **Hide** | switch entries off without removing the dashboard |
+| 👁️ **Hide** | switch entries off without removing the dashboard - for everyone or only for single users (also headings, links and popups) |
 | 📐 **Width** | separate widths for the expanded and the collapsed sidebar |
 | 🌈 **Appearance** | background and gradients (built from the GUI), hover colors, text and icon colors, font, size and weight, icon size, corner radius, borders |
 | 🖼️ **Per entry styling** | own text, icon and background color, and a column span |
@@ -62,6 +62,7 @@ through a real theme built in the same panel.
 | 🎚️ **Switch entities** | hiding the header and hiding the sidebar are real `switch` entities, so they can be put on a dashboard or used in an automation |
 | 🙈 **Hide the sidebar** | the whole sidebar can disappear; the panel stays reachable at `/ha-style-hub` |
 | 🖌️ **Theme templates** | four finished looks that fill both modes with one click, then stay editable |
+| 🧩 **Sidebar templates** | rows or tiles, each calm or bold - grid and look of the sidebar with one click, in the colours of your theme |
 | ⏻ **Restart button** | optional entry in the grid that restarts Home Assistant, for administrators only; a window in the look of your theme asks first and checks the configuration |
 | 💾 **Export / import** | one page for everything: the complete configuration, or sidebar, theme (`.yaml`), header and HA-Settings on their own - as a file or pasted into a dialog |
 | ⚡ **Live preview** | every change is visible immediately, saved only on demand; *Before* shows the saved state for comparison |
@@ -132,10 +133,25 @@ chosen part is outlined and labelled (*"Cards · selected"*).
 * **Sidebar.** *Layout*, *Entries* and *Appearance* sit at the top of the
   field column. On *Entries* the chosen entry folds open right in the list:
   name, icon, column width, the colours as three tiles (icon, text,
-  background - a click opens the field), hide, up / down, remove for headings
-  and links, *Reset* back to the saved state. A click on an entry in the
+  background - a click opens the field), hide, *Visible for* (per user, 1.5.8),
+  up / down, remove for headings and links, *Reset* back to the saved state. A click on an entry in the
   preview selects it, dragging it there reorders it; in the list you can drag
-  as before (to the right to file it under a heading). On *Appearance* a click
+  as before (to the right to file it under a heading). The entry you edit shows
+  its own colours in the preview, even when it is the page that is currently
+  open (1.5.8) - on the other tabs the preview shows the active page as Home
+  Assistant does: own colours of *Appearance › active entry* come first, an
+  own icon colour of the entry always stays. The arrow of a heading that can
+  be collapsed folds its group in the preview as well, to try it out (nothing
+  is saved).
+  **Templates** (1.5.8, on *Layout* and *Appearance*): four finished looks for
+  the sidebar - *Rows · Calm*, *Rows · Bold*, *Tiles · Calm* and *Tiles · Bold*.
+  A template sets the grid (columns, rows or tiles, gaps, heights, width) and
+  the appearance; the colours come from your theme (primary colour, text,
+  cards), so every template fits light and dark. Title, own CSS, the
+  notifications, *Layout › Behaviour* and everything set on single entries
+  stay as they are. Nothing is saved until you press *Save*; *Discard* or
+  `Ctrl Z` takes it back. The dialog marks the template that matches the
+  current values. On *Appearance* a click
   on a part of the sidebar (title, entries, badge, notifications, background)
   opens its group. Below the preview: *Expanded / Collapsed*; at the bottom of
   the *Layout* column **Hide the sidebar completely (kiosk mode)**. A click on the
@@ -232,6 +248,21 @@ administrators. Ctrl-click or the middle mouse button open the page in a new
 tab; since 1.5.5 a right-click offers *Open link in new tab* as well, like on
 the entries of Home Assistant. While the sidebar is collapsed, links, popups and the restart entry show
 their name as a tooltip on hover, like the entries of Home Assistant (1.5.4).
+
+**Visible for single users** (1.5.8): the eye hides an entry for everyone. Under
+*Entries* every entry - pages of Home Assistant, section headings, links and
+popups - also has the block **Visible for** with all users of Home Assistant
+(as under *Settings › People › Users*, without the system users). Untick a user
+and the entry is hidden for this user only, in every browser they sign in with;
+users added later see it. This is meant for entries Home Assistant's own
+sidebar editor does not know - headings, links and popups of HA Style Hub - so
+a user without admin rights does not end up with entries that are of no use
+to them. In the list the entry shows *hidden for 2*; the preview shows the
+sidebar as **you** see it. A **section heading** whose entries are all gone for
+a user - hidden here, hidden by the user in Home Assistant's own sidebar
+editor, or not available to them - disappears by itself, so no empty headings
+are left. Hiding is a matter of the look, not a permission: the pages
+themselves stay reachable through their address as before.
 
 **Popup links in the sidebar** (1.5.1): the third choice of the dialog,
 *Popup link*. Give it a name, pick pages one after the other - first the
@@ -335,7 +366,13 @@ header*); it applies to the whole header.
 > **Settings, Notifications and the user entry**
 > They only become sortable when *"Move Settings, Notifications and the user
 > entry into the grid"* is switched on in the **Layout** tab. Without it, Home
-> Assistant keeps them pinned to the bottom of the sidebar.
+> Assistant keeps them pinned to the bottom of the sidebar. Since 1.5.8 you
+> don't have to look for it: moving one of the three (arrows, dragging in the
+> list or in the preview) switches the option on by itself and says so;
+> *Discard* or `Ctrl Z` takes it back. The entry itself also carries a note
+> with the button *Make it movable*. They stay Home Assistant's own entries,
+> so the badges for repairs, updates and notifications remain - unlike a link
+> to `/config`.
 
 ### The theme
 
@@ -527,6 +564,9 @@ a colored circle behind every icon.
     the Settings page.
   * **Show the entries as tiles** - the icon stands above the name, description
     and arrow are left out.
+  * **Gap between the menu entries** (1.5.8, px) - space between the entries
+    inside one card, handy when every entry has a border; 0 is Home Assistant's
+    own look without a gap. With columns it applies in both directions.
 
 **Settings page: order and favourites.** This card is about the Settings
 page of Home Assistant itself (`/config`).
