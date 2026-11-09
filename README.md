@@ -6,7 +6,7 @@
 
 <p align="center">
   <a href="https://hacs.xyz"><img src="https://img.shields.io/badge/HACS-custom-orange.svg" alt="HACS"></a>
-  <a href="https://github.com/jayjojayson/HA-Style-Hub/releases"><img src="https://img.shields.io/badge/version-1.5.8-blue.svg" alt="Version"></a>
+  <a href="https://github.com/jayjojayson/HA-Style-Hub/releases"><img src="https://img.shields.io/badge/version-1.5.9-blue.svg" alt="Version"></a>
   <a href="https://github.com/jayjojayson/HA-Style-Hub/actions/workflows/validate.yml"><img src="https://github.com/jayjojayson/HA-Style-Hub/actions/workflows/validate.yml/badge.svg" alt="Validate"></a>
   <a href="https://github.com/jayjojayson/HA-Style-Hub/releases"><img src="https://img.shields.io/github/downloads/jayjojayson/HA-Style-Hub/total.svg" alt="Downloads"></a>
   <a href="https://github.com/jayjojayson/HA-Style-Hub/blob/main/LICENSE"><img src="https://img.shields.io/github/license/jayjojayson/HA-Style-Hub.svg" alt="License"></a>
@@ -25,7 +25,7 @@ If you like the app, I would be happy about a star rating ⭐. 🤗
 </div>
 
 Style Home Assistant from a graphical panel. The **sidebar** first: order, names,
-icons, visibility, a multi column grid layout, section headings and the complete
+icons, visibility, a multi column grid layout, groups and the complete
 look — including *Settings*, *Notifications* and the *user entry*, which Home
 Assistant normally keeps pinned to the bottom. And then **Home Assistant itself**,
 through a real theme built in the same panel.
@@ -41,14 +41,15 @@ through a real theme built in the same panel.
 |---|---|
 | 🧱 **Grid layout** | 1 to 4 columns while the sidebar is expanded, 1 to 3 while it is collapsed |
 | 🔀 **Free order** | drag and drop, including Settings, Notifications and the user entry |
-| 🏷️ **Section headings** | own dividers with a name, an icon, a border, a radius, a height and capital letters on or off, hidden while the sidebar is collapsed |
-| 🗂️ **Groups** | drag an entry to the right to file it under a heading, then fold the whole block away with a click |
+| 🏷️ **Groups** | bundle entries under a name with an icon, font and icon size, a border, a radius, a height and capital letters on or off - the name is hidden while the sidebar is collapsed |
+| ℹ️ **Info lines** | a second line under any entry - CPU and RAM, time since the last backup, active automations and more from a list or your own Home Assistant template, updated live |
+| 🗂️ **Fold groups** | put an entry into a group - by choosing the group at the entry or by dragging it to the right - then fold the whole block away with a click |
 | 🪟 **Popup links** | one sidebar entry that opens a window with several pages - dashboards, panels or pages of the settings - with a Lovelace card from your dashboard (YAML) or with a website |
 | 🌐 **Web links** | sidebar entries and popup tiles can also point to any website - they open in a new tab |
 | 💡 **Hints on demand** | the explanations next to the fields can be folded away one by one with a small info icon (the browser remembers which); one tick on the Info page hides them all |
 | ✏️ **Rename** | give every entry your own label |
 | 🎨 **Own icons** | any `mdi:` icon per entry |
-| 👁️ **Hide** | switch entries off without removing the dashboard - for everyone or only for single users (also headings, links and popups) |
+| 👁️ **Hide** | switch entries off without removing the dashboard - for everyone or only for single users (also groups, links and popups) |
 | 📐 **Width** | separate widths for the expanded and the collapsed sidebar |
 | 🌈 **Appearance** | background and gradients (built from the GUI), hover colors, text and icon colors, font, size and weight, icon size, corner radius, borders |
 | 🖼️ **Per entry styling** | own text, icon and background color, and a column span |
@@ -134,13 +135,16 @@ chosen part is outlined and labelled (*"Cards · selected"*).
   field column. On *Entries* the chosen entry folds open right in the list:
   name, icon, column width, the colours as three tiles (icon, text,
   background - a click opens the field), hide, *Visible for* (per user, 1.5.8),
-  up / down, remove for headings and links, *Reset* back to the saved state. A click on an entry in the
+  up / down, remove for groups and links, *Reset* back to the saved state. A click on an entry in the
   preview selects it, dragging it there reorders it; in the list you can drag
-  as before (to the right to file it under a heading). The entry you edit shows
+  as before (to the right to put it into the group above). Since 1.5.9 every entry
+  also has the field **Group**: choose a group and the entry moves
+  to the end of it; *– none –* takes it out again. In the preview an
+  entry dropped onto a group lands in it. The entry you edit shows
   its own colours in the preview, even when it is the page that is currently
   open (1.5.8) - on the other tabs the preview shows the active page as Home
   Assistant does: own colours of *Appearance › active entry* come first, an
-  own icon colour of the entry always stays. The arrow of a heading that can
+  own icon colour of the entry always stays. The arrow of a group that can
   be collapsed folds its group in the preview as well, to try it out (nothing
   is saved).
   **Templates** (1.5.8, on *Layout* and *Appearance*): four finished looks for
@@ -230,7 +234,7 @@ Changes are applied immediately. They are only written to `.storage` when you
 press **Save**; **Discard** returns to the stored state.
 
 **Links in the sidebar:** under *Sidebar → Entries* the **plus** opens a dialog
-with two choices: a **section heading** or a **link**. A link is a shortcut to
+with the choices **group**, **link** and **popup link** (button *Group, link, popup*). A link is a shortcut to
 a page of Home Assistant - automations, scenes, scripts, blueprints, devices,
 entities, helpers, areas, the system pages, the tools (states, actions,
 template, ...) and more. Pick the page from the list or enter one yourself with
@@ -242,26 +246,63 @@ you rename it, the entry shows the host name (`home-assistant.io`) and the
 *open in new* icon; only `http://` and `https://` addresses without spaces or
 special characters are accepted, up to 500 characters. The header and the
 favourites bar stay inside Home Assistant. After that the link is a normal entry: name, icon, colours,
-position, column span, hiding and section headings work as for every other
+position, column span, hiding and groups work as for every other
 entry, and the bin removes it again. Links into the settings are only shown to
 administrators. Ctrl-click or the middle mouse button open the page in a new
 tab; since 1.5.5 a right-click offers *Open link in new tab* as well, like on
 the entries of Home Assistant. While the sidebar is collapsed, links, popups and the restart entry show
 their name as a tooltip on hover, like the entries of Home Assistant (1.5.4).
 
+**Info lines** (1.5.9): every entry (pages, links, popups, Settings and the
+other fixed entries - not groups) has the selection **Info line**. Choose what
+the small second line under the name should show:
+
+| Choice | Shows |
+| --- | --- |
+| State of an entity | the state of one entity, numbers with their unit (e.g. `21.5 °C`) |
+| Two entities | two states side by side (`7 % \| Open`) |
+| CPU and RAM (System Monitor) | `CPU 7 % \| RAM 22 %` - the sensors of the System Monitor integration are found by themselves |
+| Time since … (e.g. last backup) | `5 min ago`, `3 h ago`, `2 days ago` - for a sensor with a point in time, prefilled with the last automatic backup |
+| Active automations | `12 of 15 active` |
+| Available updates | `2 updates` or `Up to date` |
+| Lights on | `3 lights on` |
+| People at home | `2 at home` |
+| Custom template | opens the code field for your own template |
+
+Entities are typed or picked from the suggestions (entity ID or name). Words
+such as *active* are written in the language of the panel at the time you
+choose. **Custom template** opens the field for a Home Assistant template
+(Jinja, the same as in *Developer tools › Template*); it starts with the
+template of the choice before, so a ready line is easy to adjust. Entries with a
+template from an earlier build of 1.5.9 show up as *Custom template*. Home
+Assistant calculates the template and sends every change,
+so the line stays up to date by itself - for every user, not only for admins.
+The inspector shows the result (or the error) live while you type, the preview
+shows the line as well. An empty result shows no line; with the sidebar
+collapsed the lines are hidden. Colour and font size of all info lines are set
+under *Appearance › Text and icons*. Examples for your own template (adjust the entity IDs to your system):
+
+```jinja
+CPU: {{ states('sensor.system_monitor_processor_use') }} % | RAM: {{ states('sensor.system_monitor_memory_usage') }} %
+{{ ((now() - states('sensor.backup_last_successful_automatic_backup') | as_datetime).total_seconds() / 3600) | int }} hours ago
+{{ states.automation | selectattr('state', 'eq', 'on') | list | count }} active | {{ states.automation | selectattr('state', 'eq', 'off') | list | count }} inactive
+{{ 'Protection on' if is_state('switch.adguard_home_protection', 'on') else 'Protection off' }}
+```
+
 **Visible for single users** (1.5.8): the eye hides an entry for everyone. Under
-*Entries* every entry - pages of Home Assistant, section headings, links and
+*Entries* every entry - pages of Home Assistant, groups, links and
 popups - also has the block **Visible for** with all users of Home Assistant
 (as under *Settings › People › Users*, without the system users). Untick a user
 and the entry is hidden for this user only, in every browser they sign in with;
 users added later see it. This is meant for entries Home Assistant's own
-sidebar editor does not know - headings, links and popups of HA Style Hub - so
+sidebar editor does not know - groups, links and popups of HA Style Hub - so
 a user without admin rights does not end up with entries that are of no use
 to them. In the list the entry shows *hidden for 2*; the preview shows the
-sidebar as **you** see it. A **section heading** whose entries are all gone for
+sidebar as **you** see it. A **group** whose entries are all gone for
 a user - hidden here, hidden by the user in Home Assistant's own sidebar
-editor, or not available to them - disappears by itself, so no empty headings
-are left. Hiding is a matter of the look, not a permission: the pages
+editor, or not available to them - disappears by itself, so no empty group
+names are left. Since 1.5.9 this also works for a group without assigned entries:
+then the entries standing below it up to the next group count. Hiding is a matter of the look, not a permission: the pages
 themselves stay reachable through their address as before.
 
 **Popup links in the sidebar** (1.5.1): the third choice of the dialog,
@@ -276,7 +317,7 @@ per row on a computer (5 → 3 + 2, 7 → 4 + 3), two per row on a phone; a last
 row with fewer tiles is filled by wider tiles. The window
 closes with the cross, a click next to it, `Esc` or a change of page. Under
 *Entries* the popup works like every entry (name, icon, column span, colors,
-hide, heading); in addition its links can be renamed, get an own icon, be
+hide, group); in addition its links can be renamed, get an own icon, be
 moved, added (at most 24) and removed. The icon color of the entry also colors
 the window. While a popup is selected under *Entries*, the preview shows its
 window above the dashboard. Pages that sit in a popup can be hidden in the
@@ -472,7 +513,12 @@ as a real Home Assistant theme, exactly like a theme from `configuration.yaml`.
 * **Register the theme in Home Assistant** is what actually publishes it. It
   then appears in the theme picker of every user profile. *"Use it as the
   default theme right away"* additionally sets it for everybody who follows the
-  theme selected by the server
+  theme selected by the server. Switched off and saved, the theme disappears
+  from Home Assistant again, but its values stay here
+* **Delete theme** (1.5.9, below the switch) clears both modes, puts the name
+  back to the default and switches the theme off. When you save, it is removed
+  from Home Assistant; if it was the default theme, Home Assistant goes back to
+  its own default. Until then *Discard* brings it back, afterwards the history
 * **Export** (page *Export / Import*) writes the theme as a `.yaml` file - as a backup, or to put it
   into `configuration.yaml` by hand
 * **Import** reads such a file back in: an export from here, a file from the
@@ -593,7 +639,7 @@ page of Home Assistant itself (`/config`).
   bar unless they have their own. In a window narrower than 1000 px there is no
   room next to title and buttons; then they stand above the cards.
 * **Edit the look** - the button at the end of each favourite folds out its
-  look, as for the section headings of the sidebar: text colour, background,
+  look, as for the groups of the sidebar: text colour, background,
   icon colour, icon, height, border colour, border, corner radius (each side
   and each corner separately if you like), capital letters and *Show the icon
   only, hide the text* (the name stays as tooltip). Empty means as

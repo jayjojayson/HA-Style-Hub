@@ -1,6 +1,6 @@
 /*
  * HA Style Hub - ha-style-hub.js
- * Version: 1.5.8
+ * Version: 1.5.9
  *
  * Runtime patcher for the Home Assistant sidebar (ha-sidebar).
  *
@@ -26,7 +26,7 @@
 (() => {
   "use strict";
 
-  const VERSION = "1.5.8";
+  const VERSION = "1.5.9";
   const TAG = "[HA Style Hub]";
 
   const EVENT_UPDATED = "ha_style_hub_updated";
@@ -77,6 +77,8 @@
     font_size: 12,
     font_weight: "500",
     font_family: "",
+    info_color: "",
+    info_size: 0,
     icon_size: 24,
     item_background: "",
     item_background_selected: "",
@@ -1236,6 +1238,9 @@
     radius_br: 0,
     radius_bl: 0,
     height: 0,
+    // 1.5.9: Schrift- und Icongroesse in px, 0 = Standard (11 px / 16 px)
+    font_size: 0,
+    icon_size: 0,
     uppercase: true,
     collapsible: false,
     hide_for: [],
@@ -1254,6 +1259,8 @@
     parent: "",
     // 1.5.8: fuer diese Benutzer ausgeblendet (IDs von Home Assistant)
     hide_for: [],
+    // 1.5.9: Infozeile unter dem Namen (Template von Home Assistant)
+    info: "",
   };
   const DEFAULT_POPUP = Object.assign({}, DEFAULT_ITEM, {
     links: DEFAULT_POPUP_LINKS,
@@ -1693,6 +1700,9 @@
    * profile            the user entry at the bottom
    * external-config    settings entry of the companion app
    * ------------------------------------------------------------------ */
+
+  // Die Eintraege, die Home Assistant unten in der Seitenleiste festhaelt.
+  const FIXED_KEYS = ["config", "notifications", "profile", "external-config"];
 
   const FIXED_BY_CLASS = {
     configuration: "config",
@@ -2370,6 +2380,24 @@
           "border-top: none !important; padding-block: 0 !important; " +
           "padding-inline: 4px 8px !important; gap: 4px !important; }",
         ".spacer { display: none !important; }",
+        // Ab 2026.11: Logo, Name und Anzahl stecken in einem ha-row-item im
+        // Link - Name und Anzahl standen dort untereinander. Fuer die Liste
+        // nebeneinander (ueber ::part), ohne Polster oben und unten, das Logo
+        // passend zur Zeilenhoehe; die Symbole wie gehabt vor der Anzahl.
+        ".ripple-anchor > ha-row-item { flex: 1 1 auto !important; min-width: 0 !important; " +
+          "height: 100% !important; --ha-row-item-padding-block: 0px !important; " +
+          "--ha-row-item-min-height: 0px !important; --ha-row-item-gap: 12px !important; }",
+        ".ripple-anchor > ha-row-item::part(base) { height: 100% !important; " +
+          "padding-inline: 16px 12px !important; }",
+        ".ripple-anchor > ha-row-item::part(content) { flex-direction: row !important; " +
+          "align-items: center !important; justify-content: flex-start !important; gap: 8px !important; }",
+        ".ripple-anchor > ha-row-item::part(headline) { flex: 1 1 auto !important; min-width: 0 !important; }",
+        ".ripple-anchor > ha-row-item::part(supporting-text) { flex: 0 1 auto !important; " +
+          "min-width: 0 !important; max-width: 60% !important; }",
+        `.ripple-anchor > ha-row-item > img { width: min(40px, ${Math.max(height - 12, 16)}px) !important; ` +
+          `height: min(40px, ${Math.max(height - 12, 16)}px) !important; }`,
+        ".supporting-text { justify-content: flex-end !important; }",
+        ".supporting-text .icons { margin-inline-start: 0 !important; margin-inline-end: 4px !important; }",
         ...cardFrame,
         // Symbole vor die Anzahl: die Anzahl steht ganz rechts.
         ".icons { order: -1 !important; }",
@@ -3408,6 +3436,26 @@
     }
     push(`${item} .item-text {`, ...textRules, "}");
 
+    // 1.5.9: Infozeilen (.sh-info im Platz "supporting-text" des Eintrags):
+    // eine Zeile, abgeschnitten, nur bei ausgeklappter Seitenleiste.
+    const infoSize = clamp(Math.round(number(look.info_size, 0)), 0, 30);
+    push(
+      `${item} .sh-info {`,
+      "  display: block !important;",
+      `  color: ${css(look.info_color) || "var(--secondary-text-color)"} !important;`,
+      `  font-size: ${infoSize > 0 ? infoSize : 11}px !important;`,
+      "  font-weight: 400 !important;",
+      "  line-height: 1.3 !important;",
+      "  white-space: nowrap !important;",
+      "  overflow: hidden !important;",
+      "  text-overflow: ellipsis !important;",
+      "}",
+      `:host(:not([expanded])) ${item} .sh-info { display: none !important; }`
+    );
+    if (parts) {
+      push(`${item}::part(supporting-text) { min-width: 0 !important; max-width: 100% !important; }`);
+    }
+
     // Hover: the stock look is a translucent ripple overlay. As soon as an own
     // hover background is set that overlay is switched off, otherwise the two
     // would blend and the chosen color would never be the one on screen.
@@ -3707,6 +3755,18 @@
       "  pointer-events: none !important;",
       "}",
       ".sh-heading ha-icon { --mdc-icon-size: 16px !important; flex: 0 0 auto !important; }",
+      // 1.5.9: das Icon als Box genau in seiner Groesse und mittig in der
+      // Zeile - ohne Ausrichtung an der Grundlinie der Schrift (die je nach
+      // Schrift des Themes ein, zwei Pixel daneben liegt).
+      ".sh-heading ha-icon {",
+      "  display: flex !important;",
+      "  align-items: center !important;",
+      "  justify-content: center !important;",
+      "  line-height: 0 !important;",
+      "  width: var(--mdc-icon-size) !important;",
+      "  height: var(--mdc-icon-size) !important;",
+      "  --ha-icon-display: block;",
+      "}",
       ":host(:not([expanded])) .sh-heading { display: none !important; }",
       // Nur zusammenklappbare Ueberschriften nehmen Klicks an.
       ".sh-heading[data-sh-collapsible] {",
@@ -3782,6 +3842,12 @@
           rules.push("  padding-bottom: 0 !important;");
         }
 
+        // 1.5.9: Schriftgroesse des Namens (0 = Standard 11 px, 8 bis 40 px)
+        const fontSize = Math.round(number(entry.font_size, 0));
+        if (fontSize > 0) {
+          rules.push(`  font-size: ${Math.min(40, Math.max(8, fontSize))}px !important;`);
+        }
+
         // Grossbuchstaben sind der Normalfall. Beim Abschalten geht die
         // Laufweite mit: die ist fuer Versalien gedacht und reisst gemischte
         // Schrift unnoetig auseinander.
@@ -3824,6 +3890,11 @@
             : "";
         if (radius && radius !== "0px" && radius !== "0px 0px 0px 0px") {
           rules.push(`  border-radius: ${radius} !important;`);
+        }
+        // 1.5.9: Icongroesse (0 = Standard 16 px, 8 bis 48 px)
+        const iconSize = Math.round(number(entry.icon_size, 0));
+        if (iconSize > 0) {
+          push(`${scope} ha-icon { --mdc-icon-size: ${Math.min(48, Math.max(8, iconSize))}px !important; }`);
         }
         if (rules.length) {
           push(`${scope} {`, ...rules, "}");
@@ -4318,6 +4389,7 @@
         this.applyTooltips(root, generation);
         this.applySheets(root, generation);
         this.applyContent(root, generation);
+        this.applyInfo(root, generation);
         this.applyHeader();
         this.checkSettingsPage();
         if (this.config.advanced.debug) {
@@ -7245,11 +7317,13 @@
         // Nur wo der Aufbau der Karte bekannt ist; sonst bleibt sie, wie sie ist.
         // Bis 2026.9: Kopf im Link, Fuss (.card-actions) daneben in der Karte.
         // Ab 2026.10: Kopf und Fuss als eigene Elemente in .card-content.
+        // Ab 2026.11: ein ha-row-item im Link (Logo, Name, Anzahl, Symbole).
         found.cards.forEach((root) => {
           if (
             root.querySelector("ha-card .ripple-anchor") &&
             (root.querySelector(".card-actions") ||
-              root.querySelector(`.card-content > ${LIST_CARD_HEADER}`))
+              root.querySelector(`.card-content > ${LIST_CARD_HEADER}`) ||
+              root.querySelector(".ripple-anchor > ha-row-item"))
           ) {
             put(root, "listcard", want.list.card);
           }
@@ -8022,14 +8096,35 @@
       if (root) {
         root.querySelectorAll("[data-sh-key]").forEach((node) => present.add(node.dataset.shKey));
       }
+      // 1.5.9: Ist einer Ueberschrift kein Eintrag zugeordnet (parent), zaehlen
+      // die Eintraege, die in der Reihenfolge unter ihr stehen - bis zur
+      // naechsten Ueberschrift. Einstellungen, Benachrichtigungen und Profil
+      // nur, wenn sie im Raster stehen (sonst sitzen sie unten fest).
+      const order = Array.isArray(this.config.order) ? this.config.order : [];
+      const merged = this.config.layout && this.config.layout.merge_fixed === true;
+      const below = (head) => {
+        const out = [];
+        for (let i = order.indexOf(head) + 1; i > 0 && i < order.length; i += 1) {
+          const key = order[i];
+          if (key.indexOf(HEADING_PREFIX) === 0) {
+            break;
+          }
+          if (!merged && FIXED_KEYS.indexOf(key) >= 0) {
+            continue;
+          }
+          out.push(key);
+        }
+        return out;
+      };
       Object.keys(items).forEach((head) => {
         if (head.indexOf(HEADING_PREFIX) !== 0 || items[head].hidden) {
           return;
         }
-        const children = Object.keys(items).filter(
+        const assigned = Object.keys(items).filter(
           (key) => key.indexOf(HEADING_PREFIX) !== 0 && items[key].parent === head
         );
-        if (children.length && children.every((key) => items[key].hidden || !present.has(key))) {
+        const children = assigned.length ? assigned : below(head);
+        if (children.length && children.every((key) => (items[key] || {}).hidden || !present.has(key))) {
           items[head] = Object.assign({}, items[head], { hidden: true });
           changed = true;
         }
@@ -8106,6 +8201,132 @@
         const entry = (key && this.config.items[key]) || null;
         this.applyName(item, entry);
         this.applyIcon(item, entry);
+      });
+    }
+
+    /**
+     * 1.5.9: Infozeilen. Je Eintrag mit Template haelt der Browser ein
+     * Abo auf render_template - Home Assistant rechnet das Template und
+     * schickt bei jeder Aenderung das neue Ergebnis (das geht fuer jeden
+     * Benutzer, nicht nur fuer Administratoren). Das Ergebnis steht als
+     * reiner Text in einem <span slot="supporting-text"> im Eintrag - unter
+     * dem Namen, wie ihn Home Assistant fuer eine zweite Zeile vorsieht.
+     */
+    applyInfo(root, generation) {
+      const items = this.config.items || {};
+      const wanted = {};
+      if (!generation || generation.gen >= 2) {
+        Object.keys(items).forEach((key) => {
+          const info = typeof items[key].info === "string" ? items[key].info.trim() : "";
+          if (info && key.indexOf(HEADING_PREFIX) !== 0) {
+            wanted[key] = info;
+          }
+        });
+      }
+      this.infoSubs = this.infoSubs || {};
+      Object.keys(this.infoSubs).forEach((key) => {
+        if (wanted[key] !== this.infoSubs[key].template) {
+          this.dropInfo(key);
+        }
+      });
+      const hass = this.root && this.root.hass;
+      const connection = hass && hass.connection;
+      if (connection && typeof connection.subscribeMessage === "function") {
+        Object.keys(wanted).forEach((key) => {
+          if (!this.infoSubs[key]) {
+            this.subscribeInfo(connection, key, wanted[key]);
+          }
+        });
+      }
+      this.paintInfo(root);
+    }
+
+    subscribeInfo(connection, key, template) {
+      const sub = { template, text: "", unsub: null, dead: false };
+      this.infoSubs[key] = sub;
+      Promise.resolve()
+        .then(() =>
+          connection.subscribeMessage(
+            (message) => {
+              if (sub.dead || !message || !("result" in message)) {
+                return;
+              }
+              const result = message.result;
+              const text =
+                result === null || result === undefined
+                  ? ""
+                  : typeof result === "object"
+                    ? JSON.stringify(result)
+                    : String(result);
+              sub.text = text.trim().slice(0, 200);
+              if (this.sidebar && this.sidebar.shadowRoot) {
+                this.paintInfo(this.sidebar.shadowRoot);
+              }
+            },
+            { type: "render_template", template, strict: false, report_errors: false }
+          )
+        )
+        .then((unsub) => {
+          if (sub.dead) {
+            unsub();
+          } else {
+            sub.unsub = unsub;
+          }
+        })
+        .catch((err) => {
+          this.debug("sidebar", `info line of ${key} could not be rendered`, String(err && err.message ? err.message : err));
+        });
+    }
+
+    dropInfo(key) {
+      const sub = this.infoSubs && this.infoSubs[key];
+      if (!sub) {
+        return;
+      }
+      sub.dead = true;
+      if (sub.unsub) {
+        try {
+          sub.unsub();
+        } catch (err) {
+          // Verbindung schon weg - nichts zu tun.
+        }
+      }
+      delete this.infoSubs[key];
+    }
+
+    /** Die Ergebnisse in die Eintraege schreiben (oder die Zeile entfernen). */
+    paintInfo(root) {
+      const subs = this.infoSubs || {};
+      const tag = this.generation ? this.generation.item : "ha-list-item-button";
+      root.querySelectorAll(`${tag}[data-sh-key]`).forEach((item) => {
+        const sub = subs[item.dataset.shKey];
+        const text = sub ? sub.text : "";
+        let span = item.querySelector(":scope > .sh-info");
+        if (!text) {
+          if (span) {
+            span.remove();
+            if (typeof item.requestUpdate === "function") {
+              item.requestUpdate();
+            }
+          }
+          return;
+        }
+        let added = false;
+        if (!span) {
+          span = document.createElement("span");
+          span.className = "sh-info";
+          span.setAttribute("slot", "supporting-text");
+          item.appendChild(span);
+          added = true;
+        }
+        if (span.textContent !== text) {
+          span.textContent = text;
+        }
+        // Home Assistant zeichnet den Platz fuer die zweite Zeile nur, wenn
+        // beim Zeichnen etwas darin steht - also einmal neu zeichnen lassen.
+        if (added && typeof item.requestUpdate === "function") {
+          item.requestUpdate();
+        }
       });
     }
 
@@ -8190,8 +8411,9 @@
       }
       if (this.sidebar && this.sidebar.shadowRoot) {
         this.sidebar.shadowRoot
-          .querySelectorAll(`.sh-heading, [data-sh-key="${RESTART_KEY}"], [data-sh-link], [data-sh-popup]`)
+          .querySelectorAll(`.sh-heading, [data-sh-key="${RESTART_KEY}"], [data-sh-link], [data-sh-popup], .sh-info`)
           .forEach((node) => node.remove());
+        Object.keys(this.infoSubs || {}).forEach((key) => this.dropInfo(key));
         this.closePopup();
       }
 

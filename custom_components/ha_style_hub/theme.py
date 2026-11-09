@@ -42,6 +42,10 @@ _LOGGER = logging.getLogger(__name__)
 # renamed constant in a future Home Assistant release should not stop the whole
 # integration from loading - the theme is simply not registered then.
 DATA_THEMES_KEY = "frontend_themes"
+# Das Standard-Theme des Servers (frontend/helpers.py: DATA_DEFAULT_THEME) und
+# der Name, der "kein eigenes Theme" bedeutet (DEFAULT_THEME).
+DATA_DEFAULT_THEME_KEY = "frontend_default_theme"
+DEFAULT_THEME_NAME = "default"
 EVENT_THEMES_UPDATED = "themes_updated"
 
 # Service used to make the theme the backend selected default.
@@ -363,7 +367,13 @@ class SidebarHubTheme:
         self._config = theme_config if isinstance(theme_config, dict) else {}
 
         if not self._config.get("enabled"):
+            # 1.5.9: War dieses Theme das Standard-Theme von Home Assistant,
+            # geht der Standard zurueck auf "default" - sonst zeigte er auf
+            # ein Theme, das es nicht mehr gibt. Nur hier (ausgeschaltet oder
+            # geloescht und gespeichert), nicht beim Entladen der Integration.
+            name = self._registered
             self.async_remove()
+            await self._async_reset_default(name)
             return
 
         if self._async_write():
@@ -416,6 +426,20 @@ class SidebarHubTheme:
         store = self._store
         if store is not None and self._async_drop(store):
             self._fire()
+
+    async def _async_reset_default(self, name: str | None) -> None:
+        """Point Home Assistant's default theme back to "default" if it was ours."""
+        if not name or self._hass.data.get(DATA_DEFAULT_THEME_KEY) != name:
+            return
+        try:
+            await self._hass.services.async_call(
+                FRONTEND_DOMAIN,
+                SERVICE_SET_THEME,
+                {"name": DEFAULT_THEME_NAME},
+                blocking=True,
+            )
+        except Exception as err:  # noqa: BLE001 - never break saving over this
+            _LOGGER.warning("Could not reset the default theme: %s", err)
 
     async def _async_set_default(self) -> None:
         """Make the theme the backend selected default, if that was asked for."""

@@ -7,7 +7,120 @@ englische Fassung steht in [changelog.md](changelog.md).
 Die Versionsnummern zählen bis `.9` und springen dann auf die nächste
 Nebenversion (1.2.9 → 1.3.0 → 1.3.1 → 1.3.2 → 1.3.3 → 1.3.4 → 1.3.5 → 1.3.6 →
 1.3.7 → 1.3.8 → 1.3.9 → 1.4.0 → 1.4.1 → 1.4.2 → 1.4.3 → 1.4.4 → 1.4.5 →
-1.4.6 → 1.4.7 → 1.4.8 → 1.4.9 → 1.5.0 → 1.5.1 → 1.5.2 → 1.5.3 → 1.5.4 → 1.5.5 → 1.5.6 → 1.5.7 → 1.5.8).
+1.4.6 → 1.4.7 → 1.4.8 → 1.4.9 → 1.5.0 → 1.5.1 → 1.5.2 → 1.5.3 → 1.5.4 → 1.5.5 → 1.5.6 → 1.5.7 → 1.5.8 → 1.5.9).
+
+## 1.5.9
+
+* **Einträge ohne Ziehen einer Überschrift zuordnen**
+  ([#2](https://github.com/jayjojayson/HA-Style-Hub/issues/2)). Jeder Eintrag
+  (außer Überschriften) bekommt unter *Einträge* das Feld *Gruppe*: eine
+  Liste aller Gruppen (Überschriften) plus *– keine –*. Eine
+  Überschrift setzt `parent` und schiebt den Eintrag ans Ende ihrer Gruppe
+  (direkt unter die Überschrift, wenn die Gruppe leer ist); *– keine –* leert
+  `parent` und setzt den Eintrag hinter das Ende seiner bisherigen Gruppe, damit
+  er nie mitten in einer Gruppe steht, zu der er nicht mehr gehört. Wie jede
+  Änderung ungespeichert und ein Schritt für `Strg Z`. Ziehen nach rechts in der
+  Liste geht weiter wie bisher.
+* **Vorschau: Ablegen auf einer Überschrift sortiert in ihre Gruppe ein.** Bisher
+  kam ein Eintrag in der Vorschau nur in eine Gruppe, wenn man ihn auf einen
+  Eintrag zog, der schon zu einer gehörte – der erste Eintrag einer Gruppe ließ
+  sich dort also nicht zuordnen. Auf eine Überschrift gezogen landet er jetzt
+  direkt darunter, mit gesetztem `parent`.
+* **Leere Überschriften auch ohne zugeordnete Einträge.** Seit 1.5.8 verschwindet
+  eine Überschrift für einen Benutzer, wenn alle ihre Einträge weg sind. Dabei
+  zählten nur Einträge mit `parent` – eine Überschrift, unter der die Einträge
+  einfach standen, blieb sichtbar. Ist einer Überschrift kein Eintrag
+  zugeordnet, zählen jetzt die Einträge, die in der Reihenfolge bis zur nächsten
+  Überschrift unter ihr stehen (Einstellungen, Benachrichtigungen und Profil nur,
+  solange sie im Raster stehen). Injector und Vorschau nehmen dieselbe Regel.
+  Zugeordnete Einträge gehen weiterhin vor.
+* **Theme löschen.** Neuer Knopf *Theme löschen* unter dem Schalter des Themes.
+  Nach einer Rückfrage leert er beide Modi, setzt den Namen auf den Standard
+  zurück und schaltet `enabled` und `set_default` aus – ungespeichert,
+  *Verwerfen* holt es also zurück. Beim Speichern nimmt das Backend das Theme wie
+  bisher aus Home Assistant heraus. Neu: War es das Standard-Theme von Home
+  Assistant (`hass.data["frontend_default_theme"]`), setzt `frontend.set_theme`
+  den Standard zurück auf `default`. Das passiert nur, wenn das Theme
+  ausgeschaltet oder gelöscht und gespeichert wird, nie beim Entladen der
+  Integration. Der Hinweis zu *Theme in Home Assistant eintragen* sagt jetzt
+  auch, dass beim Ausschalten die Werte erhalten bleiben.
+
+* **Listenansicht mit Home Assistant 2026.11.** Seit 2026.11 ist die
+  Integrationskarte anders aufgebaut: Logo, Name und Anzahl stecken in einem
+  `ha-row-item` im Link, der eigene Kopf (`ha-integration-card-header`) und Fuß
+  (`ha-integration-card-footer`) sind weg. Der Injector gestaltet nur Karten,
+  deren Aufbau er kennt – mit 2026.11 griffen deshalb nur noch die Spalten,
+  Zeilenhöhe, Rahmen, Hintergrund, Ecken, Schatten und Hover blieben aus. Die
+  Karte wird jetzt auch an `.ripple-anchor > ha-row-item` erkannt und sieht aus
+  wie bisher: eine Zeile mit dem Namen links und der Anzahl rechts (über
+  `::part(content)`), ohne Polster oben und unten, das Logo passend zur
+  Zeilenhöhe und die Symbole vor der Anzahl. Karten von 2026.9 und 2026.10
+  behalten ihre Regeln.
+
+* **Infozeilen unter den Einträgen.** Jeder Eintrag der Seitenleiste außer
+  Überschriften bekommt das Feld *Infozeile (Template)* (`items.<key>.info`,
+  höchstens 500 Zeichen). Der Injector abonniert je Eintrag mit Template
+  `render_template` (ein Abo je Eintrag, `report_errors: false`; der Befehl steht
+  jedem Benutzer offen, nicht nur Admins) und schreibt das Ergebnis als reinen
+  Text in ein `<span class="sh-info" slot="supporting-text">` im Eintrag – die
+  zweite Zeile, die `ha-list-item-button` von Home Assistant unter dem Namen
+  vorsieht; der Eintrag wird dafür einmal neu gezeichnet, damit der Platz
+  erscheint. Jede Änderung eines Zustands, den das Template nutzt, aktualisiert
+  die Zeile. Ein leeres Ergebnis entfernt die Zeile; bei eingeklappter
+  Seitenleiste ist sie ausgeblendet. Geänderte oder entfernte Templates beenden
+  ihr Abo, ein ausgeschaltetes HA Style Hub entfernt alle Zeilen und Abos. Farbe
+  und Größe aller Infozeilen: *Aussehen › Text und Icons* (`appearance.info_color`,
+  `appearance.info_size`; leer / 0 = Farbe des Sekundärtexts, 11 px). Im Panel
+  zeigt der Inspektor das Ergebnis oder den Fehler im Template live
+  (`report_errors: true`), die Vorschau zeigt die Zeilen; ihre Abos enden, wenn
+  das Panel geschlossen wird. Backend: `info` in `DEFAULT_ITEM` (PopUps erben
+  es), getrimmt und auf `INFO_TEMPLATE_MAX` begrenzt.
+
+* **Infozeile als Auswahl.** Statt eines reinen Template-Felds bietet der
+  Inspektor die Auswahl *Infozeile*: keine, *Zustand einer Entität*, *Zwei
+  Entitäten*, *CPU und RAM (Systemmonitor)*, *Zeit seit … (z. B. letztes
+  Backup)*, *Aktive Automationen*, *Verfügbare Updates*, *Eingeschaltete
+  Lichter*, *Personen zu Hause* und *Eigenes Template*. Die Arten mit Entitäten
+  zeigen ein oder zwei Entitätsfelder mit Vorschlägen aus den Zuständen
+  (Entitäts-ID und Name; *Zeit seit* listet nur Sensoren mit
+  `device_class: timestamp`). *CPU und RAM* sucht die Sensoren des
+  Systemmonitors über Plattform und Übersetzungsschlüssel (`processor_use`,
+  `memory_use_percent`) und notfalls über die Entitäts-ID; *Zeit seit* ist mit
+  `sensor.backup_last_successful_automatic_backup` vorbelegt, wenn es den Sensor
+  gibt. Das Panel baut aus der Auswahl das Template (Zahlen über
+  `states(…, with_unit=True)`, andere Zustände über `state_translated`, Zeiten
+  über `as_timestamp` und `now()`, Anzahlen über `states.<domain> | selectattr`)
+  und speichert es wie bisher in `info` – der Injector bleibt unverändert.
+  Wörter wie *aktiv* folgen der Sprache des Panels beim Auswählen. *Eigenes
+  Template* öffnet das Codefeld und behält das Template der vorherigen Auswahl
+  als Ausgangspunkt. Neue Felder `info_type`, `info_entity`, `info_entity2`;
+  das Backend nimmt nur die bekannten Arten (`INFO_TYPES`) und Entitäts-IDs der
+  Form `domain.object_id`. Einträge mit Template ohne Art erscheinen als
+  *Eigenes Template*.
+
+* **Checkbox *In der Seitenleiste ausblenden* im Eintrag entfernt.** Das Auge
+  neben dem Namen in der Liste macht dasselbe; das Feld `hidden` bleibt
+  unverändert.
+
+* **Schrift- und Icongröße für Gruppen.** Neben Höhe, Rahmen und Eckenradius
+  hat eine Gruppe jetzt die Felder *Schriftgröße (px)* und *Icongröße (px)*. 0
+  lässt den Standard (11 px Text, 16 px Icon); sonst 8 bis 40 px für den Text
+  und 8 bis 48 px für das Icon. Injector: `font-size` an der Zeile der Gruppe
+  und `--mdc-icon-size` an ihrem Icon; die Vorschau zieht live mit. Neue Felder
+  `font_size` und `icon_size` in `DEFAULT_HEADING`, vom Backend begrenzt.
+  Das Icon einer Gruppe ist jetzt in Seitenleiste und Vorschau eine Box genau
+  in seiner Größe, mittig in der Zeile (`display: flex`, `line-height: 0`) –
+  vorher richtete Home Assistant es an der Grundlinie der Schrift aus, und je
+  nach Schrift saß es in der Vorschau ein, zwei Pixel zu tief.
+
+* **Aus „Zwischenüberschrift“ wird „Gruppe“.** Eine Überschrift fasst die
+  Einträge darunter zu einer Gruppe zusammen, deshalb heißt sie im Panel jetzt
+  durchgehend so: der Knopf *Gruppe, Link, PopUp*, die Rubrik *Gruppe* im
+  Dialog (*Gruppe hinzufügen*), das Feld *Gruppe* am Eintrag (vorher *Gruppe
+  (Überschrift)*), *Gruppe · n* in der Liste und die Hinweise. Nur die
+  Bezeichnung ändert sich – Schlüssel (`heading:…`), Einstellungen und die
+  Seitenleiste bleiben, wie sie sind. README und Doku-Seite folgen dem neuen
+  Namen.
 
 ## 1.5.8
 

@@ -6,7 +6,7 @@
 
 <p align="center">
   <a href="https://hacs.xyz"><img src="https://img.shields.io/badge/HACS-custom-orange.svg" alt="HACS"></a>
-  <a href="https://github.com/jayjojayson/HA-Style-Hub/releases"><img src="https://img.shields.io/badge/version-1.5.8-blue.svg" alt="Version"></a>
+  <a href="https://github.com/jayjojayson/HA-Style-Hub/releases"><img src="https://img.shields.io/badge/version-1.5.9-blue.svg" alt="Version"></a>
   <a href="https://github.com/jayjojayson/HA-Style-Hub/actions/workflows/validate.yml"><img src="https://github.com/jayjojayson/HA-Style-Hub/actions/workflows/validate.yml/badge.svg" alt="Validate"></a>
   <a href="https://github.com/jayjojayson/HA-Style-Hub/releases"><img src="https://img.shields.io/github/downloads/jayjojayson/HA-Style-Hub/total.svg" alt="Downloads"></a>
   <a href="https://github.com/jayjojayson/HA-Style-Hub/blob/main/LICENSE"><img src="https://img.shields.io/github/license/jayjojayson/HA-Style-Hub.svg" alt="License"></a>
@@ -35,11 +35,15 @@ das komplette Aussehen — inklusive *Einstellungen*, *Benachrichtigungen* und
 
 * **Grid-Layout** mit 1 bis 4 Spalten (ausgeklappt) und 1 bis 3 Spalten (eingeklappt)
 * **Freie Reihenfolge** per Drag and Drop, auch für Einstellungen, Benachrichtigungen und Profil
-* **Zwischenüberschriften** mit Name, Icon, Rahmen, Eckenradius, Höhe und
-  wahlweise Großbuchstaben, die die Seitenleiste unterteilen und im
-  eingeklappten Zustand verschwinden
-* **Gruppen**: Einträge lassen sich per Drag nach rechts unter einer Überschrift
-  einsortieren und mit einem Klick auf sie zusammenklappen
+* **Gruppen** mit Name, Icon, Schrift- und Icongröße, Rahmen, Eckenradius, Höhe
+  und wahlweise Großbuchstaben, die Einträge der Seitenleiste zusammenfassen – ihr Name
+  verschwindet im eingeklappten Zustand
+* **Infozeilen**: eine zweite Zeile unter jedem Eintrag – CPU und RAM, Zeit seit
+  dem letzten Backup, aktive Automationen und mehr aus einer Auswahl oder einem
+  eigenen Template von Home Assistant, live aktualisiert
+* **Gruppen zuklappen**: Einträge lassen sich einer Gruppe zuordnen – per
+  Auswahl am Eintrag oder per Drag nach rechts – und mit einem Klick auf ihren
+  Namen zusammenklappen
 * **PopUp-Links**: ein Eintrag der Seitenleiste, der ein Fenster mit mehreren
   Seiten öffnet — Dashboards, Panels oder Seiten der Einstellungen —, um eine
   lange Seitenleiste zu bündeln, mit einer Lovelace-Karte aus deinem
@@ -51,7 +55,7 @@ das komplette Aussehen — inklusive *Einstellungen*, *Benachrichtigungen* und
   Haken auf der Info-Seite blendet sie alle aus
 * **Umbenennen** und **eigene Icons** für jeden Eintrag
 * **Ausblenden** einzelner Einträge — für alle oder nur für einzelne Benutzer
-  (auch Überschriften, Links und PopUps)
+  (auch Gruppen, Links und PopUps)
 * **Breite** getrennt für den ein- und ausgeklappten Zustand
 * **Aussehen**: Hintergrund und Farbverläufe (über die Oberfläche zusammengestellt),
   Hover-Farben, Text- und Iconfarben, Schriftgröße und -stärke, Icongröße,
@@ -172,14 +176,17 @@ Das gewählte Element ist umrandet und beschriftet (*„Karten · ausgewählt“
   Feldspalte. Unter *Einträge* klappt der gewählte Eintrag direkt in der Liste
   auf: Name, Icon, Spaltenbreite, die Farben als drei Kacheln (Icon, Text,
   Hintergrund — ein Klick öffnet das Feld), Ausblenden, nach oben / unten,
-  Entfernen bei Überschriften und Links, *Zurücksetzen* auf den gespeicherten
+  Entfernen bei Gruppen und Links, *Zurücksetzen* auf den gespeicherten
   Stand. Ein Klick auf einen Eintrag im Vorschaubild wählt ihn aus, Ziehen dort
-  sortiert um; in der Liste ziehst du wie bisher (nach rechts zum Einsortieren
-  unter eine Überschrift). Der Eintrag, den du bearbeitest, zeigt in der
+  sortiert um; jeder Eintrag hat seit 1.5.9 außerdem das Feld **Gruppe**:
+  Gruppe wählen und der Eintrag rutscht an ihr Ende, *– keine –* nimmt ihn
+  wieder heraus; in der Vorschau landet ein Eintrag, den du auf eine Gruppe
+  ziehst, in ihr; in der Liste ziehst du wie bisher (nach rechts zum
+  Zuordnen zur Gruppe darüber). Der Eintrag, den du bearbeitest, zeigt in der
   Vorschau seine eigenen Farben, auch wenn er die gerade geöffnete Seite ist
   (1.5.8) – in den anderen Reitern zeigt die Vorschau die aktive Seite so wie
   Home Assistant: eigene Farben unter *Aussehen › aktiver Eintrag* gehen vor,
-  eine eigene Iconfarbe des Eintrags bleibt immer. Der Pfeil einer Überschrift,
+  eine eigene Iconfarbe des Eintrags bleibt immer. Der Pfeil einer Gruppe,
   die sich zusammenklappen lässt, klappt ihre Gruppe auch in der Vorschau ein –
   zum Ausprobieren, gespeichert wird dabei nichts.
   **Vorlagen** (1.5.8, unter *Layout* und *Aussehen*): vier fertige Looks für
@@ -290,8 +297,8 @@ ist sofort zu sehen, gespeichert wird sie erst mit **Speichern**.
 daneben öffnet den [Verlauf](#der-verlauf).
 
 **Links in der Seitenleiste:** Unter *Sidebar → Einträge* öffnet das **Plus**
-einen Dialog mit zwei Möglichkeiten: eine **Zwischenüberschrift** oder einen
-**Link**. Ein Link ist eine Abkürzung zu einer Seite von Home Assistant —
+einen Dialog mit den Möglichkeiten **Gruppe**, **Link** und **PopUp-Link**
+(Knopf *Gruppe, Link, PopUp*). Ein Link ist eine Abkürzung zu einer Seite von Home Assistant —
 Automatisierungen, Szenen, Skripte, Blueprints, Geräte, Entitäten, Helfer,
 Bereiche, System-Seiten, die Werkzeuge (Zustände, Aktionen, Template, …) und
 mehr. Du wählst die Seite aus einer Liste oder gibst mit *Eigener Pfad oder
@@ -304,7 +311,7 @@ der Eintrag den Rechnernamen (`home-assistant.io`) und das Symbol *In neuem
 Fenster öffnen*; angenommen werden nur Adressen mit `http://` oder `https://`
 ohne Leer- und Sonderzeichen, bis zu 500 Zeichen. Kopfzeile und Favoriten-Leiste
 bleiben in Home Assistant. Der Link ist danach ein normaler Eintrag: Name, Icon,
-Farben, Position, Spaltenbreite, Ausblenden und Zwischenüberschriften wirken
+Farben, Position, Spaltenbreite, Ausblenden und Gruppen wirken
 wie bei jedem anderen, der Papierkorb entfernt ihn wieder. Links in die
 Einstellungen sehen nur Administratoren. Strg-Klick oder die mittlere Maustaste
 öffnen die Seite in einem neuen Tab; seit 1.5.5 bietet auch der Rechtsklick
@@ -312,21 +319,60 @@ Einstellungen sehen nur Administratoren. Strg-Klick oder die mittlere Maustaste
 Links, PopUps und der Neustart-Eintrag beim Überfahren mit der Maus ihren Namen
 als Tooltip – wie die Einträge von Home Assistant (1.5.4).
 
+**Infozeilen** (1.5.9): Jeder Eintrag (Seiten, Links, PopUps, Einstellungen und
+die anderen festen Einträge – nicht Gruppen) hat die Auswahl
+**Infozeile**. Wähle, was die kleine zweite Zeile unter dem Namen zeigen soll:
+
+| Auswahl | Zeigt |
+| --- | --- |
+| Zustand einer Entität | den Zustand einer Entität, Zahlen mit Einheit (z. B. `21.5 °C`) |
+| Zwei Entitäten | zwei Zustände nebeneinander (`7 % \| Offen`) |
+| CPU und RAM (Systemmonitor) | `CPU 7 % \| RAM 22 %` – die Sensoren der Integration Systemmonitor werden von selbst gefunden |
+| Zeit seit … (z. B. letztes Backup) | `vor 5 min`, `vor 3 Std.`, `vor 2 Tagen` – für einen Sensor mit Zeitpunkt, vorbelegt mit dem letzten automatischen Backup |
+| Aktive Automationen | `12 von 15 aktiv` |
+| Verfügbare Updates | `2 Updates` oder `Aktuell` |
+| Eingeschaltete Lichter | `3 Lichter an` |
+| Personen zu Hause | `2 zu Hause` |
+| Eigenes Template | öffnet das Codefeld für ein eigenes Template |
+
+Entitäten tippst du ein oder wählst sie aus den Vorschlägen (Entitäts-ID oder
+Name). Wörter wie *aktiv* stehen in der Sprache, die das Panel beim Auswählen
+hat. **Eigenes Template** öffnet das Feld für ein Template von Home Assistant
+(Jinja, wie unter *Entwicklerwerkzeuge › Template*); darin steht zunächst das
+Template der vorherigen Auswahl, eine fertige Zeile lässt sich so leicht
+anpassen. Einträge mit einem Template aus einem früheren Stand von 1.5.9
+erscheinen als *Eigenes Template*. Home Assistant rechnet das Template und
+schickt jede Änderung, die Zeile bleibt also von selbst aktuell –
+für jeden Benutzer, nicht nur für Admins. Der Inspektor zeigt das Ergebnis (oder
+den Fehler) live beim Tippen, die Vorschau zeigt die Zeile ebenfalls. Ein leeres
+Ergebnis zeigt keine Zeile; bei eingeklappter Seitenleiste sind die Zeilen
+ausgeblendet. Farbe und Schriftgröße aller Infozeilen stellst du unter
+*Aussehen › Text und Icons* ein. Beispiele für ein eigenes Template (Entity-IDs an dein System anpassen):
+
+```jinja
+CPU: {{ states('sensor.system_monitor_prozessornutzung') }} % | RAM: {{ states('sensor.system_monitor_arbeitsspeicherauslastung') }} %
+Vor {{ ((now() - states('sensor.backup_last_successful_automatic_backup') | as_datetime).total_seconds() / 3600) | int }} Stunden
+{{ states.automation | selectattr('state', 'eq', 'on') | list | count }} aktiv | {{ states.automation | selectattr('state', 'eq', 'off') | list | count }} inaktiv
+{{ 'Schutz an' if is_state('switch.adguard_home_schutz', 'on') else 'Schutz aus' }}
+```
+
 **Sichtbar für einzelne Benutzer** (1.5.8): Das Auge blendet einen Eintrag für
 alle aus. Unter *Einträge* hat jeder Eintrag – Seiten von Home Assistant,
-Zwischenüberschriften, Links und PopUps – zusätzlich den Block **Sichtbar für**
+Gruppen, Links und PopUps – zusätzlich den Block **Sichtbar für**
 mit allen Benutzern von Home Assistant (wie unter *Einstellungen › Personen ›
 Benutzer*, ohne die Systembenutzer). Nimmst du bei einem Benutzer den Haken weg,
 ist der Eintrag nur für ihn ausgeblendet, in jedem Browser, in dem er sich
 anmeldet; Benutzer, die später dazukommen, sehen ihn. Gedacht ist das für die
 Einträge, die der Sidebar-Editor von Home Assistant nicht kennt –
-Überschriften, Links und PopUps von HA Style Hub –, damit ein Benutzer ohne
+Gruppen, Links und PopUps von HA Style Hub –, damit ein Benutzer ohne
 Adminrechte nicht mit Einträgen dasteht, die ihm nichts nützen. In der Liste
 zeigt der Eintrag *für 2 ausgeblendet*; die Vorschau zeigt die Seitenleiste so,
-wie **du** sie siehst. Eine **Zwischenüberschrift**, unter der für einen
+wie **du** sie siehst. Eine **Gruppe**, in der für einen
 Benutzer kein Eintrag mehr übrig ist – hier ausgeblendet, vom Benutzer im
 Sidebar-Editor von Home Assistant ausgeblendet oder für ihn nicht verfügbar –,
-verschwindet von selbst, damit keine leeren Überschriften stehen bleiben.
+verschwindet von selbst, damit keine leeren Gruppen stehen bleiben. Seit
+1.5.9 klappt das auch bei einer Gruppe ohne zugeordnete Einträge: Dann
+zählen die Einträge, die bis zur nächsten Gruppe unter ihr stehen.
 Ausblenden ist eine Frage der Ansicht, keine Berechtigung: Die Seiten selbst
 bleiben über ihre Adresse erreichbar wie bisher.
 
@@ -343,7 +389,7 @@ Fenster immer Zeile für Zeile: am Computer bis zu vier je Zeile (5 → 3 + 2,
 7 → 4 + 3), am Handy zwei; eine kürzere letzte Zeile füllen breitere Kacheln. Das Fenster schließt mit dem Kreuz, einem Klick
 daneben, `Esc` oder einem Seitenwechsel. Unter *Einträge* verhält sich das
 PopUp wie jeder Eintrag (Name, Icon, Spaltenbreite, Farben, Ausblenden,
-Überschrift); dazu lassen sich seine Links umbenennen, mit eigenem Icon
+Gruppe); dazu lassen sich seine Links umbenennen, mit eigenem Icon
 versehen, verschieben, ergänzen (höchstens 24) und entfernen. Die Iconfarbe des
 Eintrags färbt auch das Fenster. Solange unter *Einträge* ein PopUp gewählt
 ist, zeigt das Vorschaubild sein Fenster über dem Dashboard. Seiten, die jetzt
@@ -542,7 +588,13 @@ Theme aus der `configuration.yaml`.
 * **„Theme in Home Assistant eintragen“** veröffentlicht es. Danach steht es in
   der Theme-Auswahl jedes Benutzerprofils. *„Gleich als Standard-Theme
   verwenden“* setzt es zusätzlich für alle, die dem vom Server gewählten Theme
-  folgen
+  folgen. Ausgeschaltet und gespeichert verschwindet das Theme wieder aus Home
+  Assistant, seine Werte bleiben aber hier erhalten
+* **Theme löschen** (1.5.9, unter dem Schalter) leert beide Modi, setzt den
+  Namen auf den Standard zurück und schaltet das Theme aus. Beim Speichern wird
+  es aus Home Assistant entfernt; war es das Standard-Theme, kehrt Home
+  Assistant zu seinem eigenen Standard zurück. Bis dahin holt *Verwerfen* es
+  zurück, danach der Verlauf
 * **Export** (Seite *Export / Import*) speichert das Theme als `.yaml`-Datei — als Sicherung oder um es von
   Hand in die `configuration.yaml` zu übernehmen
 * **Import** liest so eine Datei wieder ein: einen Export von hier, eine Datei aus
@@ -669,7 +721,7 @@ die Einstellungsseite von Home Assistant selbst (`/config`).
   1000 px ist neben Titel und Buttons kein Platz; dann stehen sie über den
   Karten.
 * **Aussehen bearbeiten** — der Button am Ende jedes Favoriten klappt sein
-  Aussehen auf, wie bei den Zwischenüberschriften der Sidebar: Textfarbe,
+  Aussehen auf, wie bei den Gruppen der Sidebar: Textfarbe,
   Hintergrund, Iconfarbe, Icon, Höhe, Rahmenfarbe, Rahmen, Eckenradius (auf
   Wunsch je Seite und je Ecke einzeln), Großbuchstaben und *Nur Icon anzeigen,
   Text ausblenden* (der Name bleibt als Tooltip). Leer heißt wie

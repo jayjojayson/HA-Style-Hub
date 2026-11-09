@@ -7,7 +7,7 @@ from typing import Any, Final
 
 DOMAIN: Final = "ha_style_hub"
 NAME: Final = "HA Style Hub"
-VERSION: Final = "1.5.8"
+VERSION: Final = "1.5.9"
 
 # Storage
 STORAGE_KEY: Final = f"{DOMAIN}.config"
@@ -220,6 +220,21 @@ DEFAULT_HEADER: Final[dict[str, Any]] = {
 HEADER_LINKS_MAX: Final = 12
 # Hoechstens so viele Pfade in menu_order / menu_hidden.
 MENU_PATHS_MAX: Final = 80
+# Hoechstens so lang darf das Template einer Infozeile sein (1.5.9).
+INFO_TEMPLATE_MAX: Final = 500
+# Die Arten der Infozeile in der Auswahl des Panels (1.5.9).
+INFO_TYPES: Final = (
+    "",
+    "state",
+    "two",
+    "cpu_ram",
+    "since",
+    "automations",
+    "updates",
+    "lights",
+    "people",
+    "custom",
+)
 # Hoechstens so viele Benutzer je Eintrag in hide_for (1.5.8).
 HIDE_FOR_MAX: Final = 100
 # Hoechstens so lang darf der Schatten der Zeilen sein (1.5.7).
@@ -441,6 +456,10 @@ DEFAULT_APPEARANCE: Final[dict[str, Any]] = {
     "font_weight": "500",
     # Empty keeps the font of the active theme.
     "font_family": "",
+    # 1.5.9: Farbe und Schriftgroesse der Infozeilen (leer / 0 = wie Home
+    # Assistant: Sekundaertext, 11 px).
+    "info_color": "",
+    "info_size": 0,
     "icon_size": 24,
     "item_background": "",
     "item_background_selected": "",
@@ -995,6 +1014,10 @@ DEFAULT_HEADING: Final[dict[str, Any]] = {
     # als nach unten unter den Eintraegen davor. Ein gesetzter Wert richtet den
     # Text stattdessen mittig darin aus.
     "height": 0,
+    # 1.5.9: Schriftgroesse des Namens in px. 0 = Standard (11 px), sonst 8-40.
+    "font_size": 0,
+    # 1.5.9: Groesse des Icons in px. 0 = Standard (16 px), sonst 8-48.
+    "icon_size": 0,
     # Ueberschriften werden in Home Assistant ueblicherweise in Grossbuchstaben
     # gesetzt. Das laesst sich abschalten, dann steht der Name so da, wie er
     # eingegeben wurde.
@@ -1020,6 +1043,16 @@ DEFAULT_ITEM: Final[dict[str, Any]] = {
     # 1.5.8: fuer diese Benutzer (IDs von Home Assistant) ausgeblendet. Leer
     # heisst: fuer alle sichtbar - auch fuer Benutzer, die spaeter dazukommen.
     "hide_for": [],
+    # 1.5.9: Infozeile unter dem Namen - ein Template von Home Assistant
+    # (Jinja), das der Browser des Benutzers ueber render_template rechnen
+    # laesst. Leer heisst: keine Infozeile.
+    "info": "",
+    # 1.5.9: woraus das Panel die Infozeile zusammensetzt - eine Art aus der
+    # Auswahl (INFO_TYPES) mit bis zu zwei Entitaeten; "custom" = eigenes
+    # Template. Leer heisst: keine Auswahl (aeltere Eintraege: eigenes Template).
+    "info_type": "",
+    "info_entity": "",
+    "info_entity2": "",
 }
 
 

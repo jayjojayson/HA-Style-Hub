@@ -7,7 +7,114 @@ called *Sidebar Hub*), newest first. A German version is in
 Version numbers count up to `.9` and then move on to the next minor (1.2.9 →
 1.3.0 → 1.3.1 → 1.3.2 → 1.3.3 → 1.3.4 → 1.3.5 → 1.3.6 → 1.3.7 →
 1.3.8 → 1.3.9 → 1.4.0 → 1.4.1 → 1.4.2 → 1.4.3 → 1.4.4 → 1.4.5 →
-1.4.6 → 1.4.7 → 1.4.8 → 1.4.9 → 1.5.0 → 1.5.1 → 1.5.2 → 1.5.3 → 1.5.4 → 1.5.5 → 1.5.6 → 1.5.7 → 1.5.8).
+1.4.6 → 1.4.7 → 1.4.8 → 1.4.9 → 1.5.0 → 1.5.1 → 1.5.2 → 1.5.3 → 1.5.4 → 1.5.5 → 1.5.6 → 1.5.7 → 1.5.8 → 1.5.9).
+
+## 1.5.9
+
+* **Assign entries to a heading without dragging**
+  ([#2](https://github.com/jayjojayson/HA-Style-Hub/issues/2)). Every entry
+  (not headings) gets the field *Group* under *Entries*: a list of all
+  groups (headings) plus *– none –*. Choosing a heading sets `parent` and moves the entry
+  to the end of that group (directly below the heading if the group is empty);
+  *– none –* clears `parent` and puts the entry behind the end of its former
+  group, so it never stands inside a group it no longer belongs to. Like every
+  change it is unsaved and one step for `Ctrl Z`. Dragging to the right in the
+  list still works as before.
+* **Preview: dropping onto a heading files the entry into its group.** Until
+  now an entry dropped in the preview only joined a group when it was dropped
+  onto an entry that already belonged to one - so the first entry of a group
+  could not be assigned there. Dropped onto a heading it now lands directly
+  below it with `parent` set.
+* **Empty headings also without assigned entries.** Since 1.5.8 a heading
+  disappears for a user when all of its entries are gone. That only looked at
+  entries assigned with `parent`, so a heading whose entries simply stood below
+  it stayed visible. Now, if no entry is assigned to a heading, the entries that
+  stand below it in the order up to the next heading count (Settings,
+  Notifications and the user entry only while they are in the grid). Injector
+  and preview use the same rule. Assigned entries still take precedence.
+* **Delete theme.** New button *Delete theme* below the theme switch. After a
+  confirmation it clears both modes, puts the name back to the default and
+  switches `enabled` and `set_default` off - unsaved, so *Discard* brings it
+  back. When you save, the backend removes the theme from Home Assistant as
+  before. New: if it was Home Assistant's default theme
+  (`hass.data["frontend_default_theme"]`), `frontend.set_theme` sets the
+  default back to `default`. This happens only when the theme is switched off
+  or deleted and saved, never when the integration is unloaded. The hint of
+  *Register the theme in Home Assistant* now also says that switching it off
+  keeps the values.
+
+* **List view with Home Assistant 2026.11.** Since 2026.11 the integration card
+  has a new structure: logo, name and count sit in an `ha-row-item` inside the
+  link, the separate header (`ha-integration-card-header`) and footer
+  (`ha-integration-card-footer`) are gone. The injector only styled cards whose
+  structure it knew, so with 2026.11 only the columns took effect while row
+  height, border, background, corners, shadow and hover were left out. The card
+  is now recognised by `.ripple-anchor > ha-row-item` as well and gets the same
+  look as before: one line with name on the left and count on the right (via
+  `::part(content)`), no padding above and below, the logo sized to the row
+  height and the icons in front of the count. Cards of 2026.9 and 2026.10 keep
+  their rules.
+
+* **Info lines under the entries.** Every sidebar entry except headings gets
+  the field *Info line (template)* (`items.<key>.info`, at most 500 characters).
+  The injector subscribes to `render_template` for each entry with a template
+  (one subscription per entry, `report_errors: false`; the command is open to
+  every user, not only admins) and writes the result as plain text into a
+  `<span class="sh-info" slot="supporting-text">` inside the entry - the
+  second line Home Assistant's `ha-list-item-button` provides under the
+  headline; the entry is re-rendered once so that the slot appears. Each change
+  of a state used in the template updates the line. An empty result removes
+  the line; with the sidebar collapsed it is hidden. Changed or removed
+  templates end their subscription, switching HA Style Hub off removes all
+  lines and subscriptions. Colour and size of all info lines: *Appearance ›
+  Text and icons* (`appearance.info_color`, `appearance.info_size`; empty / 0 = secondary
+  text colour, 11 px). In the panel the inspector shows the result or the
+  template error live (`report_errors: true`), the preview shows the lines;
+  its subscriptions end when the panel is closed. Backend: `info` in
+  `DEFAULT_ITEM` (popups inherit it), stripped and limited to
+  `INFO_TEMPLATE_MAX`.
+
+* **Info line as a selection.** Instead of a bare template field the
+  inspector offers the selection *Info line*: none, *State of an entity*, *Two
+  entities*, *CPU and RAM (System Monitor)*, *Time since … (e.g. last backup)*,
+  *Active automations*, *Available updates*, *Lights on*, *People at home* and
+  *Custom template*. The choices that need entities show one or two entity
+  fields with suggestions from the states (entity ID and name; *Time since*
+  lists only sensors with `device_class: timestamp`). *CPU and RAM* looks up
+  the System Monitor sensors by platform and translation key
+  (`processor_use`, `memory_use_percent`) and falls back to the entity ID;
+  *Time since* is prefilled with `sensor.backup_last_successful_automatic_backup`
+  when it exists. The panel builds the template from the choice (numbers via
+  `states(…, with_unit=True)`, other states via `state_translated`, times via
+  `as_timestamp` and `now()`, counts via `states.<domain> | selectattr`) and
+  stores it in `info` as before - the injector is unchanged. Words such as
+  *active* follow the panel language at the time of choosing. *Custom template*
+  opens the code field and keeps the template of the choice before as a
+  starting point. New item fields `info_type`, `info_entity`, `info_entity2`;
+  the backend only accepts the known types (`INFO_TYPES`) and entity IDs of
+  the form `domain.object_id`. Entries with a template but without a type are
+  shown as *Custom template*.
+
+* **Checkbox *Hide in the sidebar* removed from the entry.** The eye next to
+  the name in the list does the same; the field `hidden` stays unchanged.
+
+* **Font size and icon size for groups.** Next to height, border and radius a
+  group now has the fields *Font size (px)* and *Icon size (px)*. 0 keeps the
+  standard (11 px text, 16 px icon); otherwise 8 to 40 px for the text and 8 to
+  48 px for the icon. Injector: `font-size` on the heading row and
+  `--mdc-icon-size` on its icon; the preview follows live. New fields
+  `font_size` and `icon_size` in `DEFAULT_HEADING`, clamped by the backend.
+  The icon of a group is now a box of exactly its size centred in the row
+  (`display: flex`, `line-height: 0`) in the sidebar and in the preview - before,
+  Home Assistant lined it up with the baseline of the text and depending on the
+  font it sat a pixel or two too low in the preview.
+
+* **"Section heading" is now called "Group".** A heading bundles the entries
+  below it into a group, so the panel calls it that throughout: the button
+  *Group, link, popup*, the section *Group* in the add dialog (*Add a group*),
+  the field *Group* at the entry (before *Group (heading)*), *Group · n* in the
+  list and the hints. Only the wording changes - keys (`heading:…`), settings
+  and the sidebar stay as they are. README and docs page follow the new name.
 
 ## 1.5.8
 

@@ -317,7 +317,7 @@
               <a class="btn" href="#tour"><span data-en>▶ Watch the tour</span><span data-de>▶ Tour ansehen</span></a>
             </div>
             <div class="badges">
-              <span class="badge">Version 1.5.8</span>
+              <span class="badge">Version 1.5.9</span>
               <span class="badge">Home Assistant 2025.3+</span>
               <span class="badge">HACS</span>
               <span class="badge">MIT</span>
@@ -369,9 +369,9 @@
               <p data-de>Eigene Beschriftung und beliebiges mdi-Icon je Eintrag.</p>
             </div>
             <div class="feature">
-              <strong><span data-en>Section headings</span><span data-de>Zwischenüberschriften</span></strong>
-              <p data-en>Dividers with name, icon and height; groups can be folded, hidden while collapsed.</p>
-              <p data-de>Trenner mit Name, Icon und Höhe; Gruppen lassen sich zuklappen, eingeklappt ausgeblendet.</p>
+              <strong><span data-en>Groups</span><span data-de>Gruppen</span></strong>
+              <p data-en>Bundle entries under a name with icon, font size, icon size and height; groups can be folded, hidden while collapsed.</p>
+              <p data-de>Fassen Einträge unter einem Namen mit Icon, Schrift-, Icongröße und Höhe zusammen; lassen sich zuklappen, eingeklappt ausgeblendet.</p>
             </div>
             <div class="feature">
               <strong><span data-en>Popup links</span><span data-de>PopUp-Links</span></strong>
@@ -449,6 +449,11 @@
               <strong><span data-en>Templates</span><span data-de>Vorlagen</span></strong>
               <p data-en>Four finished looks fill both modes with one click and stay editable.</p>
               <p data-de>Vier fertige Looks füllen beide Modi mit einem Klick und bleiben änderbar.</p>
+            </div>
+            <div class="feature">
+              <strong><span data-en>Info lines</span><span data-de>Infozeilen</span></strong>
+              <p data-en>A second line under any entry - CPU, RAM, last backup, automations - picked from a list or your own Home Assistant template, updated live.</p>
+              <p data-de>Eine zweite Zeile unter jedem Eintrag - CPU, RAM, letztes Backup, Automationen - aus einer Auswahl oder einem eigenen Template von Home Assistant, live aktualisiert.</p>
             </div>
             <div class="feature">
               <strong><span data-en>Sidebar templates</span><span data-de>Sidebar-Vorlagen</span></strong>
@@ -686,24 +691,24 @@
               <li data-de>Ein Klick auf einen Eintrag im Bild wählt ihn aus, Ziehen dort sortiert um.</li>
               <li data-en>In the list on the right (drag and drop, eye) the chosen entry folds open: name, icon, column span, colors as tiles, hide, up / down, reset.</li>
               <li data-de>In der Liste rechts (Drag and Drop, Auge) klappt der gewählte Eintrag auf: Name, Icon, Spaltenbreite, Farben als Kacheln, Ausblenden, nach oben / unten, Zurücksetzen.</li>
-              <li data-en><em>Visible for</em> hides an entry - also headings, links and popups - for single users only. A heading with no entry left for a user disappears by itself.</li>
-              <li data-de><em>Sichtbar für</em> blendet einen Eintrag – auch Überschriften, Links und PopUps – nur für einzelne Benutzer aus. Eine Überschrift ohne übrigen Eintrag verschwindet für diesen Benutzer von selbst.</li>
-              <li data-en>The <code>+</code> button adds a <strong>section heading</strong>, a <strong>link</strong> to a page of Home Assistant (automations, entities, tools … or an own path) or to any <strong>web address</strong> (opens in a new tab), or a <strong>popup link</strong>.</li>
-              <li data-de>Der <code>+</code>-Knopf fügt eine <strong>Zwischenüberschrift</strong>, einen <strong>Link</strong> zu einer Seite von Home Assistant (Automatisierungen, Entitäten, Werkzeuge … oder eigener Pfad) oder zu einer beliebigen <strong>Webadresse</strong> (öffnet in einem neuen Tab) oder einen <strong>PopUp-Link</strong> ein.</li>
+              <li data-en><em>Visible for</em> hides an entry - also groups, links and popups - for single users only. A group with no entry left for a user disappears by itself.</li>
+              <li data-de><em>Sichtbar für</em> blendet einen Eintrag – auch Gruppen, Links und PopUps – nur für einzelne Benutzer aus. Eine Gruppe ohne übrigen Eintrag verschwindet für diesen Benutzer von selbst.</li>
+              <li data-en>The button <em>Group, link, popup</em> adds a <strong>group</strong>, a <strong>link</strong> to a page of Home Assistant (automations, entities, tools … or an own path) or to any <strong>web address</strong> (opens in a new tab), or a <strong>popup link</strong>.</li>
+              <li data-de>Der Knopf <em>Gruppe, Link, PopUp</em> fügt eine <strong>Gruppe</strong>, einen <strong>Link</strong> zu einer Seite von Home Assistant (Automatisierungen, Entitäten, Werkzeuge … oder eigener Pfad) oder zu einer beliebigen <strong>Webadresse</strong> (öffnet in einem neuen Tab) oder einen <strong>PopUp-Link</strong> ein.</li>
               <li data-en>A popup link opens a window with several pages or web addresses, with a card (YAML from the code editor of a dashboard card, at most 50 KB) or with the content of a website (shown like a small browser; many sites forbid embedding). Width and height can be set, 0 = automatic.</li>
               <li data-de>Ein PopUp-Link öffnet ein Fenster mit mehreren Seiten oder Webadressen, mit einer Karte (YAML aus dem Code-Editor einer Dashboard-Karte, höchstens 50 KB) oder mit dem Inhalt einer Webseite (wie ein kleiner Browser; viele Seiten verbieten das Einbetten). Breite und Höhe sind einstellbar, 0 = automatisch.</li>
             </ul>
-            <h4 data-en>Section headings</h4>
-            <h4 data-de>Zwischenüberschriften</h4>
+            <h4 data-en>Groups</h4>
+            <h4 data-de>Gruppen</h4>
             <ul>
-              <li data-en>They take a name, an icon and their own colors, run across the full width and have no target.</li>
-              <li data-de>Sie bekommen Name, Icon und eigene Farben, laufen über die volle Breite und haben kein Ziel.</li>
+              <li data-en>They take a name, an icon, their own colors and font and icon size (1.5.9), run across the full width and have no target.</li>
+              <li data-de>Sie bekommen Name, Icon, eigene Farben sowie Schrift- und Icongröße (1.5.9), laufen über die volle Breite und haben kein Ziel.</li>
               <li data-en>Hidden while the sidebar is collapsed — there is no room for text.</li>
               <li data-de>Im eingeklappten Zustand ausgeblendet — dort ist kein Platz für Text.</li>
-              <li data-en>Drag an entry a little to the <strong>right</strong> to file it under the heading above it; back to the left takes it out.</li>
-              <li data-de>Einen Eintrag etwas <strong>nach rechts</strong> ziehen, um ihn unter der Überschrift darüber einzusortieren; nach links löst die Zuordnung.</li>
-              <li data-en>With <em>“Can be collapsed”</em> a click on the heading folds the whole group. Which headings are folded is remembered per browser — a view, not a setting.</li>
-              <li data-de>Mit <em>„Lässt sich zusammenklappen“</em> klappt ein Klick auf die Überschrift die ganze Gruppe weg. Welche zugeklappt sind, merkt sich jeder Browser selbst — eine Ansicht, keine Einstellung.</li>
+              <li data-en>Drag an entry a little to the <strong>right</strong> to put it into the group above it; back to the left takes it out. Or choose the group under <em>Group</em> at the entry (1.5.9).</li>
+              <li data-de>Einen Eintrag etwas <strong>nach rechts</strong> ziehen, um ihn der Gruppe darüber zuzuordnen; nach links löst die Zuordnung. Oder am Eintrag unter <em>Gruppe</em> die Gruppe wählen (1.5.9).</li>
+              <li data-en>With <em>“Can be collapsed”</em> a click on the name folds the whole group. Which groups are folded is remembered per browser — a view, not a setting.</li>
+              <li data-de>Mit <em>„Lässt sich zusammenklappen“</em> klappt ein Klick auf den Namen die ganze Gruppe weg. Welche zugeklappt sind, merkt sich jeder Browser selbst — eine Ansicht, keine Einstellung.</li>
             </ul>
           </div>
         </details>
@@ -1010,13 +1015,16 @@
             The theme is only published once <em>“Register the theme in Home
             Assistant”</em> is switched on. <em>“Use it as the default theme
             right away”</em> additionally sets it for everybody who follows the
-            theme selected by the server.
+            theme selected by the server. <em>“Delete theme”</em> (1.5.9) clears it
+            and removes it from Home Assistant when you save.
           </p>
           <p data-de>
             Veröffentlicht wird das Theme erst mit
             <em>„Theme in Home Assistant eintragen“</em>.
             <em>„Gleich als Standard-Theme verwenden“</em> setzt es zusätzlich
-            für alle, die dem vom Server gewählten Theme folgen.
+            für alle, die dem vom Server gewählten Theme folgen. <em>„Theme
+            löschen“</em> (1.5.9) leert es und entfernt es beim Speichern aus Home
+            Assistant.
           </p>
         </div>
 
@@ -1290,7 +1298,7 @@ ha-list-item-button { text-transform: uppercase; }
     <footer>
       <div class="wrap row">
         <span>
-          HA Style Hub 1.5.8 ·
+          HA Style Hub 1.5.9 ·
           <a href="https://github.com/jayjojayson/HA-Style-Hub">github.com/jayjojayson/HA-Style-Hub</a>
           · MIT
         </span>

@@ -30,6 +30,8 @@ from .const import (
     DEFAULT_SETTINGS,
     LIST_SHADOW_MAX,
     HIDE_FOR_MAX,
+    INFO_TEMPLATE_MAX,
+    INFO_TYPES,
     DASH_DIRECTIONS,
     DASH_IMAGE_SIZES,
     DEFAULT_THEME,
@@ -81,6 +83,8 @@ _EXTERNAL_URL = re.compile(r"https?://[A-Za-z0-9][A-Za-z0-9\-._~:/?#\[\]@!$&()*+
 
 # Benutzer-IDs von Home Assistant (1.5.8): hex, ohne Sonderzeichen.
 _USER_ID = re.compile(r"[A-Za-z0-9_-]{1,64}")
+# Entitaets-IDs fuer die Infozeile (1.5.9), z. B. sensor.processor_use.
+_ENTITY_ID = re.compile(r"[a-z0-9_]+\.[a-z0-9_]+")
 
 
 def _clean_user_ids(raw: Any) -> list[str]:
@@ -497,9 +501,30 @@ def normalize(data: Any) -> dict[str, Any]:
             else:
                 defaults = DEFAULT_ITEM
             clean_items[key] = _merge_section(defaults, value)
+            # 1.5.9: Schrift- und Icongroesse einer Gruppe - 0 (Standard) oder
+            # 8 bis 40 px (Schrift) bzw. 8 bis 48 px (Icon).
+            for field, top in (("font_size", 40), ("icon_size", 48)):
+                if field in clean_items[key]:
+                    size = clean_items[key][field]
+                    size = int(size) if isinstance(size, (int, float)) and not isinstance(size, bool) else 0
+                    clean_items[key][field] = 0 if size <= 0 else min(top, max(8, size))
             clean_items[key]["hide_for"] = _clean_user_ids(
                 value.get("hide_for") if isinstance(value, dict) else None
             )
+            # 1.5.9: Infozeile - ein Template-Text, hoechstens 500 Zeichen.
+            if "info" in clean_items[key]:
+                info = clean_items[key]["info"]
+                info = info.strip() if isinstance(info, str) else ""
+                clean_items[key]["info"] = info if len(info) <= INFO_TEMPLATE_MAX else ""
+            if "info_type" in clean_items[key]:
+                kind = clean_items[key]["info_type"]
+                clean_items[key]["info_type"] = kind if isinstance(kind, str) and kind in INFO_TYPES else ""
+                for field in ("info_entity", "info_entity2"):
+                    entity = clean_items[key].get(field)
+                    entity = entity.strip() if isinstance(entity, str) else ""
+                    clean_items[key][field] = (
+                        entity if len(entity) <= 255 and _ENTITY_ID.fullmatch(entity) else ""
+                    )
             if key.startswith(KEY_PREFIX_POPUP):
                 clean_items[key]["links"] = _clean_popup_links(
                     value.get("links") if isinstance(value, dict) else None

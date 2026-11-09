@@ -1,6 +1,6 @@
 /*
  * HA Style Hub - ha-style-hub-panel.js
- * Version: 1.5.8
+ * Version: 1.5.9
  *
  * Configuration panel for the sidebar. Registered by the Python part of the
  * integration through panel_custom, so Home Assistant sets the properties
@@ -22,7 +22,7 @@
 (() => {
   "use strict";
 
-  const VERSION = "1.5.8";
+  const VERSION = "1.5.9";
   // Das Logo liegt neben dieser Datei im Ordner www (siehe URL_BASE in const.py).
   const LOGO_URL = `/ha_style_hub-static/ha-style-hub-logo.png?v=${VERSION}`;
   const EVENT_PREVIEW = "ha-style-hub-preview";
@@ -71,6 +71,8 @@
     font_size: 12,
     font_weight: "500",
     font_family: "",
+    info_color: "",
+    info_size: 0,
     icon_size: 24,
     item_background: "",
     item_background_selected: "",
@@ -316,6 +318,13 @@
     parent: "",
     // 1.5.8: fuer diese Benutzer ausgeblendet (IDs von Home Assistant)
     hide_for: [],
+    // 1.5.9: Infozeile unter dem Namen (Template von Home Assistant)
+    info: "",
+    // 1.5.9: woraus die Infozeile entsteht - eine Vorlage aus der Auswahl
+    // (mit bis zu zwei Entitaeten) oder "custom" (eigenes Template).
+    info_type: "",
+    info_entity: "",
+    info_entity2: "",
   };
 
   const DEFAULT_THEME = {
@@ -2444,12 +2453,84 @@
     radius_br: 0,
     radius_bl: 0,
     height: 0,
+    // 1.5.9: Schrift- und Icongroesse in px, 0 = Standard (11 px / 16 px)
+    font_size: 0,
+    icon_size: 0,
     uppercase: true,
     collapsible: false,
     hide_for: [],
   };
 
   const isHeading = (key) => String(key).indexOf(HEADING_PREFIX) === 0;
+
+  /**
+   * 1.5.9: Die Arten der Infozeile in der Auswahl. "" = keine, "custom" =
+   * eigenes Template. INFO_NEEDS: wie viele Entitaeten die Art braucht.
+   */
+  const INFO_TYPES = ["", "state", "two", "cpu_ram", "since", "automations", "updates", "lights", "people", "custom"];
+  const INFO_NEEDS = { state: 1, two: 2, cpu_ram: 2, since: 1 };
+  const INFO_ENTITY = /^[a-z0-9_]+\.[a-z0-9_]+$/;
+
+  /**
+   * Das Template zu einer Art. Woerter ("aktiv", "Updates") in der Sprache
+   * des Panels; die Entitaeten sind geprueft und stehen in einfachen
+   * Anfuehrungszeichen.
+   */
+  const infoTemplate = (type, one, two, de) => {
+    const ok = (id) => INFO_ENTITY.test(String(id || "")) && String(id).length <= 255;
+    const value = (id) =>
+      /^(sensor|number|input_number|counter)\./.test(id)
+        ? `{{ states('${id}', with_unit=True) }}`
+        : `{{ state_translated('${id}') }}`;
+    const count = (domain, state) => `states.${domain} | selectattr('state', 'eq', '${state}') | list | count`;
+    switch (type) {
+      case "state":
+        return ok(one) ? value(one) : "";
+      case "two":
+        if (ok(one) && ok(two)) {
+          return `${value(one)} | ${value(two)}`;
+        }
+        return ok(one) ? value(one) : ok(two) ? value(two) : "";
+      case "cpu_ram": {
+        const parts = [];
+        if (ok(one)) {
+          parts.push(`CPU ${value(one)}`);
+        }
+        if (ok(two)) {
+          parts.push(`RAM ${value(two)}`);
+        }
+        return parts.join(" | ");
+      }
+      case "since": {
+        if (!ok(one)) {
+          return "";
+        }
+        const head = `{% set ts = as_timestamp(states('${one}'), 0) %}{% if ts %}{% set m = [((now().timestamp() - ts) / 60) | int, 0] | max %}`;
+        const body = de
+          ? `{% if m < 60 %}vor {{ m }} min{% elif m < 1440 %}vor {{ m // 60 }} Std.{% else %}{% set d = m // 1440 %}vor {{ d }} {{ 'Tag' if d == 1 else 'Tagen' }}{% endif %}`
+          : `{% if m < 60 %}{{ m }} min ago{% elif m < 1440 %}{{ m // 60 }} h ago{% else %}{% set d = m // 1440 %}{{ d }} {{ 'day' if d == 1 else 'days' }} ago{% endif %}`;
+        return `${head}${body}{% else %}–{% endif %}`;
+      }
+      case "automations":
+        return de
+          ? `{{ ${count("automation", "on")} }} von {{ states.automation | list | count }} aktiv`
+          : `{{ ${count("automation", "on")} }} of {{ states.automation | list | count }} active`;
+      case "updates":
+        return de
+          ? `{% set n = ${count("update", "on")} %}{{ 'Aktuell' if n == 0 else (n ~ (' Update' if n == 1 else ' Updates')) }}`
+          : `{% set n = ${count("update", "on")} %}{{ 'Up to date' if n == 0 else (n ~ (' update' if n == 1 else ' updates')) }}`;
+      case "lights":
+        return de
+          ? `{% set n = ${count("light", "on")} %}{{ n }} {{ 'Licht' if n == 1 else 'Lichter' }} an`
+          : `{% set n = ${count("light", "on")} %}{{ n }} {{ 'light' if n == 1 else 'lights' }} on`;
+      case "people":
+        return de
+          ? `{{ ${count("person", "home")} }} zu Hause`
+          : `{{ ${count("person", "home")} }} at home`;
+      default:
+        return "";
+    }
+  };
 
   /**
    * Ab wie vielen Pixeln vom linken Rand der Liste gilt ein Eintrag als
@@ -2922,11 +3003,11 @@
       layout_grid: "Grid",
       layout_sizes: "Sizes",
       layout_behaviour: "Behaviour",
-      entry_add_short: "Heading, link, popup",
+      entry_add_short: "Group, link, popup",
       heading_fold: "Fold in the preview",
       heading_unfold: "Unfold in the preview",
       inspector_empty: "Pick an entry.",
-      heading_meta: "Heading · {n}",
+      heading_meta: "Group · {n}",
       hidden_short: "hidden",
       span_label: "Column width",
       item_style_auto_short: "Automatic",
@@ -2940,12 +3021,43 @@
       entry_reset: "Reset",
       text_short: "Text",
       item_background_short: "Background",
-      hide_in_sidebar: "Hide in the sidebar",
+      group_label: "Group",
+      info_label: "Info line",
+      info_placeholder: "e.g. CPU: {{ states('sensor.processor_use') }} %",
+      info_hint: "A second line under the name. Choose what it should show - it updates by itself and works for every user. Words such as \"active\" are written in the language of this page.",
+      info_hint_custom: "A Home Assistant template (Jinja) like in the template editor under Developer tools. Empty = no info line.",
+      info_type_none: "\u2013 none \u2013",
+      info_type_state: "State of an entity",
+      info_type_two: "Two entities",
+      info_type_cpu_ram: "CPU and RAM (System Monitor)",
+      info_type_since: "Time since \u2026 (e.g. last backup)",
+      info_type_automations: "Active automations",
+      info_type_updates: "Available updates",
+      info_type_lights: "Lights on",
+      info_type_people: "People at home",
+      info_type_custom: "Custom template",
+      info_entity: "Entity",
+      info_entity2: "Second entity",
+      info_cpu: "CPU sensor",
+      info_ram: "RAM sensor",
+      info_since_entity: "Sensor with a point in time",
+      info_entity_hint: "Type to search - entity ID or name.",
+      info_cpu_missing: "No System Monitor sensors found - set up the System Monitor integration or choose two sensors.",
+      info_no_entity: "Choose an entity first.",
+      info_wait: "Calculating …",
+      info_result: "Result: {text}",
+      info_empty: "(empty - no info line)",
+      info_error: "Error in the template: {text}",
+      info_color: "Colour of the info lines",
+      info_size: "Font size of the info lines (px)",
+      info_look_hint: "For the info lines under the entry names (set per entry under Entries). Empty / 0 = secondary text colour, 11 px.",
+      group_none: "– none –",
+      group_hint: "Puts the entry into a group: it moves to the end of the group and folds away with it. Dragging the entry to the right in the list (or onto a group in the preview) does the same.",
       users_title: "Visible for",
       users_hint:
         "Untick a user to hide this entry for them only - like the eye, but per person. Users added later see it. Applies in every browser the user signs in with.",
       users_hint_heading:
-        "Untick a user to hide this heading for them. The entries below it stay; if none of them is left for a user, the heading disappears by itself.",
+        "Untick a user to hide the name of this group for them. The entries in it stay; if none of them is left for a user, the group disappears by itself.",
       users_admin: "Admin",
       users_owner: "Owner",
       users_me: "you",
@@ -2993,7 +3105,7 @@
       n_changed: "{n} changed",
       info_lead: "Make your Home Assistant look exactly the way you like it. With HA Style Hub you adapt the interface and your dashboards to your own taste, without having to write code.",
       info_areas: "Style Hub is split into four areas, and together they cover the design of the system and of your dashboards:",
-      info_sidebar: "<p>This is where you set up the sidebar the way you want it:</p><p><strong>Layout</strong>: 1 to 4 columns (1 to 3 collapsed), gap, width expanded and collapsed, size of the entries, an optional restart button, Settings, Notifications and the user entry inside the grid, and hiding the whole sidebar (kiosk mode).</p><p><strong>Entries</strong>: sort by dragging - right in the preview as well -, rename, own icons, colors and column width per entry, hide, section headings as groups that fold away, links to any page of Home Assistant or to any web address and popup links that open a window with several pages, a Lovelace card from your dashboard or a website.</p><p><strong>Appearance</strong>: background and gradient, hover, text and icon colors, font, borders per side, corners per corner, the notification drawer and the theme colors of the sidebar.</p>",
+      info_sidebar: "<p>This is where you set up the sidebar the way you want it:</p><p><strong>Layout</strong>: 1 to 4 columns (1 to 3 collapsed), gap, width expanded and collapsed, size of the entries, an optional restart button, Settings, Notifications and the user entry inside the grid, and hiding the whole sidebar (kiosk mode).</p><p><strong>Entries</strong>: sort by dragging - right in the preview as well -, rename, own icons, colors and column width per entry, hide, groups that fold away, links to any page of Home Assistant or to any web address and popup links that open a window with several pages, a Lovelace card from your dashboard or a website.</p><p><strong>Appearance</strong>: background and gradient, hover, text and icon colors, font, borders per side, corners per corner, the notification drawer and the theme colors of the sidebar.</p>",
       info_theme: "<p>Colors Home Assistant itself - dashboards, dialogs and the settings pages - as a real theme with {n} variables, dark and light kept separately, plus the {p} steps of the primary color scale that are worked out automatically.</p><p><strong>Preview</strong>: every tile and every element in it can be clicked - switches, buttons, state colors, table rows, chart colors, code … - and opens exactly the matching fields on the right.</p><p><strong>Range</strong>: cards, fonts, state and status colors, tables, input fields, dialogs and code editor up to charts, energy, weather and the design tokens and switches of Home Assistant 2026.10.</p><p><strong>Tools</strong>: a palette from one main color, ready-made templates, the shadow designer, contrast check, quick colors, the dashboard background as color, gradient or image, and YAML export and import.</p>",
       info_header: "<p>Takes care of the bar at the top of the dashboards, up to hiding it completely (kiosk mode, also as a switch entity).</p><p><strong>Look</strong>: color or gradient, opacity and blur, height, border and corners, title and icon size, colors and borders of the view tabs and buttons - or one of the templates <em>Glass</em>, <em>Slim</em> and <em>Detached</em>.</p><p><strong>Buttons</strong>: hide Home Assistant's four buttons one by one, and put your own in front of them: restart, links, sensors (the state of any entity) and CPU, memory and storage.</p><p><strong>Theme colors of the header</strong>: the theme variables of the bar, also for the edit mode of a dashboard.</p>",
       info_settings: "<p>Styles the pages of Home Assistant itself:</p><p><strong>Settings page</strong>: the menu entries as boxes in your own colors, in columns or as tiles, in your own order and with an own name, subtitle and colors per entry - on the profile page as well. Plus a favourites bar, a system monitor with processor, memory, storage and up to six own entities, the last backup with <em>Create backup now</em> and an overview with counters.</p><p><strong>Devices &amp; services</strong>: integrations and apps as a slim list in 1 to 3 columns; the page of a single integration follows with its own row height.</p><p><strong>Tables</strong>: group headers, stripes, row background, font size and mouse hover.</p>",
@@ -3280,7 +3392,7 @@
       ctl_body_text: "Body text",
       ctl_chart_lines: "Chart lines",
       ctl_timeline: "History line",
-      entry_add: "Add a section heading, a link or a popup",
+      entry_add: "Add a group, a link or a popup",
       add_popup_title: "Popup link",
       add_popup_hint: "One entry in the sidebar that opens a window - with several pages or web addresses as tiles, or with a card from your dashboard.",
       add_popup_name: "Name of the popup",
@@ -3402,7 +3514,11 @@
       theme_default: "Home Assistant",
       theme_enabled: "Register the theme in Home Assistant",
       theme_enabled_hint:
-        "The theme then appears in the theme picker of every user profile, exactly like a theme from configuration.yaml.",
+        "The theme then appears in the theme picker of every user profile, exactly like a theme from configuration.yaml. Switched off and saved it disappears from Home Assistant again, but its values stay here - to remove it completely use Delete theme.",
+      theme_delete: "Delete theme",
+      theme_delete_confirm:
+        "Delete the theme? All values of both modes are cleared and the name goes back to the default. When you save, the theme is removed from Home Assistant (and is no longer the default theme). Until then Discard brings it back, afterwards the history does.",
+      theme_delete_done: "Theme deleted - press Save to remove it from Home Assistant. Discard brings it back.",
       theme_name: "Theme name",
       theme_set_default: "Use it as the default theme right away",
       theme_set_default_hint:
@@ -3730,7 +3846,9 @@
       merge_fixed_on: "Make it movable",
       heading_height: "Height (px)",
       heading_height_hint:
-        "0 lets the text decide the height (with the same space above and below). Any other value gives the line exactly that height. Either way the text stays centred vertically.",
+        "0 lets the text decide the height (with the same space above and below). Any other value gives the line exactly that height. Either way the text stays centred vertically. Font size and icon size 0 = standard (11 px / 16 px).",
+      heading_font_size: "Font size (px)",
+      heading_icon_size: "Icon size (px)",
       heading_uppercase: "Capital letters",
       hide_sidebar: "Hide the sidebar (kiosk mode)",
       hide_sidebar_hint:
@@ -3750,13 +3868,13 @@
       icon: "Icon",
       icon_placeholder: "e.g. mdi:home",
       span: "Width",
-      heading: "Section heading",
-      heading_sub: "divider only, no link",
-      add_hint: "The plus adds a section heading or a link to a page of Home Assistant (automations, entities, tools, ...).",
+      heading: "Group",
+      heading_sub: "bundles entries, no link",
+      add_hint: "The plus adds a group or a link to a page of Home Assistant (automations, entities, tools, ...).",
       add_title: "Add an entry",
-      add_heading_title: "Section heading",
-      add_heading_hint: "Divides the list. It has no target, entries can be assigned to it.",
-      add_heading_button: "Add a section heading",
+      add_heading_title: "Group",
+      add_heading_hint: "Bundles entries under one name. It has no target - you put entries into it afterwards.",
+      add_heading_button: "Add a group",
       add_link_title: "Link",
       add_link_hint:
         "A shortcut to a page of Home Assistant, straight in the sidebar - no detour through the settings. Or a web address (https://...) of any other site: it opens in a new tab. Name, icon, colours and position are set afterwards like for any other entry. Links into the settings are only shown to administrators.",
@@ -3774,12 +3892,12 @@
       close: "Close",
       heading_collapsible: "Can be collapsed",
       heading_collapsible_hint:
-        "A click on the heading in the sidebar then folds the entries below it away. Which headings are folded is remembered per browser.",
+        "A click on the name of the group in the sidebar then folds its entries away. Which groups are folded is remembered per browser.",
       heading_indent_hint:
-        "Drag an entry a little to the right to file it under the heading above it. Drag it back to the left to take it out again.",
-      heading_remove: "Remove this heading",
+        "Drag an entry a little to the right to put it into the group above it. Drag it back to the left to take it out again.",
+      heading_remove: "Remove this group",
       heading_hint:
-        "A section heading divides the sidebar into blocks. It has no target, it runs across the full width, and while the sidebar is collapsed it is hidden. Drag it to the place it belongs.",
+        "A group bundles entries of the sidebar under one name. It has no target, its name runs across the full width and is hidden while the sidebar is collapsed. Drag it to the place it belongs.",
       hidden: "Hidden",
       more: "More",
       text_color: "Text color",
@@ -3911,11 +4029,11 @@
       layout_grid: "Raster",
       layout_sizes: "Größen",
       layout_behaviour: "Verhalten",
-      entry_add_short: "Überschrift, Link, PopUp",
+      entry_add_short: "Gruppe, Link, PopUp",
       heading_fold: "In der Vorschau einklappen",
       heading_unfold: "In der Vorschau ausklappen",
       inspector_empty: "Wähle einen Eintrag aus.",
-      heading_meta: "Überschrift · {n}",
+      heading_meta: "Gruppe · {n}",
       hidden_short: "ausgeblendet",
       span_label: "Spaltenbreite",
       item_style_auto_short: "Automatisch",
@@ -3929,12 +4047,43 @@
       entry_reset: "Zurücksetzen",
       text_short: "Text",
       item_background_short: "Hintergrund",
-      hide_in_sidebar: "In der Seitenleiste ausblenden",
+      group_label: "Gruppe",
+      info_label: "Infozeile",
+      info_placeholder: "z. B. CPU: {{ states('sensor.processor_use') }} %",
+      info_hint: "Eine zweite Zeile unter dem Namen. Wähle, was sie zeigen soll \u2013 sie aktualisiert sich von selbst und funktioniert für jeden Benutzer. Wörter wie \u201eaktiv\u201c stehen in der Sprache dieser Seite.",
+      info_hint_custom: "Ein Template von Home Assistant (Jinja) wie im Template-Editor der Entwicklerwerkzeuge. Leer = keine Infozeile.",
+      info_type_none: "\u2013 keine \u2013",
+      info_type_state: "Zustand einer Entität",
+      info_type_two: "Zwei Entitäten",
+      info_type_cpu_ram: "CPU und RAM (Systemmonitor)",
+      info_type_since: "Zeit seit \u2026 (z. B. letztes Backup)",
+      info_type_automations: "Aktive Automationen",
+      info_type_updates: "Verfügbare Updates",
+      info_type_lights: "Eingeschaltete Lichter",
+      info_type_people: "Personen zu Hause",
+      info_type_custom: "Eigenes Template",
+      info_entity: "Entität",
+      info_entity2: "Zweite Entität",
+      info_cpu: "CPU-Sensor",
+      info_ram: "RAM-Sensor",
+      info_since_entity: "Sensor mit Zeitpunkt",
+      info_entity_hint: "Zum Suchen tippen \u2013 Entitäts-ID oder Name.",
+      info_cpu_missing: "Keine Sensoren des Systemmonitors gefunden \u2013 richte die Integration Systemmonitor ein oder wähle zwei Sensoren.",
+      info_no_entity: "Wähle zuerst eine Entität.",
+      info_wait: "Wird berechnet …",
+      info_result: "Ergebnis: {text}",
+      info_empty: "(leer \u2013 keine Infozeile)",
+      info_error: "Fehler im Template: {text}",
+      info_color: "Farbe der Infozeilen",
+      info_size: "Schriftgröße der Infozeilen (px)",
+      info_look_hint: "Für die Infozeilen unter den Namen der Einträge (je Eintrag unter Einträge einstellbar). Leer / 0 = Farbe des Sekundärtexts, 11 px.",
+      group_none: "\u2013 keine \u2013",
+      group_hint: "Ordnet den Eintrag einer Gruppe zu: Er rutscht an ihr Ende und klappt mit ihr zusammen. Dasselbe geht per Ziehen nach rechts in der Liste (oder auf eine Gruppe in der Vorschau).",
       users_title: "Sichtbar für",
       users_hint:
         "Haken weg = dieser Eintrag ist für diesen Benutzer ausgeblendet \u2013 wie das Auge, aber je Person. Benutzer, die später dazukommen, sehen ihn. Gilt in jedem Browser, in dem sich der Benutzer anmeldet.",
       users_hint_heading:
-        "Haken weg = diese Überschrift ist für diesen Benutzer ausgeblendet. Die Einträge darunter bleiben; ist für einen Benutzer keiner mehr übrig, verschwindet die Überschrift von selbst.",
+        "Haken weg = der Name dieser Gruppe ist für diesen Benutzer ausgeblendet. Die Einträge darin bleiben; ist für einen Benutzer keiner mehr übrig, verschwindet die Gruppe von selbst.",
       users_admin: "Admin",
       users_owner: "Besitzer",
       users_me: "du",
@@ -3982,7 +4131,7 @@
       n_changed: "{n} geändert",
       info_lead: "Gestalte dein Home Assistant genau so, wie es dir gefällt! Mit dem HA Style Hub passt du die Benutzeroberfläche und deine Dashboards ganz ohne tiefes Coding individuell an.",
       info_areas: "Das Style Hub ist aktuell in vier Bereiche unterteilt und bietet dir die Möglichkeit, das Design für das System und deine Dashboards anzupassen:",
-      info_sidebar: "<p>Hier richtest du die Seitenleiste nach deinen Wünschen ein:</p><p><strong>Layout</strong>: 1 bis 4 Spalten (eingeklappt 1 bis 3), Abstand, Breite ausgeklappt und eingeklappt, Größe der Einträge, ein Neustart-Button, Einstellungen, Benachrichtigungen und Benutzer im Raster sowie das Ausblenden der ganzen Sidebar (kiosk-mode).</p><p><strong>Einträge</strong>: per Ziehen sortieren – auch direkt im Vorschaubild –, umbenennen, eigene Icons, Farben und Spaltenbreite je Eintrag, ausblenden, Zwischenüberschriften als Gruppen zum Zuklappen, Links zu beliebigen Seiten von Home Assistant oder Webadressen und PopUp-Links, die ein Fenster mit mehreren Seiten, einer Lovelace-Karte aus deinem Dashboard oder einer Webseite öffnen.</p><p><strong>Aussehen</strong>: Hintergrund und Verlauf, Hover, Text- und Iconfarben, Schrift, Rahmen je Seite, Ecken je Ecke, die Benachrichtigungsleiste und die Theme-Farben der Sidebar.</p>",
+      info_sidebar: "<p>Hier richtest du die Seitenleiste nach deinen Wünschen ein:</p><p><strong>Layout</strong>: 1 bis 4 Spalten (eingeklappt 1 bis 3), Abstand, Breite ausgeklappt und eingeklappt, Größe der Einträge, ein Neustart-Button, Einstellungen, Benachrichtigungen und Benutzer im Raster sowie das Ausblenden der ganzen Sidebar (kiosk-mode).</p><p><strong>Einträge</strong>: per Ziehen sortieren – auch direkt im Vorschaubild –, umbenennen, eigene Icons, Farben und Spaltenbreite je Eintrag, ausblenden, Gruppen zum Zuklappen, Links zu beliebigen Seiten von Home Assistant oder Webadressen und PopUp-Links, die ein Fenster mit mehreren Seiten, einer Lovelace-Karte aus deinem Dashboard oder einer Webseite öffnen.</p><p><strong>Aussehen</strong>: Hintergrund und Verlauf, Hover, Text- und Iconfarben, Schrift, Rahmen je Seite, Ecken je Ecke, die Benachrichtigungsleiste und die Theme-Farben der Sidebar.</p>",
       info_theme: "<p>Färbt Home Assistant selbst ein – Dashboards, Dialoge und Einstellungsseiten – als echtes Theme mit {n} Variablen, getrennt für Hell und Dunkel, dazu die {p} Stufen der Primärfarbe, die automatisch berechnet werden.</p><p><strong>Vorschau</strong>: Jede Kachel und jedes Element darin ist anklickbar – Schalter, Buttons, Zustandsfarben, Tabellenzeilen, Diagrammfarben, Code … – und öffnet rechts genau die passenden Felder.</p><p><strong>Umfang</strong>: Karten, Schrift, Zustands- und Statusfarben, Tabellen, Eingabefelder, Dialoge und Code-Editor bis hin zu Diagrammen, Energie, Wetter sowie den Design-Tokens und Schaltern von Home Assistant 2026.10.</p><p><strong>Werkzeuge</strong>: Farbpalette aus einer Hauptfarbe, fertige Vorlagen, Schatten-Baukasten, Kontrast-Prüfung, Schnellfarben, Dashboard-Hintergrund als Farbe, Verlauf oder Bild sowie YAML-Export und -Import.</p>",
       info_header: "<p>Kümmert sich um das Headermenu der Dashboards, bis hin zum kompletten Ausblenden (kiosk-mode, auch als Schalter-Entität).</p><p><strong>Aussehen</strong>: Farbe oder Verlauf, Deckkraft und Weichzeichner, Höhe, Rahmen und Ecken, Titel- und Icongröße, Farben und Rahmen der Reiter und Buttons – oder eine der Vorlagen <em>Glas</em>, <em>Schlank</em> und <em>Abgesetzt</em>.</p><p><strong>Buttons</strong>: die vier Buttons von Home Assistant einzeln ausblenden, davor eigene: Neustart, Links, Sensoren (der Zustand einer beliebigen Entität) sowie CPU, RAM und Speicher.</p><p><strong>Theme-Farben der Kopfzeile</strong>: die Theme-Variablen der Leiste, auch für den Bearbeiten-Modus eines Dashboards.</p>",
       info_settings: "<p>Gestaltet die Seiten von Home Assistant selbst:</p><p><strong>Einstellungsseite</strong>: die Menüpunkte als Boxen in eigenen Farben, in Spalten oder als Kacheln, in eigener Reihenfolge und mit eigenem Namen, Untertitel und Farben je Punkt – auch auf der Profilseite. Dazu eine Favoriten-Leiste, ein Systemmonitor mit Prozessor, Arbeitsspeicher, Speicher und bis zu sechs eigenen Entitäten, das letzte Backup mit <em>Backup jetzt erstellen</em> und eine Übersicht mit Zählern.</p><p><strong>Geräte &amp; Dienste</strong>: Integrationen und Apps als schmale Liste in 1 bis 3 Spalten; die Seite einer einzelnen Integration zieht mit eigener Zeilenhöhe mit.</p><p><strong>Tabellen</strong>: Gruppenköpfe, Streifen, Zeilenhintergrund, Schriftgröße und Maus-Hover.</p>",
@@ -4269,7 +4418,7 @@
       ctl_body_text: "Haupttext",
       ctl_chart_lines: "Diagrammlinien",
       ctl_timeline: "Verlaufsleiste",
-      entry_add: "Zwischenüberschrift, Link oder PopUp hinzufügen",
+      entry_add: "Gruppe, Link oder PopUp hinzufügen",
       add_popup_title: "PopUp Link",
       add_popup_hint: "Ein Eintrag in der Seitenleiste, der ein Fenster öffnet – mit mehreren Seiten oder Webadressen als Kacheln oder mit einer Karte aus deinem Dashboard.",
       add_popup_name: "Name des PopUps",
@@ -4391,7 +4540,11 @@
       theme_default: "Home Assistant",
       theme_enabled: "Theme in Home Assistant eintragen",
       theme_enabled_hint:
-        "Das Theme steht danach in der Theme-Auswahl jedes Benutzerprofils, genau wie ein Theme aus der configuration.yaml.",
+        "Das Theme steht danach in der Theme-Auswahl jedes Benutzerprofils, genau wie ein Theme aus der configuration.yaml. Ausgeschaltet und gespeichert verschwindet es wieder aus Home Assistant, seine Werte bleiben aber hier erhalten \u2013 ganz entfernen geht mit „Theme löschen“.",
+      theme_delete: "Theme löschen",
+      theme_delete_confirm:
+        "Das Theme löschen? Alle Werte beider Modi werden geleert und der Name geht auf den Standard zurück. Beim Speichern wird das Theme aus Home Assistant entfernt (und ist nicht mehr Standard-Theme). Bis dahin holt Verwerfen es zurück, danach der Verlauf.",
+      theme_delete_done: "Theme gelöscht \u2013 mit Speichern wird es aus Home Assistant entfernt. Verwerfen holt es zurück.",
       theme_name: "Name des Themes",
       theme_set_default: "Gleich als Standard-Theme verwenden",
       theme_set_default_hint:
@@ -4720,7 +4873,9 @@
       merge_fixed_on: "Verschiebbar machen",
       heading_height: "H\u00f6he (px)",
       heading_height_hint:
-        "Bei 0 bestimmt der Text die H\u00f6he (mit gleich viel Abstand oben und unten). Jeder andere Wert gibt der Zeile genau diese H\u00f6he. Der Text steht in beiden F\u00e4llen senkrecht mittig.",
+        "Bei 0 bestimmt der Text die H\u00f6he (mit gleich viel Abstand oben und unten). Jeder andere Wert gibt der Zeile genau diese H\u00f6he. Der Text steht in beiden F\u00e4llen senkrecht mittig. Schrift- und Icongr\u00f6\u00dfe 0 = Standard (11 px / 16 px).",
+      heading_font_size: "Schriftgr\u00f6\u00dfe (px)",
+      heading_icon_size: "Icongr\u00f6\u00dfe (px)",
       heading_uppercase: "Gro\u00dfbuchstaben",
       hide_sidebar: "Sidebar ausblenden (kiosk-mode)",
       hide_sidebar_hint:
@@ -4740,13 +4895,13 @@
       icon: "Icon",
       icon_placeholder: "z. B. mdi:home",
       span: "Breite",
-      heading: "Zwischen\u00fcberschrift",
-      heading_sub: "nur Unterteilung, kein Ziel",
-      add_hint: "\u00dcber das Plus kommt eine Zwischen\u00fcberschrift oder ein Link zu einer Seite von Home Assistant dazu (Automatisierungen, Entit\u00e4ten, Werkzeuge, ...).",
+      heading: "Gruppe",
+      heading_sub: "fasst Eintr\u00e4ge zusammen, kein Ziel",
+      add_hint: "\u00dcber das Plus kommt eine Gruppe oder ein Link zu einer Seite von Home Assistant dazu (Automatisierungen, Entit\u00e4ten, Werkzeuge, ...).",
       add_title: "Eintrag hinzuf\u00fcgen",
-      add_heading_title: "Zwischen\u00fcberschrift",
-      add_heading_hint: "Unterteilt die Liste. Sie hat kein Ziel, Eintr\u00e4ge lassen sich ihr zuordnen.",
-      add_heading_button: "Zwischen\u00fcberschrift hinzuf\u00fcgen",
+      add_heading_title: "Gruppe",
+      add_heading_hint: "Fasst Eintr\u00e4ge unter einem Namen zusammen. Sie hat kein Ziel \u2013 Eintr\u00e4ge ordnest du ihr danach zu.",
+      add_heading_button: "Gruppe hinzuf\u00fcgen",
       add_link_title: "Link",
       add_link_hint:
         "Eine Abk\u00fcrzung zu einer Seite von Home Assistant, direkt in der Sidebar \u2013 ohne Umweg \u00fcber die Einstellungen. Oder die Adresse (https://...) einer beliebigen anderen Webseite: sie \u00f6ffnet in einem neuen Tab. Name, Icon, Farben und Position stellst du danach ein wie bei jedem anderen Eintrag. Links in die Einstellungen sehen nur Administratoren.",
@@ -4764,12 +4919,12 @@
       close: "Schlie\u00dfen",
       heading_collapsible: "L\u00e4sst sich zusammenklappen",
       heading_collapsible_hint:
-        "Ein Klick auf die \u00dcberschrift in der Seitenleiste klappt die darunter einsortierten Eintr\u00e4ge weg. Welche \u00dcberschriften zugeklappt sind, merkt sich jeder Browser selbst.",
+        "Ein Klick auf den Namen der Gruppe in der Seitenleiste klappt ihre Eintr\u00e4ge weg. Welche Gruppen zugeklappt sind, merkt sich jeder Browser selbst.",
       heading_indent_hint:
-        "Zieh einen Eintrag etwas nach rechts, um ihn unter der \u00dcberschrift dar\u00fcber einzusortieren. Nach links ziehen l\u00f6st die Zuordnung wieder.",
-      heading_remove: "Diese \u00dcberschrift entfernen",
+        "Zieh einen Eintrag etwas nach rechts, um ihn der Gruppe dar\u00fcber zuzuordnen. Nach links ziehen l\u00f6st die Zuordnung wieder.",
+      heading_remove: "Diese Gruppe entfernen",
       heading_hint:
-        "Eine Zwischen\u00fcberschrift unterteilt die Seitenleiste in Bl\u00f6cke. Sie hat kein Ziel, l\u00e4uft \u00fcber die ganze Breite und ist im eingeklappten Zustand ausgeblendet. Zieh sie an die Stelle, wo sie hingeh\u00f6rt.",
+        "Eine Gruppe fasst Eintr\u00e4ge der Seitenleiste unter einem Namen zusammen. Sie hat kein Ziel, ihr Name l\u00e4uft \u00fcber die ganze Breite und ist im eingeklappten Zustand ausgeblendet. Zieh sie an die Stelle, wo sie hingeh\u00f6rt.",
       hidden: "Ausgeblendet",
       more: "Mehr",
       text_color: "Textfarbe",
@@ -6102,6 +6257,17 @@
     }
     .sbp-it ha-icon { --mdc-icon-size: var(--is, 22px); color: var(--ic, var(--sbp-icon, var(--sidebar-icon-color, var(--secondary-text-color)))); flex: 0 0 auto; }
     .sbp-it .lbl { overflow: hidden; text-overflow: ellipsis; white-space: nowrap; min-width: 0; }
+    /* 1.5.9: Infozeile wie im Injector */
+    .sbp-it .it-info {
+      display: block; overflow: hidden; text-overflow: ellipsis; white-space: nowrap;
+      color: var(--sbp-info-color, var(--secondary-text-color)); font-size: var(--sbp-info-size, 11px);
+      font-weight: 400; line-height: 1.3;
+    }
+    .sbp[data-closed] .sbp-it .it-info { display: none; }
+    .info-result .info-error { color: var(--sh-err); }
+    .info-box { display: flex; flex-direction: column; gap: 8px; }
+    .info-box .field { margin: 0; }
+    .info-field textarea { font-family: var(--sh-mono, ui-monospace, monospace); font-size: 12px; resize: vertical; min-height: 44px; }
     .sbp[data-tiles] .sbp-it {
       flex-direction: column; justify-content: center; text-align: center; gap: var(--tgap, 2px);
       min-height: var(--tileh, 60px); padding: 6px 2px;
@@ -6156,8 +6322,16 @@
     }
     .sbp-hd[data-color] { opacity: 1; }
     .sbp-hd[data-height] { height: var(--hh); padding-top: 0; padding-bottom: 0; }
+    .sbp-hd[data-fs] { font-size: var(--hfs); }
     .sbp-hd[data-upper] { text-transform: uppercase; letter-spacing: .06em; }
-    .sbp-hd ha-icon { --mdc-icon-size: 16px; flex: 0 0 auto; color: var(--hic, inherit); }
+    .sbp-hd ha-icon { --mdc-icon-size: var(--his, 16px); flex: 0 0 auto; color: var(--hic, inherit); }
+    /* 1.5.9: das Icon als Box genau in seiner Groesse - sonst richtet Home
+       Assistant es per vertical-align an der Grundlinie der Schrift aus, und
+       je nach Schrift sitzt es dann ein, zwei Pixel zu tief. */
+    .sbp-hd ha-icon {
+      display: flex; align-items: center; justify-content: center; line-height: 0;
+      width: var(--his, 16px); height: var(--his, 16px); --ha-icon-display: block;
+    }
     .sbp-hd .hd-text { overflow: hidden; text-overflow: ellipsis; }
     .sbp-hd .hd-caret {
       margin: -6px -8px -6px auto; padding: 6px 8px; font-size: 10px; line-height: 1; flex: 0 0 auto;
@@ -6541,6 +6715,9 @@
     .theme-set label.check { margin: 0; }
     .theme-set label.check > span { order: 1; }
     .theme-set .fields-note { margin: 0; }
+    /* 1.5.9: Theme loeschen */
+    .theme-set .theme-delete { align-self: flex-start; display: inline-flex; align-items: center; gap: 6px; color: var(--sh-err); }
+    .theme-set .theme-delete ha-icon, .theme-set .theme-delete svg { --mdc-icon-size: 16px; width: 16px; height: 16px; }
     .hidden-note { padding: 6px 0 12px; }
     .dash-image { display: flex; align-items: center; gap: 14px; margin: 6px 0 4px; }
     .dash-thumb {
@@ -7764,6 +7941,8 @@
         this._config = normalize(result && result.config);
         // 1.5.8: die Benutzer fuer "Sichtbar fuer" - nebenher
         this._loadUsers();
+        // 1.5.9: Infozeilen rechnen lassen (Vorschau)
+        this._syncInfo();
         // Nebenher, ohne das Laden der Seite aufzuhalten
         this._loadIconPicker().then((ok) => {
           this._iconPicker = ok;
@@ -7829,6 +8008,340 @@
     /** Die eigene Benutzer-ID - fuer die Vorschau (sie zeigt, was du siehst). */
     get _userId() {
       return (this._hass && this._hass.user && this._hass.user.id) || "";
+    }
+
+    /**
+     * 1.5.9: Infozeile eines Eintrags - ein Template von Home Assistant, das
+     * Ergebnis steht live darunter (und in der Vorschau).
+     */
+    _infoField(key, cfg) {
+      const t = this._t;
+      const k = escapeHtml(key);
+      const type = this._infoType(cfg);
+      const kinds = INFO_TYPES.map(
+        (one) => `<option value="${one}"${one === type ? " selected" : ""}>${escapeHtml(t["info_type_" + (one || "none")])}</option>`
+      );
+      const entity = (slot, label, value) => `
+          <label class="field">
+            <span>${escapeHtml(label)}</span>
+            <input type="text" data-info-entity="${k}" data-slot="${slot}" value="${escapeHtml(value || "")}"
+              list="sh-info-entities" spellcheck="false" autocomplete="off" placeholder="sensor.…" />
+          </label>`;
+      let fields = "";
+      if (type === "state") {
+        fields = entity(1, t.info_entity, cfg.info_entity);
+      } else if (type === "two") {
+        fields = entity(1, t.info_entity, cfg.info_entity) + entity(2, t.info_entity2, cfg.info_entity2);
+      } else if (type === "cpu_ram") {
+        fields = entity(1, t.info_cpu, cfg.info_entity) + entity(2, t.info_ram, cfg.info_entity2);
+        if (!cfg.info_entity && !cfg.info_entity2) {
+          fields += `<small class="field-hint info-missing">${escapeHtml(t.info_cpu_missing)}</small>`;
+        }
+      } else if (type === "since") {
+        fields = entity(1, t.info_since_entity, cfg.info_entity);
+      }
+      if (fields) {
+        fields += `<datalist id="sh-info-entities">${this._infoEntityOptions(type)}</datalist>
+          <small class="field-hint">${escapeHtml(t.info_entity_hint)}</small>`;
+      }
+      const custom =
+        type === "custom"
+          ? `
+          <label class="field info-field">
+            <span>${escapeHtml(t.info_type_custom)}</span>
+            <textarea data-item="${k}" data-prop="info" rows="3" spellcheck="false" maxlength="500"
+              placeholder="${escapeHtml(t.info_placeholder)}">${escapeHtml(cfg.info || "")}</textarea>
+          </label>
+          <small class="field-hint">${escapeHtml(t.info_hint_custom)}</small>`
+          : "";
+      const result =
+        type && type !== "custom" && INFO_NEEDS[type] && !cfg.info_entity
+          ? escapeHtml(t.info_no_entity)
+          : this._infoResultHtml(key);
+      return `
+          <div class="sub-box info-box">
+          <label class="field info-type">
+            <span>${escapeHtml(t.info_label)}</span>
+            <select data-info-type="${k}">${kinds.join("")}</select>
+          </label>
+          ${fields}${custom}
+          <small class="field-hint info-result" data-info-for="${k}">${result}</small>
+          <small class="field-hint">${escapeHtml(t.info_hint)}</small>
+          </div>`;
+    }
+
+    /** Die Art der Infozeile; aeltere Eintraege mit Template gelten als "eigenes Template". */
+    _infoType(cfg) {
+      const type = String((cfg && cfg.info_type) || "");
+      if (type && INFO_TYPES.indexOf(type) >= 0) {
+        return type;
+      }
+      return String((cfg && cfg.info) || "").trim() ? "custom" : "";
+    }
+
+    /** Vorschlaege fuer die Entitaeten (Name und ID), passend zur Art. */
+    _infoEntityOptions(type) {
+      const states = (this._hass && this._hass.states) || {};
+      let ids = Object.keys(states);
+      if (type === "since") {
+        ids = ids.filter((id) => ((states[id] || {}).attributes || {}).device_class === "timestamp");
+      } else if (type === "cpu_ram") {
+        ids = ids.filter((id) => id.indexOf("sensor.") === 0);
+      }
+      return ids
+        .sort()
+        .slice(0, 4000)
+        .map((id) => {
+          const name = ((states[id] || {}).attributes || {}).friendly_name || "";
+          return `<option value="${escapeHtml(id)}">${escapeHtml(name)}</option>`;
+        })
+        .join("");
+    }
+
+    /** Die Sensoren des Systemmonitors fuer CPU und RAM suchen. */
+    _infoFindSystemMonitor() {
+      const states = (this._hass && this._hass.states) || {};
+      const registry = (this._hass && this._hass.entities) || {};
+      const find = (key, pattern) => {
+        const ids = Object.keys(states).filter((id) => id.indexOf("sensor.") === 0);
+        const byKey = ids.find((id) => registry[id] && registry[id].platform === "systemmonitor" && registry[id].translation_key === key);
+        return byKey || ids.find((id) => pattern.test(id)) || "";
+      };
+      return {
+        cpu: find("processor_use", /processor_use|prozessornutzung|prozessorauslastung/),
+        ram: find("memory_use_percent", /memory_use_percent|arbeitsspeicher(_?nutzung|_?auslastung)(_prozent|_percent)?$|memory_usage_percent/),
+      };
+    }
+
+    /** Die Infozeile aus Art und Entitaeten neu zusammensetzen. */
+    _infoBuild(cfg) {
+      const type = this._infoType(cfg);
+      if (type === "custom") {
+        return;
+      }
+      cfg.info = infoTemplate(type, cfg.info_entity, cfg.info_entity2, this._de);
+    }
+
+    /** Eine andere Art gewaehlt. */
+    _setInfoType(key, type) {
+      const cfg = this._itemConfig(key);
+      const before = this._infoType(cfg);
+      type = INFO_TYPES.indexOf(type) >= 0 ? type : "";
+      if (before === type) {
+        return;
+      }
+      if (type === "custom") {
+        // Das bisherige Template bleibt stehen - als Vorlage zum Anpassen.
+        cfg.info_type = "custom";
+      } else {
+        cfg.info_type = type;
+        const states = (this._hass && this._hass.states) || {};
+        if (type === "cpu_ram") {
+          const found = this._infoFindSystemMonitor();
+          cfg.info_entity = found.cpu;
+          cfg.info_entity2 = found.ram;
+        } else if (type === "since") {
+          const backup = "sensor.backup_last_successful_automatic_backup";
+          const now = (states[cfg.info_entity] || {}).attributes || {};
+          if (now.device_class !== "timestamp") {
+            cfg.info_entity = states[backup] ? backup : "";
+          }
+          cfg.info_entity2 = "";
+        } else if (type === "state" || type === "two") {
+          if (before === "cpu_ram" || before === "since") {
+            cfg.info_entity = before === "since" ? cfg.info_entity : "";
+            cfg.info_entity2 = "";
+          }
+          if (type === "state") {
+            cfg.info_entity2 = "";
+          }
+        } else {
+          cfg.info_entity = "";
+          cfg.info_entity2 = "";
+        }
+        if (type) {
+          this._infoBuild(cfg);
+        } else {
+          cfg.info = "";
+        }
+      }
+      this._renderInspector();
+      this._touch();
+    }
+
+    /** Eine Entitaet eingetippt oder gewaehlt. */
+    _setInfoEntity(key, slot, value) {
+      const cfg = this._itemConfig(key);
+      cfg[slot === "2" ? "info_entity2" : "info_entity"] = String(value || "").trim().toLowerCase();
+      this._infoBuild(cfg);
+      const box = this.shadowRoot.querySelector(`[data-info-for="${CSS.escape(key)}"]`);
+      if (box && INFO_NEEDS[this._infoType(cfg)] && !cfg.info_entity) {
+        box.textContent = this._t.info_no_entity;
+      }
+      const missing = this.shadowRoot.querySelector("#inspector .info-missing");
+      if (missing && (cfg.info_entity || cfg.info_entity2)) {
+        missing.remove();
+      }
+      this._touch();
+    }
+
+    _infoResultHtml(key) {
+      const t = this._t;
+      const cfg = (this._config.items || {})[key] || {};
+      if (!String(cfg.info || "").trim()) {
+        return "";
+      }
+      const one = (this._info || {})[key];
+      // Noch das Ergebnis eines alten Templates (Abo wird gleich neu gestartet)
+      if (!one || one.template !== String(cfg.info || "").trim() || (!one.text && !one.error && !one.done)) {
+        return escapeHtml(t.info_wait);
+      }
+      if (one.error) {
+        return `<span class="info-error">${escapeHtml(t.info_error.replace("{text}", one.error))}</span>`;
+      }
+      return escapeHtml(t.info_result.replace("{text}", one.text || t.info_empty));
+    }
+
+    /**
+     * Die Abos auf render_template fuer die Infozeilen (Vorschau und
+     * Ergebnis im Inspektor). Kurz verzoegert, damit nicht jeder Tastendruck
+     * ein neues Abo startet.
+     */
+    _syncInfo() {
+      window.clearTimeout(this._infoTimer);
+      this._infoTimer = window.setTimeout(() => this._syncInfoNow(), 350);
+    }
+
+    _syncInfoNow() {
+      this._info = this._info || {};
+      const items = (this._config && this._config.items) || {};
+      const wanted = {};
+      Object.keys(items).forEach((key) => {
+        const info = String(items[key].info || "").trim();
+        if (info && !isHeading(key)) {
+          wanted[key] = info;
+        }
+      });
+      Object.keys(this._info).forEach((key) => {
+        if (this._info[key].template !== wanted[key]) {
+          const one = this._info[key];
+          one.dead = true;
+          if (one.unsub) {
+            try { one.unsub(); } catch (err) { /* schon weg */ }
+          }
+          delete this._info[key];
+        }
+      });
+      const connection = this._hass && this._hass.connection;
+      if (!connection || typeof connection.subscribeMessage !== "function") {
+        return;
+      }
+      Object.keys(wanted).forEach((key) => {
+        if (this._info[key]) {
+          return;
+        }
+        const one = { template: wanted[key], text: "", error: "", done: false, unsub: null, dead: false };
+        this._info[key] = one;
+        Promise.resolve()
+          .then(() =>
+            connection.subscribeMessage(
+              (message) => {
+                if (one.dead || !message) {
+                  return;
+                }
+                if ("error" in message) {
+                  one.error = String(message.error || "").slice(0, 300);
+                } else if ("result" in message) {
+                  const result = message.result;
+                  one.text = (result === null || result === undefined ? "" : typeof result === "object" ? JSON.stringify(result) : String(result)).trim().slice(0, 200);
+                  one.error = "";
+                }
+                one.done = true;
+                this._paintInfo(key);
+              },
+              { type: "render_template", template: wanted[key], strict: false, report_errors: true }
+            )
+          )
+          .then((unsub) => {
+            if (one.dead) {
+              unsub();
+            } else {
+              one.unsub = unsub;
+            }
+          })
+          .catch((err) => {
+            one.error = String((err && (err.message || err.code)) || err).slice(0, 300);
+            one.done = true;
+            this._paintInfo(key);
+          });
+      });
+    }
+
+    _paintInfo(key) {
+      const box = this.shadowRoot.querySelector(`[data-info-for="${CSS.escape(key)}"]`);
+      if (box) {
+        box.innerHTML = this._infoResultHtml(key);
+      }
+      this._renderSidebarPreview();
+    }
+
+    /**
+     * 1.5.9: Die Gruppe eines Eintrags als Auswahl - ohne Ziehen. Waehlt man
+     * eine Ueberschrift, rutscht der Eintrag ans Ende ihrer Gruppe.
+     */
+    _groupSelect(key, cfg) {
+      const t = this._t;
+      const heads = this._entries.filter((one) => one.heading);
+      if (!heads.length) {
+        return "";
+      }
+      const options = [`<option value="">${escapeHtml(t.group_none)}</option>`].concat(
+        heads.map(
+          (one) =>
+            `<option value="${escapeHtml(one.key)}"${cfg.parent === one.key ? " selected" : ""}>${escapeHtml(this._entryName(one))}</option>`
+        )
+      );
+      return `
+          <label class="field group-field">
+            <span>${escapeHtml(t.group_label)}</span>
+            <select data-item-parent="${escapeHtml(key)}">${options.join("")}</select>
+          </label>
+          <small class="field-hint">${escapeHtml(t.group_hint)}</small>`;
+    }
+
+    /** Einen Eintrag einer Gruppe zuordnen (oder heraus nehmen) und dorthin setzen. */
+    _setParent(key, head) {
+      const entry = this._entries.find((one) => one.key === key);
+      if (!entry || entry.heading) {
+        return;
+      }
+      const cfg = this._itemConfig(key);
+      const old = cfg.parent || "";
+      if (old === (head || "")) {
+        return;
+      }
+      const index = this._entries.indexOf(entry);
+      this._entries = this._entries.filter((one) => one !== entry);
+      const after = (anchor) => {
+        const kids = this._childrenOf(anchor);
+        const last = kids.length ? kids[kids.length - 1].key : anchor;
+        return this._entries.findIndex((one) => one.key === last) + 1;
+      };
+      let at = index;
+      if (head && this._entries.some((one) => one.key === head)) {
+        at = after(head);
+        cfg.parent = head;
+      } else {
+        // Aus der Gruppe heraus: hinter ihr Ende, damit er nicht mitten in ihr steht
+        cfg.parent = "";
+        if (old && this._entries.some((one) => one.key === old)) {
+          at = after(old);
+        }
+      }
+      this._entries.splice(Math.max(0, Math.min(at, this._entries.length)), 0, entry);
+      this._fixedMoved(key);
+      this._renderItems();
+      this._touch();
     }
 
     /** Der Block "Sichtbar fuer" im Inspektor eines Eintrags (1.5.8). */
@@ -7998,6 +8511,9 @@
     }
 
     _touch() {
+      if (this._config) {
+        this._syncInfo();
+      }
       this._undoRecord();
       this._syncPanelTheme();
       this._updatePrimaryScales();
@@ -8892,6 +9408,7 @@
             ${this._check("theme.set_default", t.theme_set_default, t.theme_set_default_hint)}
           </div>
           <p class="fields-note" data-hide-when="theme.enabled">${escapeHtml(t.theme_disabled_hint)}</p>
+          <button type="button" class="link-btn danger theme-delete" id="theme-delete">${glyph("mdi:trash-can-outline", "&#10005;")}${escapeHtml(t.theme_delete)}</button>
         </div>`;
       return `
         <section class="page stage-page" data-page="theme">
@@ -10053,6 +10570,24 @@
       this._flash(this._t.theme_copied);
     }
 
+    /**
+     * 1.5.9: Das Theme loeschen - beide Modi leer, Name zurueck, nicht mehr
+     * eingetragen und nicht mehr Standard. Wie jede Aenderung erst mit
+     * Speichern wirksam: dann nimmt das Backend das Theme aus Home Assistant
+     * heraus (und setzt das Standard-Theme zurueck, falls es dieses war).
+     * Verwerfen holt es zurueck, nach dem Speichern der Verlauf.
+     */
+    _deleteTheme() {
+      if (!window.confirm(this._t.theme_delete_confirm)) {
+        return;
+      }
+      this._config.theme = themeSection(null);
+      this._fillInputs();
+      this._applyConditionals();
+      this._touch();
+      this._flash(this._t.theme_delete_done);
+    }
+
     /** Empty every value of the mode being edited. */
     _clearMode() {
       if (!window.confirm(this._t.theme_clear_confirm)) {
@@ -10932,17 +11467,22 @@
     _headingExtra(key, cfg) {
       const t = this._t;
       const k = escapeHtml(key);
-      const num = (prop, label) => `
+      const num = (prop, label, max = 80) => `
         <label class="field"><span>${escapeHtml(label)}</span>
-          <input type="number" min="0" max="80" data-item="${k}"
-            data-prop="${prop}" value="${escapeHtml(cfg[prop])}" />
+          <input type="number" min="0" max="${max}" data-item="${k}"
+            data-prop="${prop}" value="${escapeHtml(cfg[prop] === undefined ? 0 : cfg[prop])}" />
         </label>`;
       const check = (prop, label) => `
         <label class="check">
           <input type="checkbox" data-item="${k}" data-prop="${prop}"${cfg[prop] ? " checked" : ""} />
           <span>${escapeHtml(label)}</span>
         </label>`;
-      const nums = [num("height", t.heading_height)];
+      // 1.5.9: Schrift- und Icongroesse vorn; vier Felder in 2 Spalten, mehr in 3
+      const nums = [
+        num("font_size", t.heading_font_size, 40),
+        num("icon_size", t.heading_icon_size, 48),
+        num("height", t.heading_height),
+      ];
       if (!cfg.border_split) {
         nums.push(num("border_width", t.heading_border_width));
       }
@@ -10952,7 +11492,7 @@
       return `
         <div class="row-extra row-extra-2">
           <div class="head-block">
-            <div class="grid-mini hd-nums" style="--n:${nums.length}">${nums.join("")}</div>
+            <div class="grid-mini hd-nums" style="--n:${nums.length === 4 ? 2 : Math.min(3, nums.length)}">${nums.join("")}</div>
             <small class="field-hint">${escapeHtml(t.heading_height_hint)}</small>
             <label class="field hd-color"><span>${escapeHtml(t.header_border_color)}</span>
               <span class="color-field">
@@ -11201,7 +11741,12 @@
         const dragKey = this._stageDrag;
         this._stageDrag = null;
         const dragged = this._entries.find((one) => one.key === dragKey);
-        const into = !!dragged && !dragged.heading && !!(this._config.items[tile.dataset.key] || {}).parent;
+        // Auf eine Ueberschrift gezogen (1.5.9): in ihre Gruppe, direkt darunter.
+        // Auf einen Eintrag einer Gruppe: in dieselbe Gruppe.
+        const into =
+          !!dragged &&
+          !dragged.heading &&
+          (isHeading(tile.dataset.key) || !!(this._config.items[tile.dataset.key] || {}).parent);
         this._dropBefore(dragKey, tile.dataset.key, into);
       });
       root.addEventListener("dragend", () => {
@@ -11404,6 +11949,7 @@
       });
       on("theme-copy", "click", () => this._copyMode());
       on("theme-clear", "click", () => this._clearMode());
+      on("theme-delete", "click", () => this._deleteTheme());
       on("open-palette", "click", () => this._openPalette());
       on("open-presets", "click", () => this._openPresets());
       on("palette-cancel", "click", () => {
@@ -11870,8 +12416,23 @@
         }
       });
 
+      inspector.addEventListener("input", (event) => {
+        const input = event.target;
+        if (input.dataset && input.dataset.infoEntity) {
+          this._setInfoEntity(input.dataset.infoEntity, input.dataset.slot, input.value);
+        }
+      });
+
       inspector.addEventListener("change", (event) => {
         const input = event.target;
+        if (input.dataset && input.dataset.infoType !== undefined && input.tagName === "SELECT") {
+          this._setInfoType(input.dataset.infoType, input.value);
+          return;
+        }
+        if (input.dataset && input.dataset.itemParent !== undefined && input.tagName === "SELECT") {
+          this._setParent(input.dataset.itemParent, input.value);
+          return;
+        }
         if (input.dataset && input.dataset.hideUser && input.dataset.itemUser) {
           this._setUserHidden(input.dataset.itemUser, input.dataset.hideUser, !input.checked);
           return;
@@ -13700,7 +14261,12 @@
           </div>
           <div class="stack" style="margin-top:14px">
             ${this._select("appearance.font_family", t.font_family, FONTS(t))}
-          </div>`],
+          </div>
+          <div class="grid2" style="margin-top:14px">
+            ${this._color("appearance.info_color", t.info_color)}
+            ${num("appearance.info_size", t.info_size, 30)}
+          </div>
+          <small class="field-hint">${escapeHtml(t.info_look_hint)}</small>`],
         ["items", t.section_items, "items", `
           <div class="stack">
             ${this._color("appearance.item_background", t.item_background)}
@@ -14472,11 +15038,9 @@ ${[
           <div class="ctiles">${tiles.map((one) => tile(one[0], one[1])).join("")}</div>
           ${color}
           ${entry.popup ? this._popupEditor(key, cfg) : ""}
-          ${entry.heading ? this._headingExtra(key, cfg) : `
-          <label class="check boxed">
-            <input type="checkbox" data-item="${k}" data-prop="hidden"${cfg.hidden ? " checked" : ""} />
-            <span>${escapeHtml(t.hide_in_sidebar)}</span>
-          </label>`}
+          ${entry.heading ? "" : this._infoField(key, cfg)}
+          ${entry.heading ? "" : this._groupSelect(key, cfg)}
+          ${entry.heading ? this._headingExtra(key, cfg) : ""}
           ${this._usersBlock(key, cfg, entry.heading)}
           ${FIXED_ENTRIES.some((one) => one.key === key) && this._config.layout.merge_fixed !== true
             ? `<div class="sub-box fixed-note"><small class="field-hint">${escapeHtml(t.merge_fixed_note)}</small>
@@ -14676,6 +15240,9 @@ ${[
       put("--sbp-bw", `${edge > 0 || text(look.border_color) ? edge : 1}px`);
       put("--sbp-bc", text(look.border_color));
       put("--sbp-ibg", text(look.item_background));
+      // 1.5.9: Infozeilen
+      put("--sbp-info-color", text(look.info_color));
+      put("--sbp-info-size", num(look.info_size, 0, 0, 30) > 0 ? `${num(look.info_size, 0, 0, 30)}px` : "");
       put("--sbp-ibc", text(look.item_border_color));
       put("--sbp-ibw", look.item_border_split
         ? ["top", "right", "bottom", "left"].map((s) => `${num(look[`item_border_${s}`], 0, 0, 20)}px`).join(" ")
@@ -14722,7 +15289,18 @@ ${[
         return !!one.hidden || (Array.isArray(one.hide_for) && one.hide_for.length > 0 && (!me || one.hide_for.indexOf(me) >= 0));
       };
       const emptyHeading = (key) => {
-        const kids = entries.filter((one) => !one.heading && (items[one.key] || {}).parent === key);
+        let kids = entries.filter((one) => !one.heading && (items[one.key] || {}).parent === key);
+        if (!kids.length) {
+          // 1.5.9: ohne Zuordnung die Eintraege darunter bis zur naechsten Ueberschrift
+          for (let i = entries.findIndex((one) => one.key === key) + 1; i > 0 && i < entries.length; i += 1) {
+            if (entries[i].heading) {
+              break;
+            }
+            if (layout.merge_fixed || fixedKeys.indexOf(entries[i].key) < 0) {
+              kids.push(entries[i]);
+            }
+          }
+        }
         return kids.length > 0 && kids.every((one) => gone(one.key));
       };
       // 1.5.8: in der Vorschau zugeklappte Ueberschriften (nur dieses Bild,
@@ -14762,6 +15340,13 @@ ${[
           if (Number(cfg.height) > 0) {
             h.push(`--hh:${Math.min(200, Number(cfg.height))}px`);
             flags.push("data-height");
+          }
+          if (Number(cfg.font_size) > 0) {
+            h.push(`--hfs:${Math.min(40, Math.max(8, Math.round(Number(cfg.font_size))))}px`);
+            flags.push("data-fs");
+          }
+          if (Number(cfg.icon_size) > 0) {
+            h.push(`--his:${Math.min(48, Math.max(8, Math.round(Number(cfg.icon_size))))}px`);
           }
           const borders = cfg.border_split
             ? [cfg.border_top, cfg.border_right, cfg.border_bottom, cfg.border_left].map(px).join(" ")
@@ -14808,7 +15393,11 @@ ${[
         const badge = entry.key === "notifications"
           ? `<span class="sbp-badge"${zone === "badge" ? " data-mark" : ""}>3</span>`
           : "";
-        return `<div class="sbp-it" tabindex="0" data-key="${k}"${mark}${extra}${drag} style="${escapeHtml(s.join(";"))}">${icon(cfg.icon || entry.icon)}<span class="lbl">${escapeHtml(name)}</span>${badge}</div>`;
+        // 1.5.9: Infozeile (Ergebnis des Templates) unter dem Namen
+        const infoOne = (this._info || {})[entry.key];
+        const infoText = String(cfg.info || "").trim() && infoOne && !infoOne.error ? infoOne.text : "";
+        const infoLine = infoText ? `<small class="it-info">${escapeHtml(infoText)}</small>` : "";
+        return `<div class="sbp-it" tabindex="0" data-key="${k}"${mark}${extra}${drag} style="${escapeHtml(s.join(";"))}">${icon(cfg.icon || entry.icon)}<span class="lbl">${escapeHtml(name)}${infoLine}</span>${badge}</div>`;
       };
       this._sbpHoverDone = false;
       const main = layout.merge_fixed ? visible : visible.filter((entry) => fixedKeys.indexOf(entry.key) < 0);
@@ -14946,6 +15535,7 @@ ${[
           box.hasAttribute("data-hide-when") ||
           box.classList.contains("hidden-note") ||
           box.classList.contains("shadow-note") ||
+          box.hasAttribute("data-info-for") ||
           !box.textContent.trim()
         ) {
           return;
@@ -17813,6 +18403,9 @@ ${[
 
     connectedCallback() {
       window.dispatchEvent(new CustomEvent(EVENT_RELOAD));
+      if (this._ready && this._config) {
+        this._syncInfo();
+      }
       // Wieder eingehaengt: die Groessen wieder beobachten
       if (this._ready && !this._resizeObserver) {
         this._watchOverflow();
@@ -17851,6 +18444,17 @@ ${[
     }
 
     disconnectedCallback() {
+      // 1.5.9: die Abos der Infozeilen beenden - sie kommen beim naechsten
+      // Oeffnen wieder.
+      window.clearTimeout(this._infoTimer);
+      Object.keys(this._info || {}).forEach((key) => {
+        const one = this._info[key];
+        one.dead = true;
+        if (one.unsub) {
+          try { one.unsub(); } catch (err) { /* schon weg */ }
+        }
+      });
+      this._info = {};
       if (this._onKey) {
         window.removeEventListener("keydown", this._onKey, true);
       }
