@@ -6,7 +6,7 @@
 
 <p align="center">
   <a href="https://hacs.xyz"><img src="https://img.shields.io/badge/HACS-custom-orange.svg" alt="HACS"></a>
-  <a href="https://github.com/jayjojayson/HA-Style-Hub/releases"><img src="https://img.shields.io/badge/version-1.5.9-blue.svg" alt="Version"></a>
+  <a href="https://github.com/jayjojayson/HA-Style-Hub/releases"><img src="https://img.shields.io/badge/version-1.6.0-blue.svg" alt="Version"></a>
   <a href="https://github.com/jayjojayson/HA-Style-Hub/actions/workflows/validate.yml"><img src="https://github.com/jayjojayson/HA-Style-Hub/actions/workflows/validate.yml/badge.svg" alt="Validate"></a>
   <a href="https://github.com/jayjojayson/HA-Style-Hub/releases"><img src="https://img.shields.io/github/downloads/jayjojayson/HA-Style-Hub/total.svg" alt="Downloads"></a>
   <a href="https://github.com/jayjojayson/HA-Style-Hub/blob/main/LICENSE"><img src="https://img.shields.io/github/license/jayjojayson/HA-Style-Hub.svg" alt="License"></a>
@@ -41,9 +41,9 @@ through a real theme built in the same panel.
 |---|---|
 | 🧱 **Grid layout** | 1 to 4 columns while the sidebar is expanded, 1 to 3 while it is collapsed |
 | 🔀 **Free order** | drag and drop, including Settings, Notifications and the user entry |
-| 🏷️ **Groups** | bundle entries under a name with an icon, font and icon size, a border, a radius, a height and capital letters on or off - the name is hidden while the sidebar is collapsed |
+| 🏷️ **Groups** | bundle entries under a name with an icon, font and icon size, a border, a radius, a height and capital letters on or off; indent their entries and set the space below (1.6.0) - the name is hidden while the sidebar is collapsed |
 | ℹ️ **Info lines** | a second line under any entry - CPU and RAM, time since the last backup, active automations and more from a list or your own Home Assistant template, updated live |
-| 🗂️ **Fold groups** | put an entry into a group - by choosing the group at the entry or by dragging it to the right - then fold the whole block away with a click |
+| 🗂️ **Fold groups** | put an entry into a group - by choosing the group at the entry or by dragging it to the right - then fold the whole block away with a click - since 1.6.0 on request also in the collapsed sidebar |
 | 🪟 **Popup links** | one sidebar entry that opens a window with several pages - dashboards, panels or pages of the settings - with a Lovelace card from your dashboard (YAML) or with a website |
 | 🌐 **Web links** | sidebar entries and popup tiles can also point to any website - they open in a new tab |
 | 💡 **Hints on demand** | the explanations next to the fields can be folded away one by one with a small info icon (the browser remembers which); one tick on the Info page hides them all |
@@ -62,7 +62,9 @@ through a real theme built in the same panel.
 | 🕘 **History** | the last 10 saved states with what changed and who saved; one click loads an earlier state back into the page |
 | 🎚️ **Switch entities** | hiding the header and hiding the sidebar are real `switch` entities, so they can be put on a dashboard or used in an automation |
 | 🙈 **Hide the sidebar** | the whole sidebar can disappear; the panel stays reachable at `/ha-style-hub` |
-| 🖌️ **Theme templates** | four finished looks that fill both modes with one click, then stay editable |
+| 🖌️ **Theme templates** | ten finished looks - Glass, Contrast, Flat, Warm, Nord, Solarized, Catppuccin, Gruvbox, Dracula and OLED - that fill both modes with one click, then stay editable |
+| 🌊 **Animated backgrounds** | drifting colour patches, a wandering gradient or a slow colour change behind the dashboard (1.6.0) |
+| 🫧 **Bubble Card and Mushroom** | bound to the theme with one tick each - accent, corners and font sizes follow your theme (1.6.0) |
 | 🧩 **Sidebar templates** | rows or tiles, each calm or bold - grid and look of the sidebar with one click, in the colours of your theme |
 | ⏻ **Restart button** | optional entry in the grid that restarts Home Assistant, for administrators only; a window in the look of your theme asks first and checks the configuration |
 | 💾 **Export / import** | one page for everything: the complete configuration, or sidebar, theme (`.yaml`), header and HA-Settings on their own - as a file or pasted into a dialog |
@@ -146,7 +148,10 @@ chosen part is outlined and labelled (*"Cards · selected"*).
   Assistant does: own colours of *Appearance › active entry* come first, an
   own icon colour of the entry always stays. The arrow of a group that can
   be collapsed folds its group in the preview as well, to try it out (nothing
-  is saved).
+  is saved). Groups disappear in the collapsed sidebar - with **Show groups in
+  the collapsed sidebar too** (1.6.0, *Layout › Behaviour*) a group stays there
+  as a slim row with its icon (a line without an icon) and a small arrow; a
+  click folds it just like in the expanded sidebar.
   **Templates** (1.5.8, on *Layout* and *Appearance*): four finished looks for
   the sidebar - *Rows · Calm*, *Rows · Bold*, *Tiles · Calm* and *Tiles · Bold*.
   A template sets the grid (columns, rows or tiles, gaps, heights, width) and
@@ -158,7 +163,9 @@ chosen part is outlined and labelled (*"Cards · selected"*).
   current values. On *Appearance* a click
   on a part of the sidebar (title, entries, badge, notifications, background)
   opens its group. Below the preview: *Expanded / Collapsed*; at the bottom of
-  the *Layout* column **Hide the sidebar completely (kiosk mode)**. A click on the
+  the *Layout* column **Leave the sidebar as it is** (1.6.0: HA Style Hub does
+  not touch the sidebar at all - header, theme and HA-Settings keep working, the
+  sidebar settings stay saved) and **Hide the sidebar completely (kiosk mode)**. A click on the
   header or the cards of the dashboard next to it leads to the Header page or
   to the Theme page (cards). On the other pages the sidebar stands collapsed
   next to the model, as in Home Assistant; a click on it or on *↖ Sidebar page*
@@ -173,7 +180,9 @@ chosen part is outlined and labelled (*"Cards · selected"*).
   in Home Assistant* and *Use it as the default theme right away*. A click on
   the sidebar or the header bar in the preview leads to their own page; the
   card *Card design* opens the group *Cards* (border, colour, corners, shadow,
-  title size of all cards). Inside the tiles every element can be clicked on
+  title size of all cards; since 1.6.0 with two sliders on top: **Card
+  transparency** - the alpha of `--ha-card-background`, locked for a gradient -
+  and **Text size** - `--ha-font-size-scale`, 80 to 130 %). Inside the tiles every element can be clicked on
   its own - icons and switches, badge, slider and chips, every state color,
   table header and rows, input fields, status colors, the parts of the dialog
   and every color of the code, heading, text and link, chart lines, the 54
@@ -491,6 +500,22 @@ as a real Home Assistant theme, exactly like a theme from `configuration.yaml`.
   gradient and no image is active, the field may still hold any ready made CSS
   background. The preview shows the result behind the cards.
 
+  **Replace the own background of dashboards** (1.6.0): a background set in a
+  dashboard or a view beats the theme in Home Assistant, so the color,
+  gradient or image from here does not show there. Ticked, the background of
+  the theme is used on every dashboard.
+
+  **Motion** (1.6.0): *Drifting colour patches* (soft patches in colour 1 and
+  2 - empty = primary and accent colour), *Wandering gradient or image* (moves
+  a gradient or an image back and forth; a plain color does not move; it also
+  moves the own image of a dashboard) or *Slow colour change* (switches
+  between up to three colours - with one it breathes towards it, without one
+  the hue turns round), each slow, normal or fast. The preview shows it
+  moving. HA Style Hub sets it on the dashboards of every browser that uses
+  this theme - a theme file can only carry values, no animation, so it is not
+  part of the YAML export. When the system asks for reduced motion nothing
+  moves.
+
   **Where the image goes.** PNG, JPEG, GIF or WebP up to 8 MB (the content is
   checked, not the file name; SVG is refused because it can carry scripts). The
   file is stored as `www/ha_style_hub/background-<hash>.<ext>` in the Home
@@ -522,8 +547,28 @@ as a real Home Assistant theme, exactly like a theme from `configuration.yaml`.
 * **Export** (page *Export / Import*) writes the theme as a `.yaml` file - as a backup, or to put it
   into `configuration.yaml` by hand
 * **Import** reads such a file back in: an export from here, a file from the
-  `themes` folder, or the `themes` block of a `configuration.yaml`. Only the
-  variables above are taken over, the rest is left behind and counted
+  `themes` folder, or the `themes` block of a `configuration.yaml`. Since 1.6.0
+  variables without a field of their own (such as `my-accent-color`) are not
+  left behind: they go to **Own variables**; wherever a field uses one of
+  them (`var(--my-accent-color)`) the field gets the resolved value - also
+  through chains and with a fallback (`var(--x, red)`). Variables of Home
+  Assistant itself (`var(--primary-color)`) stay as they are
+* **Scales for alerts** (1.6.0): from **Error**, **Warning** and **Success**
+  the theme works out the scales `--ha-color-red-*`, `--ha-color-orange-*` and
+  `--ha-color-green-*` (05 to 95) that newer alerts, badges and buttons use.
+  Step 50 is your color; the other steps keep the lightness Home Assistant uses
+  for its own scale. The chips under the three fields show the result
+* **Bubble Card and Mushroom** (1.6.0): two ticks bind these cards to the
+  theme. Bubble Card: accent = primary color, background and border like the
+  cards, corners = card radius, round icons. Mushroom: entity color = primary
+  color, info, success, warning and error from the theme, text sizes follow the
+  text size of the theme, corners from the theme. Own variables or a field win
+* **Own variables** (1.6.0, last group on the page) holds variables of your own
+  as name and value, per mode. They become part of the theme and of the export
+  and work anywhere with `var(--name)` - in the fields above and in your cards
+  (e.g. with card-mod). Names may contain letters, digits, `-` and `_`; a name
+  that has a field above is pointed out. The colour box next to a value - and
+  next to every field that uses `var(--…)` - shows the resolved colour
 
 Lengths may be entered as a plain number, the unit `px` is added where CSS
 needs one. The `rgb-*` variables Home Assistant needs for transparent colors do

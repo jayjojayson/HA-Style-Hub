@@ -7,7 +7,7 @@ from typing import Any, Final
 
 DOMAIN: Final = "ha_style_hub"
 NAME: Final = "HA Style Hub"
-VERSION: Final = "1.5.9"
+VERSION: Final = "1.6.0"
 
 # Storage
 STORAGE_KEY: Final = f"{DOMAIN}.config"
@@ -113,6 +113,13 @@ DEFAULT_LAYOUT: Final[dict[str, Any]] = {
     # Hide the scrollbar of the entry list. Scrolling still works, only the
     # bar itself disappears.
     "hide_scrollbar": False,
+    # 1.6.0: Gruppen auch in der eingeklappten Seitenleiste zeigen - als
+    # schmale Zeile mit Icon (ohne Icon als Linie) und Pfeil zum Zuklappen.
+    "groups_collapsed": False,
+    # 1.6.0: Die Seitenleiste gar nicht anfassen - weder Reihenfolge noch
+    # Aussehen, Gruppen, Links, PopUps oder Infozeilen. Header, Theme und
+    # HA-Settings wirken weiter. Die Ausblendung (kiosk mode) bleibt moeglich.
+    "sidebar_off": False,
     # Die ganze Seitenleiste ausblenden. Das Panel bleibt ueber seine
     # Adresse erreichbar (/ha-style-hub), und in Home Assistant gibt es dafuer
     # einen Schalter - man sperrt sich also nicht aus.
@@ -531,7 +538,18 @@ DEFAULT_THEME: Final[dict[str, Any]] = {
     # so Home Assistant keeps its own value for it.
     "dark": {},
     "light": {},
+    # 1.6.0: Bubble Card und Mushroom ans Theme anbinden (theme.py BIND_*)
+    "bind_bubble": False,
+    "bind_mushroom": False,
+    # 1.6.0: eigene Variablen je Modus, als Liste [{"name", "value"}] in der
+    # Reihenfolge, in der sie eingetragen sind (z. B. my-accent-color). Sie
+    # kommen zusaetzlich ins Theme - fuer var(--name) in Feldern und Karten.
+    "custom": {"dark": [], "light": []},
 }
+
+# 1.6.0: Grenzen fuer die eigenen Variablen (je Modus).
+CUSTOM_VARS_MAX: Final = 200
+CUSTOM_VAR_VALUE_MAX: Final = 300
 
 # Every variable the theme page offers, in the order of the groups on that
 # page. Only names listed here survive normalize(), so nothing unexpected can
@@ -896,6 +914,16 @@ THEME_EXTRAS: Final[dict[str, Any]] = {
     "dash_image": "",
     "dash_image_size": "",
     "dash_image_scroll": False,
+    # 1.6.0: bewegter Hintergrund ("", "blobs", "drift", "hue") und sein
+    # Tempo ("", "slow", "fast") - macht der Injector, nicht das Theme.
+    "dash_motion": "",
+    "dash_motion_speed": "",
+    "dash_motion_color1": "",
+    "dash_motion_color2": "",
+    "dash_motion_color3": "",
+    # 1.6.0: eigenen Hintergrund der Dashboards (--view-background) durch den
+    # des Themes ersetzen - macht ebenfalls der Injector.
+    "dash_override": False,
 }
 
 # Erlaubte Richtungen des Verlaufs (leer = "to bottom") und Darstellungen des
@@ -913,6 +941,8 @@ DASH_DIRECTIONS: Final[tuple[str, ...]] = (
     "radial",
 )
 DASH_IMAGE_SIZES: Final[tuple[str, ...]] = ("cover", "contain", "tile")
+DASH_MOTIONS: Final[tuple[str, ...]] = ("blobs", "drift", "hue")
+DASH_MOTION_SPEEDS: Final[tuple[str, ...]] = ("slow", "fast")
 
 # Hochgeladene Hintergrundbilder ------------------------------------------------
 # Ordner in der Home-Assistant-Konfiguration (im bekannten Ordner www) und der
@@ -1016,6 +1046,10 @@ DEFAULT_HEADING: Final[dict[str, Any]] = {
     "height": 0,
     # 1.5.9: Schriftgroesse des Namens in px. 0 = Standard (11 px), sonst 8-40.
     "font_size": 0,
+    # 1.6.0: Einrueckung der zugeordneten Eintraege (px, 0-80) und Abstand
+    # unter der Gruppe (px, 0-40) - beides nur in der ausgeklappten Leiste.
+    "indent": 0,
+    "space_below": 0,
     # 1.5.9: Groesse des Icons in px. 0 = Standard (16 px), sonst 8-48.
     "icon_size": 0,
     # Ueberschriften werden in Home Assistant ueblicherweise in Grossbuchstaben
@@ -1097,6 +1131,9 @@ def default_config() -> dict[str, Any]:
             "set_default": DEFAULT_THEME["set_default"],
             "dark": {},
             "light": {},
+            "custom": {"dark": [], "light": []},
+            "bind_bubble": False,
+            "bind_mushroom": False,
         },
         # Ordered list of item keys. The order in this list is the order in
         # the sidebar. Keys that are not listed keep their original position

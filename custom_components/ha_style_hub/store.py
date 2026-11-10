@@ -13,6 +13,7 @@ from homeassistant.core import HomeAssistant
 from homeassistant.helpers.storage import Store
 
 from .card_yaml import parse_card_yaml
+from .theme import clean_custom_vars
 from .const import (
     DEFAULT_APPEARANCE,
     DEFAULT_ADVANCED,
@@ -34,6 +35,8 @@ from .const import (
     INFO_TYPES,
     DASH_DIRECTIONS,
     DASH_IMAGE_SIZES,
+    DASH_MOTION_SPEEDS,
+    DASH_MOTIONS,
     DEFAULT_THEME,
     HISTORY_MAX,
     HISTORY_STORAGE_KEY,
@@ -354,6 +357,11 @@ def _clean_paths(raw: Any) -> list[str]:
     return paths
 
 
+# 1.6.0: Farben der Bewegung - Hex, rgb()/hsl(), Namen oder var(--x); nichts,
+# was eine CSS-Angabe beenden koennte (wie MOTION_COLOR im Injector).
+_MOTION_COLOR = re.compile(r"[#a-zA-Z0-9(),.%\s/-]{1,80}")
+
+
 def _clean_background(values: dict[str, Any]) -> None:
     """Drop invalid values of the dashboard background extras (in place).
 
@@ -374,6 +382,14 @@ def _clean_background(values: dict[str, Any]) -> None:
         values.pop("dash_image_size", None)
     if not is_media_url(values.get("dash_image")):
         values.pop("dash_image", None)
+    # 1.6.0: bewegter Hintergrund - nur die bekannten Arten und Tempi
+    if values.get("dash_motion") not in DASH_MOTIONS:
+        values.pop("dash_motion", None)
+    if values.get("dash_motion_speed") not in DASH_MOTION_SPEEDS:
+        values.pop("dash_motion_speed", None)
+    for key in ("dash_motion_color1", "dash_motion_color2", "dash_motion_color3"):
+        if not isinstance(values.get(key), str) or not _MOTION_COLOR.fullmatch(values[key].strip()):
+            values.pop(key, None)
     color = values.get("dash_color2")
     if isinstance(color, str) and any(char in color for char in ";{}<>\"'\\\n"):
         values.pop("dash_color2", None)
@@ -392,9 +408,23 @@ def _merge_theme(data: Any) -> dict[str, Any]:
         "set_default": bool(DEFAULT_THEME["set_default"]),
         "dark": {},
         "light": {},
+        "custom": {"dark": [], "light": []},
+        "bind_bubble": False,
+        "bind_mushroom": False,
     }
     if not isinstance(data, dict):
         return theme
+
+    # 1.6.0: Bubble Card / Mushroom anbinden
+    theme["bind_bubble"] = bool(data.get("bind_bubble", False))
+    theme["bind_mushroom"] = bool(data.get("bind_mushroom", False))
+
+    # 1.6.0: eigene Variablen je Modus
+    custom = data.get("custom")
+    if isinstance(custom, dict):
+        theme["custom"] = {
+            mode: clean_custom_vars(custom.get(mode)) for mode in ("dark", "light")
+        }
 
     theme["enabled"] = bool(data.get("enabled", theme["enabled"]))
     theme["set_default"] = bool(data.get("set_default", theme["set_default"]))
@@ -508,6 +538,12 @@ def normalize(data: Any) -> dict[str, Any]:
                     size = clean_items[key][field]
                     size = int(size) if isinstance(size, (int, float)) and not isinstance(size, bool) else 0
                     clean_items[key][field] = 0 if size <= 0 else min(top, max(8, size))
+            # 1.6.0: Einrueckung (0-80) und Abstand darunter (0-40)
+            for field, top in (("indent", 80), ("space_below", 40)):
+                if field in clean_items[key]:
+                    size = clean_items[key][field]
+                    size = int(size) if isinstance(size, (int, float)) and not isinstance(size, bool) else 0
+                    clean_items[key][field] = max(0, min(top, size))
             clean_items[key]["hide_for"] = _clean_user_ids(
                 value.get("hide_for") if isinstance(value, dict) else None
             )

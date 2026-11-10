@@ -7,7 +7,96 @@ englische Fassung steht in [changelog.md](changelog.md).
 Die Versionsnummern zählen bis `.9` und springen dann auf die nächste
 Nebenversion (1.2.9 → 1.3.0 → 1.3.1 → 1.3.2 → 1.3.3 → 1.3.4 → 1.3.5 → 1.3.6 →
 1.3.7 → 1.3.8 → 1.3.9 → 1.4.0 → 1.4.1 → 1.4.2 → 1.4.3 → 1.4.4 → 1.4.5 →
-1.4.6 → 1.4.7 → 1.4.8 → 1.4.9 → 1.5.0 → 1.5.1 → 1.5.2 → 1.5.3 → 1.5.4 → 1.5.5 → 1.5.6 → 1.5.7 → 1.5.8 → 1.5.9).
+1.4.6 → 1.4.7 → 1.4.8 → 1.4.9 → 1.5.0 → 1.5.1 → 1.5.2 → 1.5.3 → 1.5.4 → 1.5.5 → 1.5.6 → 1.5.7 → 1.5.8 → 1.5.9 → 1.6.0).
+
+## 1.6.0
+
+* **Eigene Variablen im Theme.** Neue letzte Gruppe *Eigene Variablen* auf der
+  Theme-Seite: Variablen ganz nach deinem Geschmack als Name und Wert, je Modus
+  (z. B. `my-accent-color: rgba(97, 175, 255, 1)`). Sie werden Teil des Themes
+  (Backend `theme.custom`, von `theme.py` neben den Feldern eingetragen – ein
+  Feld geht immer vor) und des YAML-Exports, damit wirkt `var(--name)` in den
+  Feldern und in Karten. Namen: Buchstaben, Ziffern, `-` und `_` (bis 64),
+  kein Name mit eigenem Feld, kein `rgb-*` und keine Stufe der Primärskala;
+  Werte bis 300 Zeichen ohne `; { } < > \`; bis 200 je Modus. Falsche,
+  bekannte oder doppelte Namen werden unter der Zeile angezeigt. Modus kopieren
+  und Modus leeren nehmen die Liste mit. Wunsch aus dem Forum.
+* **Theme-Import löst eigene Variablen auf.** Variablen der Datei ohne eigenes
+  Feld bleiben nicht mehr liegen, sondern landen unter *Eigene Variablen*. In
+  den Feldern wird `var(--my-…)` durch den Wert aus der Datei ersetzt – auch
+  über Ketten (`var(--a)` → `var(--b)` → Wert), mit Ersatzwert
+  (`var(--x, red)`) und je Modus. Variablen von Home Assistant selbst
+  (`var(--primary-color)`) bleiben stehen, nur ihr Ersatzwert wird aufgelöst.
+  Eine Datei nur mit eigenen Variablen wird angenommen; die Meldung zählt sie.
+* **Farbfelder zeigen mehr Farben.** Das kleine Farbfeld neben einem Feld zeigt
+  jetzt auch `rgb()`/`rgba()`, `#rgb` und `#rrggbbaa` (ohne Deckkraft) statt
+  Grau und neben einem Theme-Feld mit `var(--…)` die Farbe der eigenen
+  Variable.
+* **Gruppen in der eingeklappten Seitenleiste.** Neue Option *Gruppen auch
+  eingeklappt zeigen* (`layout.groups_collapsed`, *Layout › Verhalten*,
+  standardmäßig aus). Eingeklappt bleibt eine Gruppe dann als schmale Zeile:
+  ihr Icon (ohne Icon eine Linie) und der kleine Pfeil, ohne Text. Ein Klick
+  klappt sie zu oder auf wie ausgeklappt – zugeklappte Einträge sind dann auch
+  eingeklappt verborgen. Die Vorschau *Eingeklappt* zeigt es. Wunsch aus dem
+  Forum.
+* **Theme: Abstufungen für Hinweise.** Aus *Fehler*, *Warnung* und *Erfolg*
+  (`error-color`, `warning-color`, `success-color`) rechnet das Theme jetzt
+  auch `--ha-color-red-*`, `--ha-color-orange-*` und `--ha-color-green-*`
+  (05 bis 95), aus denen Home Assistant Flächen, Ränder und Texte für Gefahr,
+  Warnung und Erfolg nimmt. Stufe 50 ist die eigene Farbe; die anderen Stufen
+  behalten die von Hand abgestimmte Helligkeit und Buntheit der Skala von Home
+  Assistant (`core.globals.ts`) und übernehmen Farbton, Buntheit und – zur
+  Mitte hin – Helligkeit der eigenen Farbe; außerhalb von sRGB verlieren sie
+  Buntheit. Mit dem Rot von Home Assistant selbst kommt genau dessen Skala
+  heraus. Gleiche Rechnung in `theme.py` und im Panel; Farbchips unter den
+  drei Feldern.
+* **Theme: Bubble Card und Mushroom anbinden.** Neue Gruppe *Bubble Card und
+  Mushroom* mit zwei Schaltern (`theme.bind_bubble`, `theme.bind_mushroom`).
+  Sie ergänzen `--bubble-*`- und `--mush-*`-Variablen, die nur auf Variablen
+  von Home Assistant verweisen (z. B. `bubble-accent-color:
+  var(--primary-color)`, `mush-rgb-danger: var(--rgb-error-color)`,
+  `mush-card-primary-font-size: var(--ha-font-size-m)`), gelesen aus den
+  Quellen beider Karten. Felder und eigene Variablen gehen vor.
+* **Theme: sechs neue Vorlagen.** Nord, Solarized, Catppuccin (Mocha / Latte),
+  Gruvbox, Dracula und OLED, je für Dunkel und Hell und mit Farben für Fehler,
+  Warnung, Erfolg und Info – zusammen zehn Vorlagen.
+* **Theme: zwei Regler im *Card-Design*.** *Transparenz der Karten* (0 bis
+  80 %) schreibt die Deckkraft von `--ha-card-background` (die Grundfarbe kommt
+  aus dem Feld, aus `card-background-color` oder von Home Assistant; bei einem
+  Verlauf gesperrt). *Textgröße* (80 bis 130 %) schreibt
+  `--ha-font-size-scale` (100 % = leer). Je Modus, Felder und Regler ziehen
+  gegenseitig nach.
+* **Bewegte Dashboard-Hintergründe.** Unter *Dashboard-Hintergrund* die neue
+  *Bewegung*: wandernde Farbinseln (zwei Ebenen in Farbe 1 und 2, leer =
+  Primär- und Akzentfarbe), wandernder Verlauf oder Bild, langsamer
+  Farbwechsel (zwischen bis zu drei Farben auf eigener Ebene; eine Farbe
+  atmet, ohne Farbe dreht sich der Farbton) – langsam, normal oder schnell, je
+  Modus (`dash_motion`, `dash_motion_speed`, `dash_motion_color1` bis `3`). Die
+  Bewegungen sind weit und flott genug, um auch in der Vorschau sichtbar zu
+  sein (Farbinseln 16/21 s, Farbwechsel 9 s je Farbe, Verlauf 18 s bei
+  normalem Tempo). Der Injector schreibt das als eigenes Stylesheet an
+  `<hui-view-background>` im Shadow Root von `hui-root` – nur solange der
+  Browser dieses Theme benutzt, nach einem Wechsel von Modus oder Theme neu
+  (Beobachter am `<html>`) und nur bei `prefers-reduced-motion:
+  no-preference`. Nicht Teil des YAML-Exports. Die Theme-Vorschau zeigt es.
+* **Eigenen Hintergrund der Dashboards ersetzen.** Neuer Haken unter
+  *Dashboard-Hintergrund* (`dash_override`, je Modus): Home Assistant stellt
+  den Hintergrund eines Dashboards oder einer Ansicht (`--view-background`)
+  vor das Theme. Mit Haken setzt der Injector ihn an `<hui-view-background>`
+  zurück, damit auf allen Dashboards der Hintergrund des Themes zu sehen ist.
+* **Gruppen: Einträge einrücken und Abstand darunter.** Zwei neue Felder an
+  einer Gruppe (`indent` 0 bis 80 px, `space_below` 0 bis 40 px): Die der
+  Gruppe zugeordneten Einträge rücken nach rechts (`margin-inline-start`), die
+  Gruppe bekommt Platz bis zu ihrem ersten Eintrag (`margin-bottom`). Beides
+  nur in der ausgeklappten Seitenleiste und in der Vorschau. Wunsch aus dem
+  Forum.
+* **Sidebar nicht anpassen.** Neuer Schalter auf der Sidebar-Seite über
+  *Sidebar ganz ausblenden (kiosk-mode)* (`layout.sidebar_off`): HA Style Hub
+  nimmt dann alles an der Seitenleiste zurück (Reihenfolge, Aussehen, Gruppen,
+  Links, PopUps, Infozeilen, Namen, Icons) und überlässt sie Home Assistant;
+  Header, Theme und HA-Settings wirken weiter, der kiosk-mode blendet sie
+  trotzdem aus. Die Einstellungen der Seitenleiste bleiben gespeichert. Wunsch
+  aus dem Forum.
 
 ## 1.5.9
 

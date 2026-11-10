@@ -6,7 +6,7 @@
 
 <p align="center">
   <a href="https://hacs.xyz"><img src="https://img.shields.io/badge/HACS-custom-orange.svg" alt="HACS"></a>
-  <a href="https://github.com/jayjojayson/HA-Style-Hub/releases"><img src="https://img.shields.io/badge/version-1.5.9-blue.svg" alt="Version"></a>
+  <a href="https://github.com/jayjojayson/HA-Style-Hub/releases"><img src="https://img.shields.io/badge/version-1.6.0-blue.svg" alt="Version"></a>
   <a href="https://github.com/jayjojayson/HA-Style-Hub/actions/workflows/validate.yml"><img src="https://github.com/jayjojayson/HA-Style-Hub/actions/workflows/validate.yml/badge.svg" alt="Validate"></a>
   <a href="https://github.com/jayjojayson/HA-Style-Hub/releases"><img src="https://img.shields.io/github/downloads/jayjojayson/HA-Style-Hub/total.svg" alt="Downloads"></a>
   <a href="https://github.com/jayjojayson/HA-Style-Hub/blob/main/LICENSE"><img src="https://img.shields.io/github/license/jayjojayson/HA-Style-Hub.svg" alt="License"></a>
@@ -35,15 +35,17 @@ das komplette Aussehen — inklusive *Einstellungen*, *Benachrichtigungen* und
 
 * **Grid-Layout** mit 1 bis 4 Spalten (ausgeklappt) und 1 bis 3 Spalten (eingeklappt)
 * **Freie Reihenfolge** per Drag and Drop, auch für Einstellungen, Benachrichtigungen und Profil
-* **Gruppen** mit Name, Icon, Schrift- und Icongröße, Rahmen, Eckenradius, Höhe
-  und wahlweise Großbuchstaben, die Einträge der Seitenleiste zusammenfassen – ihr Name
+* **Gruppen** mit Name, Icon, Schrift- und Icongröße, Rahmen, Eckenradius, Höhe,
+  Einrückung der Einträge und Abstand darunter (1.6.0) und wahlweise
+  Großbuchstaben, die Einträge der Seitenleiste zusammenfassen – ihr Name
   verschwindet im eingeklappten Zustand
 * **Infozeilen**: eine zweite Zeile unter jedem Eintrag – CPU und RAM, Zeit seit
   dem letzten Backup, aktive Automationen und mehr aus einer Auswahl oder einem
   eigenen Template von Home Assistant, live aktualisiert
 * **Gruppen zuklappen**: Einträge lassen sich einer Gruppe zuordnen – per
   Auswahl am Eintrag oder per Drag nach rechts – und mit einem Klick auf ihren
-  Namen zusammenklappen
+  Namen zusammenklappen; seit 1.6.0 auf Wunsch auch in der eingeklappten
+  Seitenleiste
 * **PopUp-Links**: ein Eintrag der Seitenleiste, der ein Fenster mit mehreren
   Seiten öffnet — Dashboards, Panels oder Seiten der Einstellungen —, um eine
   lange Seitenleiste zu bündeln, mit einer Lovelace-Karte aus deinem
@@ -94,8 +96,13 @@ das komplette Aussehen — inklusive *Einstellungen*, *Benachrichtigungen* und
 * **Sidebar-Vorlagen**: Zeilen oder Kacheln, jeweils dezent oder kräftig –
   Raster und Aussehen der Seitenleiste mit einem Klick, in den Farben deines
   Themes
-* **Theme-Vorlagen**: vier fertige Looks, die beide Modi mit einem Klick füllen
-  und danach ganz normal weiter bearbeitet werden können
+* **Theme-Vorlagen**: zehn fertige Looks – Glas, Kontrast, Flach, Warm, Nord,
+  Solarized, Catppuccin, Gruvbox, Dracula und OLED –, die beide Modi mit einem
+  Klick füllen und danach ganz normal weiter bearbeitet werden können
+* **Bewegte Hintergründe**: wandernde Farbinseln, ein wandernder Verlauf oder
+  ein langsamer Farbwechsel hinter dem Dashboard (1.6.0)
+* **Bubble Card und Mushroom** mit je einem Haken ans Theme anbinden – Akzent,
+  Ecken und Schriftgrößen folgen deinem Theme (1.6.0)
 * **Neustart-Knopf** auf Wunsch im Raster — nur für Administratoren, mit
   Rückfrage in einem Fenster in der Optik deines Themes, das vorher die
   Konfiguration prüft
@@ -188,7 +195,11 @@ Das gewählte Element ist umrandet und beschriftet (*„Karten · ausgewählt“
   Home Assistant: eigene Farben unter *Aussehen › aktiver Eintrag* gehen vor,
   eine eigene Iconfarbe des Eintrags bleibt immer. Der Pfeil einer Gruppe,
   die sich zusammenklappen lässt, klappt ihre Gruppe auch in der Vorschau ein –
-  zum Ausprobieren, gespeichert wird dabei nichts.
+  zum Ausprobieren, gespeichert wird dabei nichts. In der eingeklappten
+  Seitenleiste verschwinden Gruppen – mit **Gruppen auch eingeklappt zeigen**
+  (1.6.0, *Layout › Verhalten*) bleibt eine Gruppe dort als schmale Zeile mit
+  ihrem Icon (ohne Icon als Linie) und einem kleinen Pfeil; ein Klick klappt
+  sie zu, genau wie ausgeklappt.
   **Vorlagen** (1.5.8, unter *Layout* und *Aussehen*): vier fertige Looks für
   die Seitenleiste – *Zeilen · Dezent*, *Zeilen · Kräftig*, *Kacheln · Dezent*
   und *Kacheln · Kräftig*. Eine Vorlage setzt das Raster (Spalten, Zeilen oder
@@ -200,7 +211,10 @@ Das gewählte Element ist umrandet und beschriftet (*„Karten · ausgewählt“
   zurück. Der Dialog markiert die Vorlage, die zu den aktuellen Werten passt. Unter *Aussehen* öffnet ein Klick auf einen Teil der
   Seitenleiste (Titel, Einträge, Badge, Benachrichtigungen, Hintergrund) seine
   Gruppe. Unter dem Bild: *Ausgeklappt / Eingeklappt*; unten in der Spalte
-  *Layout* **Sidebar ganz ausblenden (kiosk-mode)**. Ein Klick auf den Header
+  *Layout* **Sidebar nicht anpassen** (1.6.0: HA Style Hub fasst die
+  Seitenleiste gar nicht an – Header, Theme und HA-Settings wirken weiter, die
+  Einstellungen der Seitenleiste bleiben gespeichert) und **Sidebar ganz
+  ausblenden (kiosk-mode)**. Ein Klick auf den Header
   oder die Karten des Dashboards daneben führt auf die Seite Header bzw. auf die
   Theme-Seite (Karten). Auf den anderen Seiten steht die Seitenleiste
   eingeklappt neben dem Bild, wie in Home Assistant; ein Klick darauf oder auf
@@ -216,7 +230,9 @@ Das gewählte Element ist umrandet und beschriftet (*„Karten · ausgewählt“
   Assistant eintragen* und *Gleich als Standard-Theme verwenden*. Ein Klick auf
   Seitenleiste oder Kopfzeile im Bild führt auf deren eigene Seite; die Karte
   *Card-Design* öffnet die Gruppe *Cards* (Rahmen, Farbe, Ecken, Schatten,
-  Titelgröße aller Cards). In den Kacheln lässt sich jedes Element einzeln
+  Titelgröße aller Cards; seit 1.6.0 oben mit zwei Reglern: **Transparenz der
+  Karten** – die Deckkraft von `--ha-card-background`, bei einem Verlauf
+  gesperrt – und **Textgröße** – `--ha-font-size-scale`, 80 bis 130 %). In den Kacheln lässt sich jedes Element einzeln
   anklicken — Icons und Schalter, Badge, Regler und Chips, jede Zustandsfarbe,
   Tabellenkopf und Zeilen, Eingabefelder, Statusfarben, die Teile des Dialogs
   und jede Farbe im Code, Überschrift, Text und Link, Diagrammlinien, die 54
@@ -573,6 +589,23 @@ Theme aus der `configuration.yaml`.
   weder Verlauf noch Bild aktiv sind, darf das Feld auch ein fertiger
   CSS-Hintergrund sein. Die Vorschau zeigt das Ergebnis hinter den Karten.
 
+  **Eigenen Hintergrund der Dashboards ersetzen** (1.6.0): Ein Hintergrund,
+  der in einem Dashboard oder einer Ansicht eingestellt ist, geht in Home
+  Assistant dem Theme vor – dann ist Farbe, Verlauf oder Bild von hier dort
+  nicht zu sehen. Mit Haken gilt auf allen Dashboards der Hintergrund des
+  Themes.
+
+  **Bewegung** (1.6.0): *Wandernde Farbinseln* (weiche Flecken in Farbe 1 und
+  2 – leer = Primär- und Akzentfarbe), *Wandernder Verlauf oder Bild* (bewegt
+  einen Verlauf oder ein Bild hin und her; eine einfache Farbe bewegt sich
+  nicht; auch das eigene Bild eines Dashboards wandert) oder *Langsamer
+  Farbwechsel* (wechselt zwischen bis zu drei Farben – mit einer atmet er zu
+  ihr hin, ohne Farbe dreht sich der Farbton), jeweils langsam, normal oder
+  schnell. Die Vorschau zeigt die Bewegung. HA Style Hub setzt das auf den
+  Dashboards jedes Browsers, der dieses Theme benutzt – eine Theme-Datei kann
+  nur Werte tragen, keine Animation, deshalb ist es nicht Teil des
+  YAML-Exports. Wünscht das System weniger Bewegung, bewegt sich nichts.
+
   **Wohin das Bild kommt.** PNG, JPEG, GIF oder WebP bis 8 MB (geprüft wird der
   Inhalt, nicht der Dateiname; SVG wird abgelehnt, weil es Skripte enthalten
   kann). Die Datei landet als `www/ha_style_hub/background-<Hash>.<Endung>` im
@@ -599,8 +632,30 @@ Theme aus der `configuration.yaml`.
   Hand in die `configuration.yaml` zu übernehmen
 * **Import** liest so eine Datei wieder ein: einen Export von hier, eine Datei aus
   dem `themes`-Ordner oder den `themes`-Block einer `configuration.yaml`.
-  Übernommen wird nur, was oben aufgeführt ist, der Rest bleibt liegen und wird
-  gezählt
+  Seit 1.6.0 bleiben Variablen ohne eigenes Feld (wie `my-accent-color`) nicht
+  liegen: Sie landen unter **Eigene Variablen**; wo ein Feld eine davon
+  nutzt (`var(--my-accent-color)`), bekommt es den aufgelösten Wert – auch über
+  Ketten und mit Ersatzwert (`var(--x, red)`). Variablen von Home Assistant
+  selbst (`var(--primary-color)`) bleiben stehen
+* **Abstufungen für Hinweise** (1.6.0): Aus **Fehler**, **Warnung** und
+  **Erfolg** rechnet das Theme die Skalen `--ha-color-red-*`,
+  `--ha-color-orange-*` und `--ha-color-green-*` (05 bis 95), die neuere
+  Hinweise, Badges und Knöpfe nutzen. Stufe 50 ist deine Farbe; die anderen
+  Stufen behalten die Helligkeiten, die Home Assistant für seine eigene Skala
+  verwendet. Die Farbchips unter den drei Feldern zeigen das Ergebnis
+* **Bubble Card und Mushroom** (1.6.0): zwei Haken binden diese Karten ans
+  Theme an. Bubble Card: Akzent = Primärfarbe, Hintergrund und Rahmen wie bei
+  den Karten, Ecken = Kartenradius, runde Icons. Mushroom: Farbe der Entitäten
+  = Primärfarbe, Info, Erfolg, Warnung und Fehler aus dem Theme, Textgrößen
+  folgen der Textgröße des Themes, Ecken aus dem Theme. Eigene Variablen oder
+  ein Feld gehen vor
+* **Eigene Variablen** (1.6.0, letzte Gruppe der Seite) nimmt Variablen ganz
+  nach deinem Geschmack auf, als Name und Wert je Modus. Sie werden Teil des
+  Themes und des Exports und wirken überall mit `var(--name)` – in den Feldern
+  oben und in deinen Karten (z. B. mit card-mod). Namen dürfen Buchstaben,
+  Ziffern, `-` und `_` enthalten; ein Name mit eigenem Feld oben wird
+  angezeigt. Das Farbfeld neben einem Wert – und neben jedem Feld mit
+  `var(--…)` – zeigt die aufgelöste Farbe
 
 Längen dürfen als blanke Zahl eingetragen werden, die Einheit `px` wird ergänzt,
 wo CSS eine braucht. Die `rgb-*`-Variablen, die Home Assistant für transparente

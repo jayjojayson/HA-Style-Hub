@@ -1,6 +1,6 @@
 /*
  * HA Style Hub - ha-style-hub.js
- * Version: 1.5.9
+ * Version: 1.6.0
  *
  * Runtime patcher for the Home Assistant sidebar (ha-sidebar).
  *
@@ -26,7 +26,7 @@
 (() => {
   "use strict";
 
-  const VERSION = "1.5.9";
+  const VERSION = "1.6.0";
   const TAG = "[HA Style Hub]";
 
   const EVENT_UPDATED = "ha_style_hub_updated";
@@ -58,6 +58,10 @@
     row_height_collapsed: 0,
     merge_fixed: false,
     hide_scrollbar: false,
+    // 1.6.0: Gruppen auch eingeklappt zeigen
+    groups_collapsed: false,
+    // 1.6.0: Seitenleiste gar nicht anfassen
+    sidebar_off: false,
     hide_sidebar: false,
     show_restart: false,
   };
@@ -1241,6 +1245,9 @@
     // 1.5.9: Schrift- und Icongroesse in px, 0 = Standard (11 px / 16 px)
     font_size: 0,
     icon_size: 0,
+    // 1.6.0: Einrueckung der Eintraege, Abstand unter der Gruppe (px)
+    indent: 0,
+    space_below: 0,
     uppercase: true,
     collapsible: false,
     hide_for: [],
@@ -1360,6 +1367,12 @@
     return out;
   };
 
+  const motionOf = (mode) => ({
+    kind: isObject(mode) && typeof mode.dash_motion === "string" ? mode.dash_motion : "",
+    speed: isObject(mode) && typeof mode.dash_motion_speed === "string" ? mode.dash_motion_speed : "",
+    colors: isObject(mode) ? [mode.dash_motion_color1, mode.dash_motion_color2, mode.dash_motion_color3] : [],
+    override: isObject(mode) && mode.dash_override === true,
+  });
   const themeSummary = (raw) => {
     const theme = isObject(raw) ? raw : {};
     const count = (mode) =>
@@ -1371,6 +1384,12 @@
       name: typeof theme.name === "string" ? theme.name.trim() : "",
       dark: count(theme.dark),
       light: count(theme.light),
+      // 1.6.0: bewegter Hintergrund je Modus (der Rest des Themes kommt
+      // ueber Home Assistant, das hier braucht der Injector selbst)
+      motion: {
+        dark: motionOf(theme.dark),
+        light: motionOf(theme.light),
+      },
     };
   };
 
@@ -2856,6 +2875,116 @@
    *    Variablen (hui-view-container: padding-top: calc(var(--header-height)
    *    + ...)), damit rueckt alles von selbst mit.
    */
+  /**
+   * 1.6.0: Bewegter Dashboard-Hintergrund - dieselbe Regel im Injector (am
+   * <hui-view-background> im Schatten von hui-root) und in der Vorschau des
+   * Panels. Ein Theme-Feld kann nur einen Wert tragen, keine @keyframes -
+   * deshalb macht das der Injector. Bei "Bewegung reduzieren" im System
+   * laeuft nichts.
+   *   drift  - Verlauf oder Bild wandert hin und her (background-position)
+   *   blobs  - weiche Farbinseln in zwei Farben ziehen umher (::before, ::after)
+   *   hue    - Farbwechsel: ohne eigene Farben dreht sich der Farbton, mit bis
+   *            zu drei Farben wechselt der Hintergrund zwischen ihnen
+   */
+  const MOTION_KINDS = ["drift", "blobs", "hue"];
+  const MOTION_COLOR = /^[#a-zA-Z0-9(),.%\s/-]{1,80}$/;
+  const motionColors = (list) =>
+    (Array.isArray(list) ? list : [])
+      .map((one) => String(one === undefined || one === null ? "" : one).trim())
+      .filter((one) => one && MOTION_COLOR.test(one));
+  const motionCss = (kind, speed, sel, colors) => {
+    if (MOTION_KINDS.indexOf(kind) < 0) {
+      return "";
+    }
+    const factor = speed === "slow" ? 2 : speed === "fast" ? 0.5 : 1;
+    const sec = (n) => `${Math.round(n * factor)}s`;
+    const own = motionColors(colors);
+    const calm = "@media (prefers-reduced-motion: no-preference) {";
+    if (kind === "drift") {
+      return [
+        "@keyframes sh-bg-drift { 0% { background-position: 0% 0%; } 50% { background-position: 100% 60%; } 100% { background-position: 30% 100%; } }",
+        calm,
+        `  ${sel} { background-size: 250% 250% !important; animation: sh-bg-drift ${sec(18)} ease-in-out infinite alternate !important; }`,
+        "}",
+      ].join("\n");
+    }
+    if (kind === "hue") {
+      if (!own.length) {
+        return [
+          "@keyframes sh-bg-hue { from { filter: hue-rotate(0deg); } to { filter: hue-rotate(360deg); } }",
+          calm,
+          `  ${sel} { animation: sh-bg-hue ${sec(30)} linear infinite !important; }`,
+          "}",
+        ].join("\n");
+      }
+      // Eine Farbe: der Hintergrund atmet zu ihr hin und zurueck.
+      // Zwei oder drei: reihum, am Ende wieder die erste.
+      const stops = own.length === 1 ? ["transparent", own[0], "transparent"] : own.concat([own[0]]);
+      const frames = stops
+        .map((color, index) => `  ${Math.round((index / (stops.length - 1)) * 100)}% { background-color: ${color}; }`)
+        .join("\n");
+      return [
+        `${sel}::before { content: ""; position: absolute; inset: 0; pointer-events: none; background-color: ${stops[0]}; }`,
+        "@keyframes sh-bg-cycle {",
+        frames,
+        "}",
+        calm,
+        `  ${sel}::before { animation: sh-bg-cycle ${sec(own.length === 1 ? 14 : 9 * own.length)} ease-in-out infinite; }`,
+        "}",
+      ].join("\n");
+    }
+    const one = own[0] || "var(--primary-color)";
+    const two = own[1] || "var(--accent-color, var(--primary-color))";
+    const patch = (color, x, y, strength, size) =>
+      `radial-gradient(circle at ${x}% ${y}%, color-mix(in srgb, ${color} ${strength}%, transparent), transparent ${size}%)`;
+    return [
+      `${sel} { overflow: hidden !important; }`,
+      `${sel}::before, ${sel}::after { content: ""; position: absolute; inset: -40%; pointer-events: none; }`,
+      `${sel}::before { background: ${patch(one, 30, 35, 55, 22)}, ${patch(one, 70, 75, 40, 18)}; }`,
+      `${sel}::after { background: ${patch(two, 70, 30, 50, 20)}, ${patch(two, 25, 70, 38, 17)}; }`,
+      "@keyframes sh-bg-blobs-a {",
+      "  0% { transform: translate(-14%, -10%) scale(1); }",
+      "  33% { transform: translate(12%, 6%) scale(1.18); }",
+      "  66% { transform: translate(-4%, 14%) scale(0.92); }",
+      "  100% { transform: translate(-14%, -10%) scale(1); }",
+      "}",
+      "@keyframes sh-bg-blobs-b {",
+      "  0% { transform: translate(12%, 10%) scale(1.1); }",
+      "  33% { transform: translate(-12%, -4%) scale(0.95); }",
+      "  66% { transform: translate(6%, -14%) scale(1.2); }",
+      "  100% { transform: translate(12%, 10%) scale(1.1); }",
+      "}",
+      calm,
+      `  ${sel}::before { animation: sh-bg-blobs-a ${sec(16)} ease-in-out infinite; will-change: transform; }`,
+      `  ${sel}::after { animation: sh-bg-blobs-b ${sec(21)} ease-in-out infinite; will-change: transform; }`,
+      "}",
+    ].join("\n");
+  };
+
+  /**
+   * 1.6.0: Bewegung nur, wenn dieses Browserfenster gerade das Theme von
+   * HA Style Hub benutzt - die Bewegung gehoert zum Theme.
+   */
+  const buildMotionCss = (config, hass) => {
+    const theme = config.theme || {};
+    if (!theme.enabled || !hass || !hass.themes) {
+      return "";
+    }
+    const themes = hass.themes;
+    const active = themes.theme || (hass.selectedTheme && hass.selectedTheme.theme) || "";
+    const name = String(theme.name || "").trim() || "HA Style Hub";
+    if (active !== name) {
+      return "";
+    }
+    const values = ((theme.motion || {})[themes.darkMode ? "dark" : "light"]) || {};
+    // Den eigenen Hintergrund eines Dashboards (--view-background, setzt
+    // Home Assistant am Element) auf Wunsch durch den des Themes ersetzen.
+    const override = values.override
+      ? "hui-view-background { --view-background: initial !important; --view-background-opacity: initial !important; }"
+      : "";
+    return [override, motionCss(values.kind, values.speed, "hui-view-background", values.colors)].filter(Boolean).join("\n");
+  };
+
   const buildHeaderCss = (config) => {
     const head = config.header || DEFAULT_HEADER;
     const out = [];
@@ -3767,7 +3896,26 @@
       "  height: var(--mdc-icon-size) !important;",
       "  --ha-icon-display: block;",
       "}",
-      ":host(:not([expanded])) .sh-heading { display: none !important; }",
+      // 1.6.0: mit "Gruppen auch eingeklappt zeigen" bleibt die Gruppe als
+      // schmale Zeile: Icon (ohne Icon eine Linie) und Pfeil, ohne Text.
+      ...(layout.groups_collapsed
+        ? [
+            ":host(:not([expanded])) .sh-heading {",
+            "  justify-content: center !important;",
+            "  gap: 2px !important;",
+            "  padding: 5px 0 !important;",
+            "}",
+            ":host(:not([expanded])) .sh-heading .sh-heading-text { display: none !important; }",
+            ":host(:not([expanded])) .sh-heading .sh-caret { margin-left: 0 !important; font-size: 8px !important; }",
+            ":host(:not([expanded])) .sh-heading[data-sh-noicon]::before {",
+            "  content: \"\" !important;",
+            "  flex: 0 1 60% !important;",
+            "  height: 1px !important;",
+            "  background: currentColor !important;",
+            "  opacity: .6 !important;",
+            "}",
+          ]
+        : [":host(:not([expanded])) .sh-heading { display: none !important; }"]),
       // Nur zusammenklappbare Ueberschriften nehmen Klicks an.
       ".sh-heading[data-sh-collapsible] {",
       "  pointer-events: auto !important;",
@@ -3808,8 +3956,10 @@
         if (config.items[key].parent !== head) {
           return;
         }
+        // 1.6.0: mit "Gruppen auch eingeklappt" auch eingeklappt zugeklappt -
+        // die Gruppe ist dort ja zu sehen und klickbar.
         push(
-          `${selectorsOfKey(key, ":host([expanded])")} { display: none !important; }`
+          `${selectorsOfKey(key, layout.groups_collapsed ? undefined : ":host([expanded])")} { display: none !important; }`
         );
       });
     });
@@ -3840,6 +3990,22 @@
           rules.push(`  height: ${height}px !important;`);
           rules.push("  padding-top: 0 !important;");
           rules.push("  padding-bottom: 0 !important;");
+        }
+
+        // 1.6.0: Abstand unter der Gruppe (nur ausgeklappt - eingeklappt ist
+        // die Gruppe ausgeblendet oder eine schmale Zeile)
+        const below = Math.max(0, Math.min(40, Math.round(number(entry.space_below, 0))));
+        if (below > 0) {
+          push(`${selectorsOfKey(key, ":host([expanded])")} { margin-bottom: ${below}px !important; }`);
+        }
+        // 1.6.0: zugeordnete Eintraege einruecken (nur ausgeklappt)
+        const indent = Math.max(0, Math.min(80, Math.round(number(entry.indent, 0))));
+        if (indent > 0) {
+          Object.keys(config.items).forEach((child) => {
+            if (child.indexOf(HEADING_PREFIX) !== 0 && config.items[child] && config.items[child].parent === key) {
+              push(`${selectorsOfKey(child, ":host([expanded])")} { margin-inline-start: ${indent}px !important; }`);
+            }
+          });
         }
 
         // 1.5.9: Schriftgroesse des Namens (0 = Standard 11 px, 8 bis 40 px)
@@ -4362,6 +4528,27 @@
           return;
         }
 
+        // 1.6.0: "Seitenleiste nicht anpassen" - alles an der Seitenleiste
+        // zuruecknehmen, Header und HA-Settings laufen weiter. Nur die
+        // Ausblendung (kiosk mode) bleibt, wenn sie an ist.
+        if (this.config.layout.sidebar_off === true) {
+          // Was gleich wieder geschrieben wird, nicht erst leeren - sonst
+          // sieht der Beobachter der Seitenleiste jedes Mal eine Aenderung.
+          this.resetSidebar(this.config.layout.hide_sidebar ? ["sidebar", "root"] : []);
+          if (this.config.layout.hide_sidebar) {
+            this.sheet(this.sidebar.shadowRoot, "sidebar").write(":host { display: none !important; }");
+            if (this.root && this.root.shadowRoot) {
+              this.sheet(this.root.shadowRoot, "root").write(buildRootCss(this.config));
+            }
+          }
+          this.applyHeader();
+          this.checkSettingsPage();
+          this.debug("sidebar", "left as Home Assistant draws it (\"Do not change the sidebar\" is on)", {
+            kiosk: this.config.layout.hide_sidebar === true,
+          });
+          return;
+        }
+
         // Der CSS-Bau braucht den Klappzustand; er kommt nicht aus der
         // gespeicherten Konfiguration, sondern aus diesem Browser.
         this.config.collapsed = this.collapsed;
@@ -4476,6 +4663,8 @@
         } else if (iconNode) {
           iconNode.remove();
         }
+        // 1.6.0: ohne Icon wird die Gruppe eingeklappt zur Linie
+        node.toggleAttribute("data-sh-noicon", !icon);
 
         let label = node.querySelector(".sh-heading-text");
         if (!label) {
@@ -7903,6 +8092,28 @@
       }
     }
 
+    /**
+     * 1.6.0: Bewegter Hintergrund. Haengt am Modus (Hell/Dunkel) und am
+     * gewaehlten Theme - beides setzt Home Assistant als style am <html>.
+     * Ein Beobachter dort schreibt die Regel nach jedem Wechsel neu.
+     */
+    applyMotion(given) {
+      const root = given || this.huiRoot();
+      if (!this.motionObserver && typeof MutationObserver !== "undefined") {
+        this.motionObserver = new MutationObserver(() => {
+          window.clearTimeout(this.motionTimer);
+          this.motionTimer = window.setTimeout(() => this.applyMotion(), 250);
+        });
+        this.motionObserver.observe(document.documentElement, { attributes: true, attributeFilter: ["style", "class"] });
+      }
+      if (!root) {
+        return;
+      }
+      const enabled = this.config.advanced.enabled !== false;
+      const css = enabled ? buildMotionCss(this.config, this.root && this.root.hass) : "";
+      this.sheet(root, "motion").write(css);
+    }
+
     /** <hui-root> hat sich gerade gezeichnet (siehe hookElement). */
     styleHeaderElement(element) {
       this.applyHeader(element && element.shadowRoot);
@@ -7921,6 +8132,7 @@
       this.applyHeaderButtons(root);
       const headerCss = enabled ? buildHeaderCss(this.config) : "";
       this.sheet(root, "header").write(headerCss);
+      this.applyMotion(root);
       this.debug(
         "header",
         !enabled
@@ -8409,6 +8621,16 @@
       if (this.feed) {
         this.useSystem("header", false);
       }
+      this.resetSidebar();
+      (this.activeSheets || []).forEach((sheet) => sheet.clear());
+    }
+
+    /**
+     * 1.6.0: Nur die Seitenleiste zuruecksetzen - eigene Eintraege, Infozeilen,
+     * Icons, Namen, Ausblendungen und ihre Stylesheets. Header und HA-Settings
+     * bleiben (reset() nimmt alles zurueck und ruft das hier mit auf).
+     */
+    resetSidebar(keep = []) {
       if (this.sidebar && this.sidebar.shadowRoot) {
         this.sidebar.shadowRoot
           .querySelectorAll(`.sh-heading, [data-sh-key="${RESTART_KEY}"], [data-sh-link], [data-sh-popup], .sh-info`)
@@ -8416,8 +8638,12 @@
         Object.keys(this.infoSubs || {}).forEach((key) => this.dropInfo(key));
         this.closePopup();
       }
-
-      (this.activeSheets || []).forEach((sheet) => sheet.clear());
+      const sidebarSheet = /^(sidebar|custom|root|drawer|notifications|list-\d+)$/;
+      (this.activeSheets || []).forEach((sheet) => {
+        if (sidebarSheet.test(sheet.id) && keep.indexOf(sheet.id) < 0) {
+          sheet.clear();
+        }
+      });
       if (!this.sidebar || !this.sidebar.shadowRoot) {
         return;
       }

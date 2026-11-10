@@ -27,6 +27,8 @@ from typing import Any
 from homeassistant.core import HomeAssistant, callback
 
 from .const import (
+    CUSTOM_VAR_VALUE_MAX,
+    CUSTOM_VARS_MAX,
     DASH_DIRECTIONS,
     DASH_IMAGE_SIZES,
     THEME_COMPOSED,
@@ -36,6 +38,58 @@ from .const import (
 )
 
 _LOGGER = logging.getLogger(__name__)
+
+# 1.6.0: Name einer eigenen Variable (ohne "--") und was im Wert nicht stehen
+# darf - der Wert wird zu CSS, deshalb kein ; { } < > \ und keine Zeilen.
+_CUSTOM_NAME = re.compile(r"[A-Za-z0-9][A-Za-z0-9_-]{0,63}")
+_CUSTOM_BAD = re.compile(r"[;{}<>\\\r\n]")
+# Die Skala der Primaerfarbe rechnet das Theme selbst aus.
+_CUSTOM_DERIVED = re.compile(r"(rgb-.*|ha-color-(primary|red|orange|green)-\d{2})")
+
+
+def clean_custom_vars(raw: Any) -> list[dict[str, str]]:
+    """Return the own variables of one mode as a clean list.
+
+    Accepts the stored list ``[{"name": ..., "value": ...}]`` (and, to be
+    forgiving, a plain ``{name: value}`` mapping). Invalid names, names the
+    theme page has a field for, derived names, empty or unsafe values and
+    duplicates (the first one wins) are dropped.
+    """
+    if isinstance(raw, dict):
+        pairs = [{"name": key, "value": value} for key, value in raw.items()]
+    elif isinstance(raw, list):
+        pairs = [one for one in raw if isinstance(one, dict)]
+    else:
+        return []
+    known = set(THEME_VARIABLES)
+    seen: set[str] = set()
+    out: list[dict[str, str]] = []
+    for pair in pairs:
+        name = pair.get("name")
+        value = pair.get("value")
+        if isinstance(value, (int, float)) and not isinstance(value, bool):
+            value = str(value)
+        if not isinstance(name, str) or not isinstance(value, str):
+            continue
+        name = name.strip()
+        if name.startswith("--"):
+            name = name[2:]
+        value = value.strip()
+        if (
+            not _CUSTOM_NAME.fullmatch(name)
+            or name in known
+            or _CUSTOM_DERIVED.fullmatch(name)
+            or name in seen
+            or not value
+            or len(value) > CUSTOM_VAR_VALUE_MAX
+            or _CUSTOM_BAD.search(value)
+        ):
+            continue
+        seen.add(name)
+        out.append({"name": name, "value": value})
+        if len(out) >= CUSTOM_VARS_MAX:
+            break
+    return out
 
 # Both belong to the frontend integration. They are used as literals on
 # purpose: hass.data keys are plain strings (HassKey is a str subclass), and a
@@ -242,6 +296,124 @@ def primary_palette(raw: Any) -> dict[str, str]:
     return palette
 
 
+# 1.6.0: Die Skalen von Rot, Orange und Gruen aus Home Assistant
+# (src/resources/theme/color/core.globals.ts, Stand 11/2026). Home Assistant
+# stimmt sie von Hand ab; aus ihnen kommen die Flaechen, Raender und Texte
+# fuer Fehler, Warnung und Erfolg (semantic.globals.ts).
+ROLE_SCALES: dict[str, tuple[str, ...]] = {
+    "red": ("#2a040b", "#3e0913", "#631323", "#8a132c", "#b30532", "#dc3146",
+            "#f3676c", "#fd8f90", "#ffb8b6", "#ffdedc", "#fff0ef"),
+    "orange": ("#280700", "#3b0f00", "#5e1c00", "#7e2900", "#9d3800", "#c94e00",
+               "#f36d00", "#ff9342", "#ffbb89", "#ffe0c8", "#fff0e4"),
+    "green": ("#031608", "#052310", "#0a3a1d", "#0a5027", "#036730", "#00883c",
+              "#00ac49", "#5dc36f", "#93da98", "#c2f2c1", "#e3f9e3"),
+}
+# Welches Feld welche Skala faerbt
+ROLE_FIELDS: tuple[tuple[str, str], ...] = (
+    ("red", "error-color"),
+    ("orange", "warning-color"),
+    ("green", "success-color"),
+)
+
+
+def _oklab_in_gamut(lightness: float, a: float, b: float) -> bool:
+    big_l = (lightness * 0.99999999845051981432 + 0.39633779217376785678 * a + 0.21580375806075880339 * b) ** 3
+    big_m = (lightness * 1.0000000088817607767 - 0.1055613423236563494 * a - 0.063854174771705903402 * b) ** 3
+    big_s = (lightness * 1.0000000546724109177 - 0.089484182094965759684 * a - 1.2914855378640917399 * b) ** 3
+    linear = (
+        4.076741661347994 * big_l - 3.307711590408193 * big_m + 0.230969928729428 * big_s,
+        -1.2684380040921763 * big_l + 2.6097573492876887 * big_m - 0.3413193760026573 * big_s,
+        -0.0041960761386756 * big_l - 0.7034186179359362 * big_m + 1.7076146940746117 * big_s,
+    )
+    return all(-0.0005 <= value <= 1.0005 for value in linear)
+
+
+def role_palette(role: str, raw: Any) -> dict[str, str]:
+    """Return --ha-color-<role>-05 ... -95 for an own status color, {} if unknown.
+
+    Keeps the hand made lightness and chroma of Home Assistant per step and
+    moves it to the own color: step 50 is exactly that color, the steps
+    around it follow its lightness, chroma and hue - towards 05 and 95 less
+    and less, so the darkest and lightest steps stay close to the original.
+    Colors outside sRGB lose chroma until they fit.
+    """
+    base = ROLE_SCALES.get(role)
+    rgb = _parse_color(raw)
+    if not base or rgb is None:
+        return {}
+    lab_user = _to_oklab(rgb)
+    user_c = math.hypot(lab_user[1], lab_user[2])
+    user_h = math.atan2(lab_user[2], lab_user[1])
+    lab_mid = _to_oklab(_parse_color(base[5]))  # type: ignore[arg-type]
+    mid_c = math.hypot(lab_mid[1], lab_mid[2])
+    mid_h = math.atan2(lab_mid[2], lab_mid[1])
+    ratio = user_c / mid_c if mid_c > 1e-6 else 1.0
+    shift_l = lab_user[0] - lab_mid[0]
+    shift_h = user_h - mid_h
+    palette: dict[str, str] = {}
+    for index, step in enumerate(PALETTE_STEPS):
+        key = f"ha-color-{role}-{step:02d}"
+        if step == 50:
+            palette[key] = _oklab_hex(*lab_user)
+            continue
+        # Helligkeit: an den Enden (05, 95) gar nicht verschoben, damit die
+        # dunkelste und hellste Stufe nicht schwarz oder weiss werden.
+        weight_l = max(0.0, 1 - abs(step - 50) / 45)
+        weight = 1 - abs(step - 50) / 50 * 0.9
+        lab = _to_oklab(_parse_color(base[index]))  # type: ignore[arg-type]
+        chroma = math.hypot(lab[1], lab[2]) * (1 + (ratio - 1) * weight)
+        hue = math.atan2(lab[2], lab[1]) + shift_h
+        level = max(0.0, min(1.0, lab[0] + shift_l * weight_l))
+        # in sRGB holen: Buntheit halbieren, bis es passt (12 Schritte)
+        low, high = 0.0, max(0.0, chroma)
+        if not _oklab_in_gamut(level, high * math.cos(hue), high * math.sin(hue)):
+            for _ in range(12):
+                middle = (low + high) / 2
+                if _oklab_in_gamut(level, middle * math.cos(hue), middle * math.sin(hue)):
+                    low = middle
+                else:
+                    high = middle
+            high = low
+        palette[key] = _oklab_hex(level, high * math.cos(hue), high * math.sin(hue))
+    return palette
+
+
+# 1.6.0: Bubble Card und Mushroom ans Theme anbinden. Beide Karten lesen
+# eigene Variablen (--bubble-*, --mush-*) und haben eigene Vorgaben (Bubble:
+# blauer Akzent und runde Formen, Mushroom: eigene Statusfarben). Die
+# Zuordnung verweist nur auf Variablen von Home Assistant - damit folgen die
+# Karten dem Theme in Hell und Dunkel. Gelesen aus den Quellen der Karten
+# (Bubble Card und lovelace-mushroom, Stand 10/2026); was ein Feld oder eine
+# eigene Variable setzt, geht vor.
+BIND_BUBBLE: tuple[tuple[str, str], ...] = (
+    ("bubble-accent-color", "var(--primary-color)"),
+    ("bubble-main-background-color", "var(--ha-card-background, var(--card-background-color))"),
+    ("bubble-secondary-background-color", "var(--secondary-background-color)"),
+    ("bubble-pop-up-background-color", "var(--primary-background-color)"),
+    ("bubble-border-radius", "var(--ha-card-border-radius, var(--ha-border-radius-lg))"),
+    ("bubble-icon-border-radius", "var(--ha-border-radius-circle)"),
+    ("bubble-border", "var(--ha-card-border-width, 1px) solid var(--ha-card-border-color, var(--divider-color))"),
+)
+
+BIND_MUSHROOM: tuple[tuple[str, str], ...] = (
+    ("mush-rgb-state-entity", "var(--rgb-primary-color)"),
+    ("mush-rgb-info", "var(--rgb-info-color)"),
+    ("mush-rgb-success", "var(--rgb-success-color)"),
+    ("mush-rgb-warning", "var(--rgb-warning-color)"),
+    ("mush-rgb-danger", "var(--rgb-error-color)"),
+    ("mush-card-secondary-color", "var(--secondary-text-color)"),
+    ("mush-card-primary-font-size", "var(--ha-font-size-m)"),
+    ("mush-card-secondary-font-size", "var(--ha-font-size-s)"),
+    ("mush-card-primary-font-weight", "var(--ha-font-weight-medium)"),
+    ("mush-card-secondary-font-weight", "var(--ha-font-weight-normal)"),
+    ("mush-title-font-size", "var(--ha-font-size-2xl)"),
+    ("mush-subtitle-font-size", "var(--ha-font-size-l)"),
+    ("mush-control-border-radius", "var(--ha-border-radius-lg)"),
+    ("mush-chip-border-radius", "var(--ha-border-radius-pill)"),
+    ("mush-icon-border-radius", "var(--ha-border-radius-circle)"),
+)
+
+
 def _mode_values(raw: Any) -> dict[str, str]:
     """Return the CSS variables of one mode, including the derived rgb ones."""
     if not isinstance(raw, dict):
@@ -279,6 +451,13 @@ def _mode_values(raw: Any) -> dict[str, str]:
     if values.get("primary-color"):
         values.update(primary_palette(values["primary-color"]))
 
+    # 1.6.0: dasselbe fuer Fehler, Warnung und Erfolg - aus den Feldern
+    # error-color, warning-color und success-color.
+    for role, field in ROLE_FIELDS:
+        if values.get(field):
+            for key, value in role_palette(role, values[field]).items():
+                values.setdefault(key, value)
+
     # No rgb-* variants are built here on purpose: Home Assistant derives them
     # itself for every hex value (apply_themes_on_element.ts, processTheme),
     # for all variables and not just a handful. Doing it twice would only
@@ -306,6 +485,19 @@ def build(theme_config: Any) -> dict[str, Any]:
 
     dark = _mode_values(theme_config.get("dark"))
     light = _mode_values(theme_config.get("light"))
+    # 1.6.0: eigene Variablen dazu. Was die Felder setzen, geht vor.
+    custom = theme_config.get("custom")
+    custom = custom if isinstance(custom, dict) else {}
+    for name, values in (("dark", dark), ("light", light)):
+        for pair in clean_custom_vars(custom.get(name)):
+            values.setdefault(pair["name"], pair["value"])
+        # 1.6.0: Bubble Card / Mushroom anbinden
+        if theme_config.get("bind_bubble"):
+            for key, value in BIND_BUBBLE:
+                values.setdefault(key, value)
+        if theme_config.get("bind_mushroom"):
+            for key, value in BIND_MUSHROOM:
+                values.setdefault(key, value)
     if not dark and not light:
         return {}
 

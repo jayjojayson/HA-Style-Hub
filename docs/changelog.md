@@ -7,7 +7,90 @@ called *Sidebar Hub*), newest first. A German version is in
 Version numbers count up to `.9` and then move on to the next minor (1.2.9 →
 1.3.0 → 1.3.1 → 1.3.2 → 1.3.3 → 1.3.4 → 1.3.5 → 1.3.6 → 1.3.7 →
 1.3.8 → 1.3.9 → 1.4.0 → 1.4.1 → 1.4.2 → 1.4.3 → 1.4.4 → 1.4.5 →
-1.4.6 → 1.4.7 → 1.4.8 → 1.4.9 → 1.5.0 → 1.5.1 → 1.5.2 → 1.5.3 → 1.5.4 → 1.5.5 → 1.5.6 → 1.5.7 → 1.5.8 → 1.5.9).
+1.4.6 → 1.4.7 → 1.4.8 → 1.4.9 → 1.5.0 → 1.5.1 → 1.5.2 → 1.5.3 → 1.5.4 → 1.5.5 → 1.5.6 → 1.5.7 → 1.5.8 → 1.5.9 → 1.6.0).
+
+## 1.6.0
+
+* **Own variables in the theme.** New last group *Own variables* on the theme
+  page: variables of your own as name and value, per mode (e.g.
+  `my-accent-color: rgba(97, 175, 255, 1)`). They become part of the theme
+  (backend `theme.custom`, registered by `theme.py` next to the fields - a
+  field always wins) and of the YAML export, so `var(--name)` works in the
+  fields and in cards. Names: letters, digits, `-` and `_` (up to 64), no name
+  that has a field of its own, no `rgb-*` or primary scale; values up to 300
+  characters without `; { } < > \`; up to 200 per mode. Wrong, known or double
+  names are pointed out under the row. Copying a mode and clearing it include
+  the list. Wish from the forum.
+* **Theme import resolves own variables.** Variables of the file without a
+  field are no longer left behind but go to *Own variables*. In the fields,
+  `var(--my-…)` is replaced by the value from the file - also through chains
+  (`var(--a)` → `var(--b)` → value), with a fallback (`var(--x, red)`) and per
+  mode. Variables of Home Assistant itself (`var(--primary-color)`) stay as
+  they are, only their fallback is resolved. A file with only own variables is
+  accepted; the message counts them.
+* **Colour boxes show more colours.** The small colour box next to a field now
+  also shows `rgb()`/`rgba()`, `#rgb` and `#rrggbbaa` (without alpha) instead of
+  grey; next to a theme field with `var(--…)` it shows the colour of the own
+  variable.
+* **Groups in the collapsed sidebar.** New option *Show groups in the collapsed
+  sidebar too* (`layout.groups_collapsed`, *Layout › Behaviour*, off by
+  default). Collapsed, a group then stays as a slim row: its icon (a line
+  without an icon) and the small arrow, no text. A click folds or opens it like
+  in the expanded sidebar - folded entries are then also hidden collapsed. The
+  preview *Collapsed* shows it. Wish from the forum.
+* **Theme: scales for alerts.** From *Error*, *Warning* and *Success*
+  (`error-color`, `warning-color`, `success-color`) the theme now also works
+  out `--ha-color-red-*`, `--ha-color-orange-*` and `--ha-color-green-*`
+  (05 to 95), from which Home Assistant takes fills, borders and text for
+  danger, warning and success. Step 50 is the own color; the other steps keep
+  the hand made lightness and chroma of Home Assistant's scale
+  (`core.globals.ts`) and take hue, chroma and - towards the middle - lightness
+  of the own color; out of sRGB they lose chroma. With Home Assistant's own
+  red the result is exactly its scale. Same calculation in `theme.py` and the
+  panel; chips under the three fields.
+* **Theme: bind Bubble Card and Mushroom.** New group *Bubble Card and
+  Mushroom* with two switches (`theme.bind_bubble`, `theme.bind_mushroom`).
+  They add `--bubble-*` and `--mush-*` variables that only point to Home
+  Assistant variables (e.g. `bubble-accent-color: var(--primary-color)`,
+  `mush-rgb-danger: var(--rgb-error-color)`, `mush-card-primary-font-size:
+  var(--ha-font-size-m)`), read from the sources of both cards. Fields and own
+  variables win.
+* **Theme: six new templates.** Nord, Solarized, Catppuccin (Mocha / Latte),
+  Gruvbox, Dracula and OLED, each for dark and light and with error, warning,
+  success and info colors - ten templates in total.
+* **Theme: two sliders in *Card design*.** *Card transparency* (0 to 80 %)
+  writes the alpha of `--ha-card-background` (the base color comes from the
+  field, `card-background-color` or Home Assistant; locked for a gradient).
+  *Text size* (80 to 130 %) writes `--ha-font-size-scale` (100 % = empty).
+  Per mode, fields and sliders follow each other.
+* **Animated dashboard backgrounds.** Under *Dashboard background* the new
+  *Motion*: drifting colour patches (two layers in colour 1 and 2, empty =
+  primary and accent colour), wandering gradient or image, slow colour change
+  (between up to three colours on its own layer; one colour breathes, no
+  colour turns the hue) - slow, normal or fast, per mode (`dash_motion`,
+  `dash_motion_speed`, `dash_motion_color1` to `3`). Movements are wide and
+  quick enough to be seen in the preview as well (patches 16/21 s, colour
+  change 9 s per colour, gradient 18 s at normal speed). The injector writes it as its own stylesheet onto
+  `<hui-view-background>` in the shadow root of `hui-root` - only while the
+  browser uses this theme, again after a change of mode or theme (observer on
+  `<html>`) and only with `prefers-reduced-motion: no-preference`. Not part of
+  the YAML export. The theme preview shows it.
+* **Replace the own background of dashboards.** New tick under *Dashboard
+  background* (`dash_override`, per mode): Home Assistant puts the background
+  of a dashboard or view (`--view-background`) before the theme. Ticked, the
+  injector resets it on `<hui-view-background>` so the background of the theme
+  shows on every dashboard.
+* **Groups: indent entries and space below.** Two new fields at a group
+  (`indent` 0 to 80 px, `space_below` 0 to 40 px): the entries assigned to the
+  group move to the right (`margin-inline-start`), the group gets room below
+  it before its first entry (`margin-bottom`). Both only in the expanded
+  sidebar and in the preview. Wish from the forum.
+* **Leave the sidebar as it is.** New switch on the sidebar page above
+  *Hide the sidebar completely (kiosk mode)* (`layout.sidebar_off`): HA Style
+  Hub then takes everything back on the sidebar (order, look, groups, links,
+  popups, info lines, names, icons) and leaves it to Home Assistant; header,
+  theme and HA-Settings keep working, kiosk mode still hides it. The sidebar
+  settings stay saved. Wish from the forum.
 
 ## 1.5.9
 

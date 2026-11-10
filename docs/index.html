@@ -317,7 +317,7 @@
               <a class="btn" href="#tour"><span data-en>▶ Watch the tour</span><span data-de>▶ Tour ansehen</span></a>
             </div>
             <div class="badges">
-              <span class="badge">Version 1.5.9</span>
+              <span class="badge">Version 1.6.0</span>
               <span class="badge">Home Assistant 2025.3+</span>
               <span class="badge">HACS</span>
               <span class="badge">MIT</span>
@@ -370,8 +370,8 @@
             </div>
             <div class="feature">
               <strong><span data-en>Groups</span><span data-de>Gruppen</span></strong>
-              <p data-en>Bundle entries under a name with icon, font size, icon size and height; groups can be folded, hidden while collapsed.</p>
-              <p data-de>Fassen Einträge unter einem Namen mit Icon, Schrift-, Icongröße und Höhe zusammen; lassen sich zuklappen, eingeklappt ausgeblendet.</p>
+              <p data-en>Bundle entries under a name with icon, font size, icon size and height; groups can be folded - collapsed hidden or as a slim row (1.6.0).</p>
+              <p data-de>Fassen Einträge unter einem Namen mit Icon, Schrift-, Icongröße und Höhe zusammen; lassen sich zuklappen – eingeklappt ausgeblendet oder als schmale Zeile (1.6.0).</p>
             </div>
             <div class="feature">
               <strong><span data-en>Popup links</span><span data-de>PopUp-Links</span></strong>
@@ -447,8 +447,18 @@
             </div>
             <div class="feature">
               <strong><span data-en>Templates</span><span data-de>Vorlagen</span></strong>
-              <p data-en>Four finished looks fill both modes with one click and stay editable.</p>
-              <p data-de>Vier fertige Looks füllen beide Modi mit einem Klick und bleiben änderbar.</p>
+              <p data-en>Ten finished looks - from Glass to Nord, Catppuccin, Gruvbox, Dracula and OLED - fill both modes with one click and stay editable.</p>
+              <p data-de>Zehn fertige Looks - von Glas bis Nord, Catppuccin, Gruvbox, Dracula und OLED - füllen beide Modi mit einem Klick und bleiben änderbar.</p>
+            </div>
+            <div class="feature">
+              <strong><span data-en>Animated backgrounds</span><span data-de>Bewegte Hintergründe</span></strong>
+              <p data-en>Drifting colour patches, a wandering gradient or a slow colour change behind the dashboard (1.6.0).</p>
+              <p data-de>Wandernde Farbinseln, ein wandernder Verlauf oder ein langsamer Farbwechsel hinter dem Dashboard (1.6.0).</p>
+            </div>
+            <div class="feature">
+              <strong><span data-en>Bubble Card &amp; Mushroom</span><span data-de>Bubble Card &amp; Mushroom</span></strong>
+              <p data-en>One tick each binds them to the theme - accent, corners and font sizes follow it (1.6.0).</p>
+              <p data-de>Je ein Haken bindet sie ans Theme - Akzent, Ecken und Schriftgrößen folgen ihm (1.6.0).</p>
             </div>
             <div class="feature">
               <strong><span data-en>Info lines</span><span data-de>Infozeilen</span></strong>
@@ -1006,8 +1016,8 @@
         <ul>
           <li data-en><strong>Export</strong> writes the theme as a <code>.yaml</code> file, ready for <code>configuration.yaml</code>.</li>
           <li data-de><strong>Export</strong> speichert das Theme als <code>.yaml</code>-Datei, fertig für die <code>configuration.yaml</code>.</li>
-          <li data-en><strong>Import</strong> reads an export from here, a file from the <code>themes</code> folder, or the <code>themes</code> block of a <code>configuration.yaml</code>. Only the variables above are taken over, the rest is counted. A four value border or radius is split back into its fields; with several themes in the file you pick one.</li>
-          <li data-de><strong>Import</strong> liest einen Export von hier, eine Datei aus dem <code>themes</code>-Ordner oder den <code>themes</code>-Block einer <code>configuration.yaml</code>. Übernommen wird nur, was oben aufgeführt ist, der Rest wird gezählt. Ein vierfacher Rahmen- oder Eckenwert wird wieder auf die Felder verteilt; bei mehreren Themes in der Datei wählst du eines aus.</li>
+          <li data-en><strong>Import</strong> reads an export from here, a file from the <code>themes</code> folder, or the <code>themes</code> block of a <code>configuration.yaml</code>. Variables without a field of their own (such as <code>my-accent-color</code>) go to <em>Own variables</em> and are resolved in the fields (1.6.0). A four value border or radius is split back into its fields; with several themes in the file you pick one.</li>
+          <li data-de><strong>Import</strong> liest einen Export von hier, eine Datei aus dem <code>themes</code>-Ordner oder den <code>themes</code>-Block einer <code>configuration.yaml</code>. Variablen ohne eigenes Feld (wie <code>my-accent-color</code>) landen unter <em>Eigene Variablen</em> und werden in den Feldern aufgelöst (1.6.0). Ein vierfacher Rahmen- oder Eckenwert wird wieder auf die Felder verteilt; bei mehreren Themes in der Datei wählst du eines aus.</li>
         </ul>
 
         <div class="note">
@@ -1298,7 +1308,7 @@ ha-list-item-button { text-transform: uppercase; }
     <footer>
       <div class="wrap row">
         <span>
-          HA Style Hub 1.5.9 ·
+          HA Style Hub 1.6.0 ·
           <a href="https://github.com/jayjojayson/HA-Style-Hub">github.com/jayjojayson/HA-Style-Hub</a>
           · MIT
         </span>

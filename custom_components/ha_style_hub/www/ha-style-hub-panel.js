@@ -1,6 +1,6 @@
 /*
  * HA Style Hub - ha-style-hub-panel.js
- * Version: 1.5.9
+ * Version: 1.6.0
  *
  * Configuration panel for the sidebar. Registered by the Python part of the
  * integration through panel_custom, so Home Assistant sets the properties
@@ -22,7 +22,7 @@
 (() => {
   "use strict";
 
-  const VERSION = "1.5.9";
+  const VERSION = "1.6.0";
   // Das Logo liegt neben dieser Datei im Ordner www (siehe URL_BASE in const.py).
   const LOGO_URL = `/ha_style_hub-static/ha-style-hub-logo.png?v=${VERSION}`;
   const EVENT_PREVIEW = "ha-style-hub-preview";
@@ -52,6 +52,10 @@
     row_height_collapsed: 0,
     merge_fixed: false,
     hide_scrollbar: false,
+    // 1.6.0: Gruppen auch eingeklappt zeigen
+    groups_collapsed: false,
+    // 1.6.0: Seitenleiste gar nicht anfassen
+    sidebar_off: false,
     hide_sidebar: false,
     show_restart: false,
   };
@@ -908,6 +912,85 @@
       },
     },
   ];
+
+  /*
+   * 1.6.0: weitere Vorlagen aus bekannten Farbpaletten (Nord, Solarized,
+   * Catppuccin, Gruvbox, Dracula) und eine fuer OLED. Die Farben stammen aus
+   * den oeffentlichen Paletten; daraus baut themePresetMode() dieselben Felder
+   * wie bei den Vorlagen oben - plus Fehler, Warnung, Erfolg und Info, aus
+   * denen das Theme die Skalen rechnet.
+   */
+  const themePresetMode = (p, dark) => ({
+    "primary-color": p.primary,
+    "light-primary-color": p.primaryLight,
+    "dark-primary-color": p.primaryDark,
+    "accent-color": p.accent,
+    "divider-color": p.border,
+    "outline-color": p.outline || p.border,
+    "primary-background-color": p.bg,
+    "secondary-background-color": p.bg2,
+    "card-background-color": p.card,
+    "ha-card-background": p.card,
+    "clear-background-color": p.bg,
+    "primary-text-color": p.text,
+    "secondary-text-color": p.text2,
+    "text-primary-color": p.onPrimary,
+    "disabled-text-color": p.muted,
+    "app-header-background-color": p.header || p.bg,
+    "app-header-text-color": p.text,
+    "ha-card-border-color": p.border,
+    "ha-card-border-width": "1",
+    "ha-card-border-radius": String(p.radius || 14),
+    "ha-card-box-shadow": dark ? "0 4px 16px rgba(0,0,0,0.30)" : "0 2px 10px rgba(0,0,0,0.08)",
+    "ha-card-header-color": p.text,
+    "state-icon-color": p.text2,
+    "state-active-color": p.primary,
+    "state-inactive-color": p.muted,
+    "input-fill-color": p.bg2,
+    "input-ink-color": p.text,
+    "input-idle-line-color": p.outline || p.border,
+    "ha-dialog-surface-background": p.card,
+    "markdown-code-background-color": p.bg2,
+    "code-editor-background-color": p.bg,
+    "scrollbar-thumb-color": p.outline || p.border,
+    "table-row-background-color": p.card,
+    "table-row-alternative-background-color": p.bg2,
+    "data-table-background-color": p.card,
+    "slider-color": p.primary,
+    "slider-track-color": p.outline || p.border,
+    "label-badge-background-color": p.primary,
+    "label-badge-text-color": p.onPrimary,
+    "chip-background-color": p.bg2,
+    "error-color": p.error,
+    "warning-color": p.warning,
+    "success-color": p.success,
+    "info-color": p.info,
+  });
+  const themePreset = (id, de, en, deHint, enHint, dark, light) => ({
+    id, de, en, de_hint: deHint, en_hint: enHint,
+    dark: themePresetMode(dark, true),
+    light: themePresetMode(light, false),
+  });
+  THEME_PRESETS.push(
+    themePreset("nord", "Nord", "Nord", "Kühles Nordlicht, ruhiges Blau", "Cool arctic blues, calm",
+      { bg: "#2e3440", bg2: "#3b4252", card: "#3b4252", border: "#434c5e", outline: "#4c566a", text: "#eceff4", text2: "#d8dee9", muted: "#616e88", primary: "#88c0d0", primaryLight: "#8fbcbb", primaryDark: "#5e81ac", accent: "#81a1c1", onPrimary: "#2e3440", error: "#bf616a", warning: "#d08770", success: "#a3be8c", info: "#5e81ac", radius: 12 },
+      { bg: "#e5e9f0", bg2: "#d8dee9", card: "#eceff4", border: "#d8dee9", outline: "#c4cbd8", text: "#2e3440", text2: "#4c566a", muted: "#7b88a1", primary: "#5e81ac", primaryLight: "#81a1c1", primaryDark: "#4c6a92", accent: "#88c0d0", onPrimary: "#eceff4", error: "#bf616a", warning: "#d08770", success: "#7f9c68", info: "#5e81ac", radius: 12 }),
+    themePreset("solarized", "Solarized", "Solarized", "Der Klassiker, augenschonend", "The classic, easy on the eyes",
+      { bg: "#002b36", bg2: "#073642", card: "#073642", border: "#0f4654", outline: "#24525e", text: "#93a1a1", text2: "#839496", muted: "#586e75", primary: "#268bd2", primaryLight: "#4ea3e0", primaryDark: "#1a6aa3", accent: "#2aa198", onPrimary: "#fdf6e3", error: "#dc322f", warning: "#cb4b16", success: "#859900", info: "#268bd2", radius: 10 },
+      { bg: "#eee8d5", bg2: "#e6dfc8", card: "#fdf6e3", border: "#e1d9c2", outline: "#d3caaf", text: "#586e75", text2: "#657b83", muted: "#93a1a1", primary: "#268bd2", primaryLight: "#4ea3e0", primaryDark: "#1a6aa3", accent: "#2aa198", onPrimary: "#fdf6e3", error: "#dc322f", warning: "#cb4b16", success: "#859900", info: "#268bd2", radius: 10 }),
+    themePreset("catppuccin", "Catppuccin", "Catppuccin", "Sanfte Pastellfarben (Mocha / Latte)", "Soft pastels (Mocha / Latte)",
+      { bg: "#1e1e2e", bg2: "#181825", card: "#313244", border: "#45475a", outline: "#585b70", text: "#cdd6f4", text2: "#a6adc8", muted: "#6c7086", primary: "#cba6f7", primaryLight: "#b4befe", primaryDark: "#9a73d6", accent: "#89b4fa", onPrimary: "#1e1e2e", error: "#f38ba8", warning: "#fab387", success: "#a6e3a1", info: "#89b4fa", radius: 16 },
+      { bg: "#e6e9ef", bg2: "#dce0e8", card: "#eff1f5", border: "#ccd0da", outline: "#bcc0cc", text: "#4c4f69", text2: "#6c6f85", muted: "#9ca0b0", primary: "#8839ef", primaryLight: "#7287fd", primaryDark: "#6a2bc4", accent: "#1e66f5", onPrimary: "#eff1f5", error: "#d20f39", warning: "#fe640b", success: "#40a02b", info: "#1e66f5", radius: 16 }),
+    themePreset("gruvbox", "Gruvbox", "Gruvbox", "Retro, warm und kräftig", "Retro, warm and punchy",
+      { bg: "#282828", bg2: "#32302f", card: "#3c3836", border: "#504945", outline: "#665c54", text: "#ebdbb2", text2: "#a89984", muted: "#7c6f64", primary: "#fabd2f", primaryLight: "#fbd36a", primaryDark: "#d79921", accent: "#fe8019", onPrimary: "#282828", error: "#fb4934", warning: "#fe8019", success: "#b8bb26", info: "#83a598", radius: 8 },
+      { bg: "#fbf1c7", bg2: "#ebdbb2", card: "#f9f5d7", border: "#d5c4a1", outline: "#bdae93", text: "#3c3836", text2: "#665c54", muted: "#a89984", primary: "#b57614", primaryLight: "#d79921", primaryDark: "#8f5a0e", accent: "#af3a03", onPrimary: "#fbf1c7", error: "#9d0006", warning: "#af3a03", success: "#79740e", info: "#076678", radius: 8 }),
+    themePreset("dracula", "Dracula", "Dracula", "Lila Nacht mit bunten Akzenten", "Purple night, vivid accents",
+      { bg: "#282a36", bg2: "#21222c", card: "#343746", border: "#44475a", outline: "#6272a4", text: "#f8f8f2", text2: "#bfc0d0", muted: "#6272a4", primary: "#bd93f9", primaryLight: "#d6bcfb", primaryDark: "#9566e6", accent: "#ff79c6", onPrimary: "#282a36", error: "#ff5555", warning: "#ffb86c", success: "#50fa7b", info: "#8be9fd", radius: 14 },
+      { bg: "#f4f4f8", bg2: "#e9e9f0", card: "#ffffff", border: "#dcdce6", outline: "#c6c7d6", text: "#282a36", text2: "#5d6182", muted: "#9a9cb5", primary: "#7c5ccf", primaryLight: "#9d83dd", primaryDark: "#5e3fb2", accent: "#d6409f", onPrimary: "#ffffff", error: "#d82c2c", warning: "#b8701f", success: "#1f9d55", info: "#1f8ea8", radius: 14 }),
+    themePreset("oled", "OLED", "OLED", "Echtes Schwarz für Wandtablets", "True black for wall tablets",
+      { bg: "#000000", bg2: "#0a0a0a", card: "#0d0d0d", border: "#1f1f1f", outline: "#2a2a2a", text: "#f2f2f2", text2: "#a0a0a0", muted: "#5c5c5c", primary: "#3ea6ff", primaryLight: "#7cc2ff", primaryDark: "#0a7bd6", accent: "#3ea6ff", onPrimary: "#000000", error: "#ff453a", warning: "#ff9f0a", success: "#30d158", info: "#64d2ff", header: "#000000", radius: 14 },
+      { bg: "#ffffff", bg2: "#f2f2f2", card: "#ffffff", border: "#e3e3e3", outline: "#d0d0d0", text: "#111111", text2: "#5c5c5c", muted: "#a0a0a0", primary: "#0a7bd6", primaryLight: "#3ea6ff", primaryDark: "#075a9e", accent: "#0a7bd6", onPrimary: "#ffffff", error: "#d70015", warning: "#c93400", success: "#248a3d", info: "#0071a4", header: "#ffffff", radius: 14 })
+  );
 
   /**
    * Every variable of the theme page, grouped exactly as it is shown.
@@ -1936,6 +2019,14 @@
     dash_image: "",
     dash_image_size: "",
     dash_image_scroll: false,
+    // 1.6.0: bewegter Hintergrund (nur ueber den Injector, nicht im Theme)
+    dash_motion: "",
+    dash_motion_speed: "",
+    dash_motion_color1: "",
+    dash_motion_color2: "",
+    dash_motion_color3: "",
+    // 1.6.0: eigenen Hintergrund der Dashboards durch den des Themes ersetzen
+    dash_override: false,
   };
 
   /** Mirror of THEME_COMPOSED in const.py: variable -> [switch, four parts]. */
@@ -2123,6 +2214,94 @@
         factor = Math.max(0, 1 - light * 0.7);
       }
       out[`ha-color-primary-${String(step).padStart(2, "0")}`] = hex(level, lab[1] * factor, lab[2] * factor);
+    });
+    return out;
+  };
+
+  /* 1.6.0: Skalen fuer Fehler, Warnung und Erfolg - wie role_palette in
+   * theme.py (gleiche Rechnung, gleiche Zahlen). Grundlage sind die von Hand
+   * abgestimmten Skalen von Home Assistant (core.globals.ts, Stand 11/2026). */
+  const ROLE_SCALES = {
+    red: ["#2a040b", "#3e0913", "#631323", "#8a132c", "#b30532", "#dc3146", "#f3676c", "#fd8f90", "#ffb8b6", "#ffdedc", "#fff0ef"],
+    orange: ["#280700", "#3b0f00", "#5e1c00", "#7e2900", "#9d3800", "#c94e00", "#f36d00", "#ff9342", "#ffbb89", "#ffe0c8", "#fff0e4"],
+    green: ["#031608", "#052310", "#0a3a1d", "#0a5027", "#036730", "#00883c", "#00ac49", "#5dc36f", "#93da98", "#c2f2c1", "#e3f9e3"],
+  };
+  const ROLE_FIELDS = [["red", "error-color"], ["orange", "warning-color"], ["green", "success-color"]];
+  const okLinear = (c) => {
+    const a = Math.abs(c);
+    return a <= 0.04045 ? c / 12.92 : (Math.sign(c) || 1) * Math.pow((a + 0.055) / 1.055, 2.4);
+  };
+  const okGamma = (c) => {
+    const a = Math.abs(c);
+    return a > 0.0031308 ? (Math.sign(c) || 1) * (1.055 * Math.pow(a, 1 / 2.4) - 0.055) : c * 12.92;
+  };
+  const toOklab = (rgb) => {
+    const [r, g, b] = rgb.map(okLinear);
+    const L = Math.cbrt(0.41222147079999993 * r + 0.5363325363 * g + 0.0514459929 * b);
+    const M = Math.cbrt(0.2119034981999999 * r + 0.6806995450999999 * g + 0.1073969566 * b);
+    const S = Math.cbrt(0.08830246189999998 * r + 0.2817188376 * g + 0.6299787005000002 * b);
+    return [
+      0.2104542553 * L + 0.793617785 * M - 0.0040720468 * S,
+      1.9779984951 * L - 2.428592205 * M + 0.4505937099 * S,
+      0.0259040371 * L + 0.7827717662 * M - 0.808675766 * S,
+    ];
+  };
+  const oklabLinear = (l, a, b) => {
+    const l3 = Math.pow(l * 0.99999999845051981432 + 0.39633779217376785678 * a + 0.21580375806075880339 * b, 3);
+    const m3 = Math.pow(l * 1.0000000088817607767 - 0.1055613423236563494 * a - 0.063854174771705903402 * b, 3);
+    const s3 = Math.pow(l * 1.0000000546724109177 - 0.089484182094965759684 * a - 1.2914855378640917399 * b, 3);
+    return [
+      4.076741661347994 * l3 - 3.307711590408193 * m3 + 0.230969928729428 * s3,
+      -1.2684380040921763 * l3 + 2.6097573492876887 * m3 - 0.3413193760026573 * s3,
+      -0.0041960761386756 * l3 - 0.7034186179359362 * m3 + 1.7076146940746117 * s3,
+    ];
+  };
+  const oklabHex = (l, a, b) =>
+    "#" + oklabLinear(l, a, b).map((c) => Math.round(Math.max(0, Math.min(1, okGamma(c) || 0)) * 255).toString(16).padStart(2, "0")).join("");
+  const oklabInGamut = (l, a, b) => oklabLinear(l, a, b).every((c) => c >= -0.0005 && c <= 1.0005);
+  const rolePalette = (role, raw) => {
+    const base = ROLE_SCALES[role];
+    const rgb = parsePaletteColor(raw);
+    if (!base || !rgb) {
+      return {};
+    }
+    const user = toOklab(rgb);
+    const userC = Math.hypot(user[1], user[2]);
+    const userH = Math.atan2(user[2], user[1]);
+    const mid = toOklab(parsePaletteColor(base[5]));
+    const midC = Math.hypot(mid[1], mid[2]);
+    const midH = Math.atan2(mid[2], mid[1]);
+    const ratio = midC > 1e-6 ? userC / midC : 1;
+    const shiftL = user[0] - mid[0];
+    const shiftH = userH - midH;
+    const out = {};
+    PALETTE_STEPS.forEach((step, index) => {
+      const key = `ha-color-${role}-${String(step).padStart(2, "0")}`;
+      if (step === 50) {
+        out[key] = oklabHex(user[0], user[1], user[2]);
+        return;
+      }
+      // Helligkeit an den Enden (05, 95) unveraendert, sonst wird es schwarz/weiss
+      const weightL = Math.max(0, 1 - Math.abs(step - 50) / 45);
+      const weight = 1 - (Math.abs(step - 50) / 50) * 0.9;
+      const lab = toOklab(parsePaletteColor(base[index]));
+      const chroma = Math.hypot(lab[1], lab[2]) * (1 + (ratio - 1) * weight);
+      const hue = Math.atan2(lab[2], lab[1]) + shiftH;
+      const level = Math.max(0, Math.min(1, lab[0] + shiftL * weightL));
+      let low = 0;
+      let high = Math.max(0, chroma);
+      if (!oklabInGamut(level, high * Math.cos(hue), high * Math.sin(hue))) {
+        for (let i = 0; i < 12; i += 1) {
+          const middle = (low + high) / 2;
+          if (oklabInGamut(level, middle * Math.cos(hue), middle * Math.sin(hue))) {
+            low = middle;
+          } else {
+            high = middle;
+          }
+        }
+        high = low;
+      }
+      out[key] = oklabHex(level, high * Math.cos(hue), high * Math.sin(hue));
     });
     return out;
   };
@@ -2456,6 +2635,9 @@
     // 1.5.9: Schrift- und Icongroesse in px, 0 = Standard (11 px / 16 px)
     font_size: 0,
     icon_size: 0,
+    // 1.6.0: Einrueckung der Eintraege, Abstand unter der Gruppe (px)
+    indent: 0,
+    space_below: 0,
     uppercase: true,
     collapsible: false,
     hide_for: [],
@@ -3127,6 +3309,8 @@
       goto_theme_cards: "Cards and background · Theme",
       header_hidden_full: "Hide the header completely (kiosk mode)",
       hide_sidebar_full: "Hide the sidebar completely (kiosk mode)",
+      sidebar_off: "Leave the sidebar as it is",
+      sidebar_off_hint: "HA Style Hub does not touch the sidebar: no order, look, groups, links, popups or info lines - Home Assistant draws it as usual. Header, theme and HA-Settings keep working. Your sidebar settings stay saved and come back when you untick this.",
       header_hidden_stage: "The header is hidden.",
       show_hidden_short: "Hidden ones",
       stage_home: "Home",
@@ -3275,6 +3459,8 @@
       shadow_inset: "Inset",
       shadow_custom: "The field holds a value the sliders cannot show (several shadows or a special color). Moving a slider replaces it.",
       primary_scale: "Scale for newer controls",
+      role_scale: "Scale for alerts and states",
+      role_scale_hint: "Computed from this color (--ha-color-{role}-05 … 95) with the lightness Home Assistant uses for its own scale: newer alerts, badges and buttons for errors, warnings and success follow the theme. Hex or rgb() colors only.",
       primary_scale_hint: "Computed from the primary color (--ha-color-primary-05 … 95), like Home Assistant does for its default theme: buttons, switches, checkboxes and links follow the theme. Hex or rgb() colors only.",
       header_actions_color: "Colour of the right side",
       header_actions_color_hint: "Buttons, your own links and CPU/RAM/storage on the right of the header. The tabs keep their own colour. Empty: like the icons and text of the header.",
@@ -3511,6 +3697,28 @@
       theme_import_done_one: "One value taken over",
       theme_import_skipped: ", {skipped} unknown variables left behind",
       theme_import_skipped_one: ", one unknown variable left behind",
+      theme_import_custom: ", {n} own variables kept",
+      theme_import_custom_one: ", one own variable kept",
+      bind_title: "Bubble Card and Mushroom",
+      bind_hint: "Both cards bring their own defaults - a blue accent, round shapes and their own state colors. Bound to the theme they take colors, corners and font sizes from it, in light and dark. Applies to every card of that kind. Own variables below or a field above win over this.",
+      bind_bubble: "Bind Bubble Card to the theme",
+      bind_bubble_hint: "Accent = primary color, background and border like the cards, corners = card radius, round icons.",
+      bind_mushroom: "Bind Mushroom to the theme",
+      bind_mushroom_hint: "Entity color = primary color, info, success, warning and error from the theme, text sizes follow the text size of the theme, corners from the theme.",
+      card_alpha: "Card transparency",
+      card_alpha_locked: "Only with a plain color as card background (not with a gradient or a variable without a color).",
+      card_text_scale: "Text size",
+      card_sliders_hint: "Transparency sets the alpha of --ha-card-background (0 % = opaque). Text size sets --ha-font-size-scale - Home Assistant multiplies every font size with it. Both apply to the mode you are editing.",
+      custom_vars_title: "Own variables",
+      custom_vars_hint: "Variables of your own such as my-accent-color. They become part of the theme and work anywhere with var(--name) - in the fields above and in your cards. A theme import puts every variable without a field of its own here and fills the fields above with the resolved values.",
+      custom_vars_add: "Add variable",
+      custom_vars_name: "Name (without --)",
+      custom_vars_value: "Value",
+      custom_vars_empty: "No own variables yet.",
+      custom_vars_bad: "Not used: the name may only contain letters, digits, - and _; the value must not contain ; { } < > or \\.",
+      custom_vars_known: "This name has its own field above - please use that one.",
+      custom_vars_double: "This name is already in the list - only the first one counts.",
+      custom_vars_remove: "Remove",
       theme_default: "Home Assistant",
       theme_enabled: "Register the theme in Home Assistant",
       theme_enabled_hint:
@@ -3838,6 +4046,9 @@
       hide_scrollbar: "Hide the scrollbar",
       hide_scrollbar_hint:
         "The list still scrolls, only the bar itself disappears.",
+      groups_collapsed: "Show groups in the collapsed sidebar too",
+      groups_collapsed_hint:
+        "Collapsed, a group stays as a slim row with its icon (a line without an icon) and a small arrow. A click folds its entries away or opens them again - just like in the expanded sidebar. That keeps the collapsed sidebar short and in order.",
       merge_fixed: "Move Settings, Notifications and the user entry into the grid",
       merge_fixed_hint:
         "Only then can those three entries be sorted freely. Without it Home Assistant keeps them pinned to the bottom of the sidebar. Moving one of them switches this on by itself.",
@@ -3849,6 +4060,9 @@
         "0 lets the text decide the height (with the same space above and below). Any other value gives the line exactly that height. Either way the text stays centred vertically. Font size and icon size 0 = standard (11 px / 16 px).",
       heading_font_size: "Font size (px)",
       heading_icon_size: "Icon size (px)",
+      heading_indent: "Indent entries (px)",
+      heading_space_below: "Space below (px)",
+      heading_indent_space_hint: "Indent moves the entries assigned to this group to the right. Space below adds room between the group and its first entry. Both only in the expanded sidebar.",
       heading_uppercase: "Capital letters",
       hide_sidebar: "Hide the sidebar (kiosk mode)",
       hide_sidebar_hint:
@@ -3926,6 +4140,22 @@
       dash_size_contain: "Fit completely",
       dash_size_tile: "Tile",
       dash_image_scroll: "Let the image scroll with the page",
+      dash_motion: "Motion",
+      dash_motion_off: "\u2013 none \u2013",
+      dash_motion_blobs: "Drifting colour patches",
+      dash_motion_drift: "Wandering gradient or image",
+      dash_motion_hue: "Slow colour change",
+      dash_motion_speed: "Speed",
+      dash_speed_slow: "Slow",
+      dash_speed_normal: "Normal",
+      dash_speed_fast: "Fast",
+      dash_motion_hint: "Colour patches drift over the background in colour 1 and 2 (empty = primary and accent color). Wandering moves a gradient or an image back and forth (a plain color does not move). Colour change switches the background between up to three colours - with one colour it breathes towards it, without a colour the hue turns round. Runs on every dashboard of a browser that uses this theme - not while the system asks for reduced motion. Not part of the YAML export.",
+      dash_motion_color1: "Colour 1",
+      dash_motion_color2: "Colour 2",
+      dash_motion_color3: "Colour 3",
+      dash_motion_color_auto: "automatic",
+      dash_override: "Replace the own background of dashboards",
+      dash_override_hint: "A background set in a dashboard or a view beats the theme in Home Assistant - then your color, gradient or image from here does not show there. Ticked, the background of this theme is used on every dashboard. The motion runs either way.",
       dash_image_hint:
         "PNG, JPEG, GIF or WebP, up to 8 MB. The integration stores the file in the folder www/ha_style_hub of your Home Assistant configuration and serves it itself - no path to type. The image is public like anything in www: do not use a private photo. It only takes effect after Save.",
       dash_uploading: "Uploading\u2026",
@@ -4153,6 +4383,8 @@
       goto_theme_cards: "Karten und Hintergrund · Theme",
       header_hidden_full: "Kopfzeile ganz ausblenden (kiosk-mode)",
       hide_sidebar_full: "Sidebar ganz ausblenden (kiosk-mode)",
+      sidebar_off: "Sidebar nicht anpassen",
+      sidebar_off_hint: "HA Style Hub fasst die Seitenleiste nicht an: keine Reihenfolge, kein Aussehen, keine Gruppen, Links, PopUps oder Infozeilen \u2013 Home Assistant zeichnet sie wie gewohnt. Header, Theme und HA-Settings wirken weiter. Deine Einstellungen der Seitenleiste bleiben gespeichert und kommen zurück, wenn du den Haken wieder entfernst.",
       header_hidden_stage: "Die Kopfzeile ist ausgeblendet.",
       show_hidden_short: "Ausgeblendete",
       stage_home: "Zuhause",
@@ -4301,6 +4533,8 @@
       shadow_inset: "Innenschatten",
       shadow_custom: "Im Feld steht ein Wert, den die Regler nicht abbilden können (mehrere Schatten oder eine besondere Farbe). Ein Regler ersetzt ihn.",
       primary_scale: "Abstufungen für neuere Bedienelemente",
+      role_scale: "Abstufungen für Hinweise und Zustände",
+      role_scale_hint: "Automatisch aus dieser Farbe (--ha-color-{role}-05 … 95) mit den Helligkeiten, die Home Assistant für seine eigene Skala verwendet: neuere Hinweise, Badges und Knöpfe für Fehler, Warnung und Erfolg folgen dem Theme. Nur aus Hex- oder rgb()-Farben.",
       primary_scale_hint: "Automatisch aus der Primärfarbe (--ha-color-primary-05 … 95), wie beim Standard-Theme von Home Assistant: Buttons, Schalter, Checkboxen und Links folgen dem Theme. Nur aus Hex- oder rgb()-Farben.",
       header_actions_color: "Farbe der rechten Seite",
       header_actions_color_hint: "Buttons, eigene Links und CPU/RAM/Speicher rechts in der Kopfzeile. Die Reiter behalten ihre eigene Farbe. Leer: wie Icons und Text der Kopfzeile.",
@@ -4537,6 +4771,28 @@
       theme_import_done_one: "Ein Wert \u00fcbernommen",
       theme_import_skipped: ", {skipped} unbekannte Variablen liegen gelassen",
       theme_import_skipped_one: ", eine unbekannte Variable liegen gelassen",
+      theme_import_custom: ", {n} eigene Variablen übernommen",
+      theme_import_custom_one: ", eine eigene Variable übernommen",
+      bind_title: "Bubble Card und Mushroom",
+      bind_hint: "Beide Karten bringen eigene Vorgaben mit \u2013 einen blauen Akzent, runde Formen und eigene Statusfarben. Ans Theme angebunden nehmen sie Farben, Ecken und Schriftgrößen von dort, in Hell und Dunkel. Gilt für alle Karten dieser Art. Eigene Variablen unten oder ein Feld oben gehen vor.",
+      bind_bubble: "Bubble Card ans Theme anbinden",
+      bind_bubble_hint: "Akzent = Primärfarbe, Hintergrund und Rahmen wie bei den Karten, Ecken = Kartenradius, runde Icons.",
+      bind_mushroom: "Mushroom ans Theme anbinden",
+      bind_mushroom_hint: "Farbe der Entitäten = Primärfarbe, Info, Erfolg, Warnung und Fehler aus dem Theme, Textgrößen folgen der Textgröße des Themes, Ecken aus dem Theme.",
+      card_alpha: "Transparenz der Karten",
+      card_alpha_locked: "Nur bei einer einfachen Farbe als Kartenhintergrund (nicht bei einem Verlauf oder einer Variable ohne Farbe).",
+      card_text_scale: "Textgröße",
+      card_sliders_hint: "Transparenz setzt die Deckkraft von --ha-card-background (0 % = deckend). Textgröße setzt --ha-font-size-scale \u2013 damit multipliziert Home Assistant alle Schriftgrößen. Beides gilt für den Modus, den du gerade bearbeitest.",
+      custom_vars_title: "Eigene Variablen",
+      custom_vars_hint: "Variablen ganz nach deinem Geschmack wie my-accent-color. Sie werden Teil des Themes und wirken überall mit var(--name) \u2013 in den Feldern oben und in deinen Karten. Ein Theme-Import legt hier jede Variable ohne eigenes Feld ab und füllt die Felder oben mit den aufgelösten Werten.",
+      custom_vars_add: "Variable hinzufügen",
+      custom_vars_name: "Name (ohne --)",
+      custom_vars_value: "Wert",
+      custom_vars_empty: "Noch keine eigenen Variablen.",
+      custom_vars_bad: "Wird nicht verwendet: Der Name darf nur Buchstaben, Ziffern, - und _ enthalten; im Wert darf kein ; { } < > oder \\ stehen.",
+      custom_vars_known: "Für diesen Namen gibt es oben ein eigenes Feld \u2013 nimm bitte das.",
+      custom_vars_double: "Diesen Namen gibt es schon in der Liste \u2013 es zählt nur der erste.",
+      custom_vars_remove: "Entfernen",
       theme_default: "Home Assistant",
       theme_enabled: "Theme in Home Assistant eintragen",
       theme_enabled_hint:
@@ -4864,6 +5120,9 @@
       hide_scrollbar: "Scrollbalken ausblenden",
       hide_scrollbar_hint:
         "Die Liste lässt sich weiterhin scrollen, nur der Balken verschwindet.",
+      groups_collapsed: "Gruppen auch eingeklappt zeigen",
+      groups_collapsed_hint:
+        "Eingeklappt bleibt eine Gruppe als schmale Zeile mit ihrem Icon (ohne Icon als Linie) und einem kleinen Pfeil. Ein Klick klappt ihre Einträge zu oder wieder auf \u2013 genau wie ausgeklappt. So bleibt die eingeklappte Seitenleiste kurz und geordnet.",
       merge_fixed:
         "Einstellungen, Benachrichtigungen und Profil ins Raster übernehmen",
       merge_fixed_hint:
@@ -4876,6 +5135,9 @@
         "Bei 0 bestimmt der Text die H\u00f6he (mit gleich viel Abstand oben und unten). Jeder andere Wert gibt der Zeile genau diese H\u00f6he. Der Text steht in beiden F\u00e4llen senkrecht mittig. Schrift- und Icongr\u00f6\u00dfe 0 = Standard (11 px / 16 px).",
       heading_font_size: "Schriftgr\u00f6\u00dfe (px)",
       heading_icon_size: "Icongr\u00f6\u00dfe (px)",
+      heading_indent: "Eintr\u00e4ge einr\u00fccken (px)",
+      heading_space_below: "Abstand darunter (px)",
+      heading_indent_space_hint: "Einr\u00fccken schiebt die Eintr\u00e4ge, die dieser Gruppe zugeordnet sind, nach rechts. Abstand darunter schafft Platz zwischen der Gruppe und ihrem ersten Eintrag. Beides nur in der ausgeklappten Seitenleiste.",
       heading_uppercase: "Gro\u00dfbuchstaben",
       hide_sidebar: "Sidebar ausblenden (kiosk-mode)",
       hide_sidebar_hint:
@@ -4953,6 +5215,22 @@
       dash_size_contain: "Ganz einpassen",
       dash_size_tile: "Kacheln",
       dash_image_scroll: "Bild beim Scrollen mitlaufen lassen",
+      dash_motion: "Bewegung",
+      dash_motion_off: "\u2013 keine \u2013",
+      dash_motion_blobs: "Wandernde Farbinseln",
+      dash_motion_drift: "Wandernder Verlauf oder Bild",
+      dash_motion_hue: "Langsamer Farbwechsel",
+      dash_motion_speed: "Tempo",
+      dash_speed_slow: "Langsam",
+      dash_speed_normal: "Normal",
+      dash_speed_fast: "Schnell",
+      dash_motion_hint: "Farbinseln ziehen in Farbe 1 und 2 über den Hintergrund (leer = Primär- und Akzentfarbe). Wandern bewegt einen Verlauf oder ein Bild hin und her (eine einfache Farbe bewegt sich nicht). Farbwechsel wechselt den Hintergrund zwischen bis zu drei Farben \u2013 mit einer Farbe atmet er zu ihr hin, ohne Farbe dreht sich der Farbton. Läuft auf allen Dashboards eines Browsers, der dieses Theme benutzt \u2013 nicht, wenn das System weniger Bewegung wünscht. Nicht Teil des YAML-Exports.",
+      dash_motion_color1: "Farbe 1",
+      dash_motion_color2: "Farbe 2",
+      dash_motion_color3: "Farbe 3",
+      dash_motion_color_auto: "automatisch",
+      dash_override: "Eigenen Hintergrund der Dashboards ersetzen",
+      dash_override_hint: "Ein Hintergrund, der in einem Dashboard oder einer Ansicht eingestellt ist, geht in Home Assistant dem Theme vor \u2013 dann ist deine Farbe, dein Verlauf oder dein Bild von hier dort nicht zu sehen. Mit Haken gilt auf allen Dashboards der Hintergrund dieses Themes. Die Bewegung läuft so oder so.",
       dash_image_hint:
         "PNG, JPEG, GIF oder WebP, bis 8 MB. Die Integration legt die Datei im Ordner www/ha_style_hub deiner Home-Assistant-Konfiguration ab und liefert sie selbst aus - ein Pfad muss nicht eingetippt werden. Das Bild ist wie alles in www öffentlich abrufbar: kein privates Foto verwenden. Wirksam wird es erst nach dem Speichern.",
       dash_uploading: "Wird hochgeladen\u2026",
@@ -5074,6 +5352,14 @@
       set_default: !!data.set_default,
       dark: {},
       light: {},
+      // 1.6.0: Bubble Card / Mushroom anbinden
+      bind_bubble: !!data.bind_bubble,
+      bind_mushroom: !!data.bind_mushroom,
+      // 1.6.0: eigene Variablen je Modus
+      custom: {
+        dark: customVarList(isObject(data.custom) ? data.custom.dark : null),
+        light: customVarList(isObject(data.custom) ? data.custom.light : null),
+      },
     };
     ["dark", "light"].forEach((mode) => {
       const values = isObject(data[mode]) ? data[mode] : {};
@@ -5555,7 +5841,245 @@
 
   const asHexColor = (raw) => {
     const text = String(raw || "").trim();
-    return /^#[0-9a-fA-F]{6}$/.test(text) ? text : "#888888";
+    if (/^#[0-9a-fA-F]{6}$/.test(text)) {
+      return text;
+    }
+    // 1.6.0: auch #rgb, #rgba, #rrggbbaa und rgb()/rgba() - ohne Deckkraft,
+    // die kann das Farbfeld des Browsers nicht zeigen.
+    const hex = /^#([0-9a-f]{3,4}|[0-9a-f]{8})$/i.exec(text);
+    if (hex) {
+      const h = hex[1].length <= 4 ? hex[1].slice(0, 3).split("").map((c) => c + c).join("") : hex[1].slice(0, 6);
+      return "#" + h.toLowerCase();
+    }
+    const rgb = /^rgba?\(\s*(\d{1,3}(?:\.\d+)?)\s*[,\s]\s*(\d{1,3}(?:\.\d+)?)\s*[,\s]\s*(\d{1,3}(?:\.\d+)?)/i.exec(text);
+    if (rgb) {
+      return toHex([Number(rgb[1]), Number(rgb[2]), Number(rgb[3])]);
+    }
+    return "#888888";
+  };
+
+  /* 1.6.0: eigene Variablen des Themes ---------------------------------- */
+  const CUSTOM_VAR_NAME = /^[A-Za-z0-9][A-Za-z0-9_-]{0,63}$/;
+  const CUSTOM_VAR_BAD = /[;{}<>\\\r\n]/;
+  const CUSTOM_VAR_DERIVED = /^(rgb-.*|ha-color-(primary|red|orange|green)-\d{2})$/;
+  const CUSTOM_VARS_MAX = 200;
+  const CUSTOM_VAR_VALUE_MAX = 300;
+
+  /**
+   * 1.6.0: Bewegter Dashboard-Hintergrund - dieselbe Regel im Injector (am
+   * <hui-view-background> im Schatten von hui-root) und in der Vorschau des
+   * Panels. Ein Theme-Feld kann nur einen Wert tragen, keine @keyframes -
+   * deshalb macht das der Injector. Bei "Bewegung reduzieren" im System
+   * laeuft nichts.
+   *   drift  - Verlauf oder Bild wandert hin und her (background-position)
+   *   blobs  - weiche Farbinseln in zwei Farben ziehen umher (::before, ::after)
+   *   hue    - Farbwechsel: ohne eigene Farben dreht sich der Farbton, mit bis
+   *            zu drei Farben wechselt der Hintergrund zwischen ihnen
+   */
+  const MOTION_KINDS = ["drift", "blobs", "hue"];
+  const MOTION_COLOR = /^[#a-zA-Z0-9(),.%\s/-]{1,80}$/;
+  const motionColors = (list) =>
+    (Array.isArray(list) ? list : [])
+      .map((one) => String(one === undefined || one === null ? "" : one).trim())
+      .filter((one) => one && MOTION_COLOR.test(one));
+  const motionCss = (kind, speed, sel, colors) => {
+    if (MOTION_KINDS.indexOf(kind) < 0) {
+      return "";
+    }
+    const factor = speed === "slow" ? 2 : speed === "fast" ? 0.5 : 1;
+    const sec = (n) => `${Math.round(n * factor)}s`;
+    const own = motionColors(colors);
+    const calm = "@media (prefers-reduced-motion: no-preference) {";
+    if (kind === "drift") {
+      return [
+        "@keyframes sh-bg-drift { 0% { background-position: 0% 0%; } 50% { background-position: 100% 60%; } 100% { background-position: 30% 100%; } }",
+        calm,
+        `  ${sel} { background-size: 250% 250% !important; animation: sh-bg-drift ${sec(18)} ease-in-out infinite alternate !important; }`,
+        "}",
+      ].join("\n");
+    }
+    if (kind === "hue") {
+      if (!own.length) {
+        return [
+          "@keyframes sh-bg-hue { from { filter: hue-rotate(0deg); } to { filter: hue-rotate(360deg); } }",
+          calm,
+          `  ${sel} { animation: sh-bg-hue ${sec(30)} linear infinite !important; }`,
+          "}",
+        ].join("\n");
+      }
+      // Eine Farbe: der Hintergrund atmet zu ihr hin und zurueck.
+      // Zwei oder drei: reihum, am Ende wieder die erste.
+      const stops = own.length === 1 ? ["transparent", own[0], "transparent"] : own.concat([own[0]]);
+      const frames = stops
+        .map((color, index) => `  ${Math.round((index / (stops.length - 1)) * 100)}% { background-color: ${color}; }`)
+        .join("\n");
+      return [
+        `${sel}::before { content: ""; position: absolute; inset: 0; pointer-events: none; background-color: ${stops[0]}; }`,
+        "@keyframes sh-bg-cycle {",
+        frames,
+        "}",
+        calm,
+        `  ${sel}::before { animation: sh-bg-cycle ${sec(own.length === 1 ? 14 : 9 * own.length)} ease-in-out infinite; }`,
+        "}",
+      ].join("\n");
+    }
+    const one = own[0] || "var(--primary-color)";
+    const two = own[1] || "var(--accent-color, var(--primary-color))";
+    const patch = (color, x, y, strength, size) =>
+      `radial-gradient(circle at ${x}% ${y}%, color-mix(in srgb, ${color} ${strength}%, transparent), transparent ${size}%)`;
+    return [
+      `${sel} { overflow: hidden !important; }`,
+      `${sel}::before, ${sel}::after { content: ""; position: absolute; inset: -40%; pointer-events: none; }`,
+      `${sel}::before { background: ${patch(one, 30, 35, 55, 22)}, ${patch(one, 70, 75, 40, 18)}; }`,
+      `${sel}::after { background: ${patch(two, 70, 30, 50, 20)}, ${patch(two, 25, 70, 38, 17)}; }`,
+      "@keyframes sh-bg-blobs-a {",
+      "  0% { transform: translate(-14%, -10%) scale(1); }",
+      "  33% { transform: translate(12%, 6%) scale(1.18); }",
+      "  66% { transform: translate(-4%, 14%) scale(0.92); }",
+      "  100% { transform: translate(-14%, -10%) scale(1); }",
+      "}",
+      "@keyframes sh-bg-blobs-b {",
+      "  0% { transform: translate(12%, 10%) scale(1.1); }",
+      "  33% { transform: translate(-12%, -4%) scale(0.95); }",
+      "  66% { transform: translate(6%, -14%) scale(1.2); }",
+      "  100% { transform: translate(12%, 10%) scale(1.1); }",
+      "}",
+      calm,
+      `  ${sel}::before { animation: sh-bg-blobs-a ${sec(16)} ease-in-out infinite; will-change: transform; }`,
+      `  ${sel}::after { animation: sh-bg-blobs-b ${sec(21)} ease-in-out infinite; will-change: transform; }`,
+      "}",
+    ].join("\n");
+  };
+
+  /* 1.6.0: Bubble Card und Mushroom ans Theme anbinden - wie BIND_* in
+   * theme.py (gleiche Liste). Nur Verweise auf Variablen von Home Assistant. */
+  const BIND_BUBBLE = [
+    ["bubble-accent-color", "var(--primary-color)"],
+    ["bubble-main-background-color", "var(--ha-card-background, var(--card-background-color))"],
+    ["bubble-secondary-background-color", "var(--secondary-background-color)"],
+    ["bubble-pop-up-background-color", "var(--primary-background-color)"],
+    ["bubble-border-radius", "var(--ha-card-border-radius, var(--ha-border-radius-lg))"],
+    ["bubble-icon-border-radius", "var(--ha-border-radius-circle)"],
+    ["bubble-border", "var(--ha-card-border-width, 1px) solid var(--ha-card-border-color, var(--divider-color))"],
+  ];
+  const BIND_MUSHROOM = [
+    ["mush-rgb-state-entity", "var(--rgb-primary-color)"],
+    ["mush-rgb-info", "var(--rgb-info-color)"],
+    ["mush-rgb-success", "var(--rgb-success-color)"],
+    ["mush-rgb-warning", "var(--rgb-warning-color)"],
+    ["mush-rgb-danger", "var(--rgb-error-color)"],
+    ["mush-card-secondary-color", "var(--secondary-text-color)"],
+    ["mush-card-primary-font-size", "var(--ha-font-size-m)"],
+    ["mush-card-secondary-font-size", "var(--ha-font-size-s)"],
+    ["mush-card-primary-font-weight", "var(--ha-font-weight-medium)"],
+    ["mush-card-secondary-font-weight", "var(--ha-font-weight-normal)"],
+    ["mush-title-font-size", "var(--ha-font-size-2xl)"],
+    ["mush-subtitle-font-size", "var(--ha-font-size-l)"],
+    ["mush-control-border-radius", "var(--ha-border-radius-lg)"],
+    ["mush-chip-border-radius", "var(--ha-border-radius-pill)"],
+    ["mush-icon-border-radius", "var(--ha-border-radius-circle)"],
+  ];
+
+  /** Warum eine Zeile nicht zaehlt ("" = sie zaehlt). */
+  const customVarProblem = (name, value, seen) => {
+    if (!CUSTOM_VAR_NAME.test(name) || CUSTOM_VAR_BAD.test(value) || value.length > CUSTOM_VAR_VALUE_MAX) {
+      return "bad";
+    }
+    if (THEME_VARIABLES.indexOf(name) >= 0 || CUSTOM_VAR_DERIVED.test(name)) {
+      return "known";
+    }
+    if (seen && seen[name]) {
+      return "double";
+    }
+    return "";
+  };
+
+  /** Die gueltigen eigenen Variablen eines Modus als {name: wert}. */
+  const customVarMap = (list) => {
+    const out = {};
+    (Array.isArray(list) ? list : []).forEach((one) => {
+      const name = String((one && one.name) || "").trim();
+      const value = String((one && one.value) || "").trim();
+      if (name && value && !customVarProblem(name, value, out)) {
+        out[name] = value;
+      }
+    });
+    return out;
+  };
+
+  /** Liste fuer den Speicher: Zeilen als {name, value}, hoechstens 200. */
+  const customVarList = (raw) => {
+    let list = [];
+    if (Array.isArray(raw)) {
+      list = raw.filter((one) => isObject(one));
+    } else if (isObject(raw)) {
+      list = Object.keys(raw).map((name) => ({ name: name, value: raw[name] }));
+    }
+    return list.slice(0, CUSTOM_VARS_MAX).map((one) => ({
+      name: String(one.name === undefined || one.name === null ? "" : one.name).trim().replace(/^--/, ""),
+      value: typeof one.value === "number" ? String(one.value) : typeof one.value === "string" ? one.value : "",
+    }));
+  };
+
+  /**
+   * var(--name) und var(--name, ersatz) aufloesen - nur Namen aus lookup,
+   * alles andere bleibt stehen. Ketten bis zehn Stufen, Schleifen brechen ab.
+   */
+  const resolveVars = (value, lookup, depth = 0) => {
+    const text = String(value === undefined || value === null ? "" : value);
+    if (depth > 10 || text.indexOf("var(") < 0) {
+      return text;
+    }
+    let out = "";
+    let i = 0;
+    while (i < text.length) {
+      const at = text.indexOf("var(", i);
+      if (at < 0) {
+        out += text.slice(i);
+        break;
+      }
+      out += text.slice(i, at);
+      // passende Klammer suchen
+      let level = 0;
+      let end = -1;
+      let comma = -1;
+      for (let j = at + 3; j < text.length; j += 1) {
+        const c = text[j];
+        if (c === "(") {
+          level += 1;
+        } else if (c === ")") {
+          level -= 1;
+          if (level === 0) {
+            end = j;
+            break;
+          }
+        } else if (c === "," && level === 1 && comma < 0) {
+          comma = j;
+        }
+      }
+      if (end < 0) {
+        out += text.slice(at);
+        break;
+      }
+      const whole = text.slice(at, end + 1);
+      const name = text.slice(at + 4, comma >= 0 ? comma : end).trim().replace(/^--/, "");
+      const fallback = comma >= 0 ? text.slice(comma + 1, end).trim() : null;
+      const known = Object.prototype.hasOwnProperty.call(lookup, name);
+      if (known && String(lookup[name]).trim()) {
+        out += resolveVars(lookup[name], lookup, depth + 1);
+      } else if (known && fallback) {
+        // In der Datei, aber leer: dann gilt der Ersatz.
+        out += resolveVars(fallback, lookup, depth + 1);
+      } else if (fallback) {
+        // Fremde Variable (z. B. von Home Assistant): bleibt, nur im Ersatz
+        // wird aufgeloest.
+        out += `${text.slice(at, comma + 1)} ${resolveVars(fallback, lookup, depth + 1)})`;
+      } else {
+        out += whole;
+      }
+      i = end + 1;
+    }
+    return out;
   };
 
   /* ------------------------------------------------------------------ *
@@ -6266,6 +6790,15 @@
     .sbp[data-closed] .sbp-it .it-info { display: none; }
     .info-result .info-error { color: var(--sh-err); }
     .info-box { display: flex; flex-direction: column; gap: 8px; }
+    .card-sliders { margin-bottom: 10px; }
+    .card-sliders output { margin-left: 6px; font-weight: 600; }
+    .cv-list { display: flex; flex-direction: column; gap: 8px; margin: 4px 0 10px; }
+    .cv-row { display: grid; grid-template-columns: minmax(0, 0.9fr) minmax(0, 1.4fr); gap: 6px; align-items: center; }
+    .cv-row .cv-name { font-family: ui-monospace, Menlo, Consolas, monospace; font-size: 12px; min-width: 0; }
+    .cv-row .cv-val { display: flex; min-width: 0; }
+    .cv-row .cv-val input[type="text"] { flex: 1 1 auto; min-width: 0; font-family: ui-monospace, Menlo, Consolas, monospace; font-size: 12px; }
+    .cv-row .cv-warn { grid-column: 1 / -1; margin: 0; }
+    .cv-add { align-self: flex-start; }
     .info-box .field { margin: 0; }
     .info-field textarea { font-family: var(--sh-mono, ui-monospace, monospace); font-size: 12px; resize: vertical; min-height: 44px; }
     .sbp[data-tiles] .sbp-it {
@@ -6278,7 +6811,14 @@
       display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical;
     }
     /* Eingeklappt blendet der Injector die Ueberschriften aus */
-    .sbp[data-closed] .sbp-hd { display: none; }
+    .sbp[data-closed]:not([data-groups]) .sbp-hd { display: none; }
+    /* 1.6.0: Gruppen auch eingeklappt - schmale Zeile mit Icon und Pfeil */
+    .sbp[data-closed][data-groups] .sbp-hd { justify-content: center; gap: 2px; padding: 5px 0; }
+    .sbp[data-closed][data-groups] .sbp-hd .hd-text { display: none; }
+    .sbp[data-closed][data-groups] .sbp-hd .hd-caret { margin: -5px -4px; padding: 5px 4px; font-size: 8px; }
+    .sbp[data-closed][data-groups] .sbp-hd[data-noicon]::before {
+      content: ""; flex: 0 1 60%; height: 1px; background: currentColor; opacity: .6;
+    }
     .sbp[data-nolabels] .sbp-it .lbl { display: none; }
     .sbp[data-nolabels] .sbp-it { justify-content: center; }
     /* Der aktive Eintrag (1.5.8: dieselbe Rangfolge wie im Injector): eigener
@@ -6346,6 +6886,13 @@
     .theme-stage { font-size: calc(14px * var(--ha-font-size-scale, 1)); font-weight: var(--ha-font-weight-body, 400); }
     .ts-dash {
       flex: 1; min-height: 0; position: relative; padding: 22px 22px 56px; overflow: auto;
+      background: var(--lovelace-background, var(--primary-background-color));
+    }
+    /* 1.6.0: eigene Ebene fuer den bewegten Hintergrund (nur mit Bewegung) */
+    .ts-dash { isolation: isolate; }
+    .ts-bg { display: none; }
+    .ts-dash[data-motion] .ts-bg {
+      display: block; position: absolute; inset: 0; z-index: -1; pointer-events: none;
       background: var(--lovelace-background, var(--primary-background-color));
     }
     .ts-grid { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 14px; }
@@ -9044,9 +9591,11 @@
     }
 
     _color(key, labelText, showWhen, placeholder) {
+      // showWhen: "<path>" (wahr) oder "<path>:<wert>|<wert>" (1.6.0)
+      const [whenPath, whenValues] = String(showWhen || "").split(":");
       return `
         <label class="field"${
-          showWhen ? ` data-show-when="${showWhen}"` : ""
+          showWhen ? ` data-show-when="${whenPath}"${whenValues !== undefined ? ` data-show-values="${whenValues}"` : ""}` : ""
         }>
           <span>${escapeHtml(labelText)}</span>
           <span class="color-field">
@@ -9096,12 +9645,18 @@
           </div>`, { open: true })}
         ${this._grp("layout:behaviour", t.layout_behaviour, `
           ${this._check("layout.hide_scrollbar", t.hide_scrollbar, t.hide_scrollbar_hint)}
+          ${this._check("layout.groups_collapsed", t.groups_collapsed, t.groups_collapsed_hint)}
           ${this._check("layout.merge_fixed", t.merge_fixed, t.merge_fixed_hint)}
           ${this._check("layout.show_restart", t.show_restart, t.show_restart_hint)}`, { open: true })}
+        <p class="hint hidden-note" data-show-when="layout.sidebar_off">${escapeHtml(t.sidebar_off_hint)}</p>
         <p class="hint hidden-note" data-show-when="layout.hide_sidebar">${escapeHtml(t.hide_sidebar_hint)}</p>
         <p class="fields-note">${escapeHtml(t.preview_hint)}</p>`;
       // Wie "Kopfzeile ganz ausblenden" auf der Seite Header: unten in der Spalte
       const foot = `
+        <label class="check boxed" title="${escapeHtml(t.sidebar_off_hint)}">
+          <input type="checkbox" data-bind="layout.sidebar_off" />
+          <span>${escapeHtml(t.sidebar_off)}</span>
+        </label>
         <label class="check boxed">
           <input type="checkbox" data-bind="layout.hide_sidebar" />
           <span>${escapeHtml(t.hide_sidebar_full)}</span>
@@ -9187,12 +9742,13 @@
           </label>`;
       }
       // Unter der Primaerfarbe: die daraus berechnete Skala (seit 1.4.6).
-      const scale = variable === "primary-color"
+      const role = (ROLE_FIELDS.find((one) => one[1] === variable) || [])[0];
+      const scale = variable === "primary-color" || role
         ? `
-        <div class="primary-scale" data-scale-for="${path}">
-          <span class="ps-label">${escapeHtml(this._t.primary_scale)}</span>
+        <div class="primary-scale" data-scale-for="${path}"${role ? ` data-scale-role="${role}"` : ""}>
+          <span class="ps-label">${escapeHtml(role ? this._t.role_scale : this._t.primary_scale)}</span>
           <span class="ps-chips">${PALETTE_STEPS.map((step) => `<i data-step="${step}"></i>`).join("")}</span>
-          <small class="ps-hint">${escapeHtml(this._t.primary_scale_hint)}</small>
+          <small class="ps-hint">${escapeHtml(role ? this._t.role_scale_hint.replace("{role}", role) : this._t.primary_scale_hint)}</small>
         </div>`
         : "";
       return `
@@ -9217,7 +9773,19 @@
       const field = (name) => group.fields.find((entry) => entry[0] === name);
       const side = (key, label) =>
         this._field(`theme.${mode}.${key}`, label, "number", 'min="0" max="80"');
+      // 1.6.0: zwei Schnellregler - Transparenz der Karten, Textgroesse
+      const slider = (kind, label, min, max) => `
+        <label class="range card-slider">
+          <span class="cap">${escapeHtml(label)}<output data-card-out="${kind}" data-mode="${mode}"></output></span>
+          <input type="range" min="${min}" max="${max}" step="1" data-card-slider="${kind}" data-mode="${mode}" />
+        </label>`;
       return `
+        <div class="sub-box card-sliders">
+          ${slider("alpha", t.card_alpha, 0, 80)}
+          <small class="field-hint" data-card-alpha-note="${mode}" hidden>${escapeHtml(t.card_alpha_locked)}</small>
+          ${slider("scale", t.card_text_scale, 80, 130)}
+          <small class="field-hint">${escapeHtml(t.card_sliders_hint)}</small>
+        </div>
         <div class="rows">
           ${this._themeField(mode, field("ha-card-border-color"))}
           ${this._themeField(mode, field("ha-card-box-shadow"))}
@@ -9243,6 +9811,127 @@
             ${side("card_radius_bl", t.corner_bl)}
           </div>
         </div>`;
+    }
+
+    /**
+     * 1.6.0: Grundfarbe der Karten eines Modus als [r, g, b] (0..255) und ihre
+     * Deckkraft (0..1). null, wenn es keine einfache Farbe ist (Verlauf o. ae.).
+     */
+    _cardSurface(mode) {
+      const theme = this._config.theme || {};
+      const values = theme[mode] || {};
+      const lookup = Object.assign({}, values, customVarMap((theme.custom || {})[mode]));
+      const raw = String(values["ha-card-background"] || values["card-background-color"] || (THEME_FALLBACK[mode] || {})["card-background-color"] || "").trim();
+      const text = resolveVars(raw, lookup).trim();
+      const rgb = parsePaletteColor(text);
+      if (!rgb) {
+        return null;
+      }
+      let alpha = 1;
+      const hex = /^#[0-9a-f]{8}$/i.exec(text) || /^#[0-9a-f]{4}$/i.exec(text);
+      if (hex) {
+        const h = text.slice(1);
+        alpha = h.length === 8 ? parseInt(h.slice(6, 8), 16) / 255 : parseInt(h[3] + h[3], 16) / 255;
+      }
+      const fn = /^rgba?\(([^)]*)\)$/i.exec(text);
+      if (fn) {
+        const parts = fn[1].split(/[\s,/]+/).filter(Boolean);
+        if (parts.length >= 4) {
+          alpha = parts[3].endsWith("%") ? parseFloat(parts[3]) / 100 : parseFloat(parts[3]);
+        }
+      }
+      return { rgb: rgb.map((c) => Math.round(c * 255)), alpha: Math.max(0, Math.min(1, isFinite(alpha) ? alpha : 1)) };
+    }
+
+    /** 1.6.0: Bewegung des Dashboard-Hintergrunds in der Theme-Vorschau. */
+    _previewMotion(values) {
+      const root = this.shadowRoot;
+      const kind = MOTION_KINDS.indexOf(values.dash_motion) >= 0 ? values.dash_motion : "";
+      root.querySelectorAll(".ts-dash").forEach((dash) => {
+        dash.toggleAttribute("data-motion", !!kind);
+      });
+      let style = root.getElementById("sh-motion-preview");
+      if (!style) {
+        style = document.createElement("style");
+        style.id = "sh-motion-preview";
+        root.appendChild(style);
+      }
+      const css = kind
+        ? motionCss(kind, values.dash_motion_speed, ".ts-dash .ts-bg", [values.dash_motion_color1, values.dash_motion_color2, values.dash_motion_color3])
+        : "";
+      if (style.textContent !== css) {
+        style.textContent = css;
+      }
+    }
+
+    /** 1.6.0: Regler im Card-Design auf die aktuellen Werte stellen. */
+    _syncCardSliders() {
+      const root = this.shadowRoot;
+      if (!root || !this._config || !this._config.theme) {
+        return;
+      }
+      ["dark", "light"].forEach((mode) => {
+        const surface = this._cardSurface(mode);
+        const alpha = root.querySelector(`input[data-card-slider="alpha"][data-mode="${mode}"]`);
+        const alphaOut = root.querySelector(`output[data-card-out="alpha"][data-mode="${mode}"]`);
+        const note = root.querySelector(`[data-card-alpha-note="${mode}"]`);
+        if (alpha) {
+          const value = surface ? Math.round((1 - surface.alpha) * 100) : 0;
+          if (root.activeElement !== alpha) {
+            alpha.value = String(Math.min(80, value));
+          }
+          alpha.disabled = !surface;
+          if (alphaOut) {
+            alphaOut.textContent = surface ? `${alpha.value} %` : "";
+          }
+          if (note) {
+            note.hidden = !!surface;
+          }
+        }
+        const scale = root.querySelector(`input[data-card-slider="scale"][data-mode="${mode}"]`);
+        const scaleOut = root.querySelector(`output[data-card-out="scale"][data-mode="${mode}"]`);
+        if (scale) {
+          const raw = parseFloat(String((this._config.theme[mode] || {})["ha-font-size-scale"] || ""));
+          const value = isFinite(raw) && raw > 0 ? Math.round(raw * 100) : 100;
+          if (root.activeElement !== scale) {
+            scale.value = String(value);
+          }
+          if (scaleOut) {
+            scaleOut.textContent = `${scale.value} %`;
+          }
+        }
+      });
+    }
+
+    /** 1.6.0: Regler bewegt - schreibt in die Felder des Themes. */
+    _cardSliderInput(input) {
+      const mode = input.dataset.mode;
+      const values = this._config.theme[mode];
+      if (!values) {
+        return;
+      }
+      const value = Number(input.value);
+      if (input.dataset.cardSlider === "alpha") {
+        const surface = this._cardSurface(mode);
+        if (!surface) {
+          return;
+        }
+        const alpha = Math.round((1 - value / 100) * 100) / 100;
+        values["ha-card-background"] = alpha >= 1
+          ? toHex(surface.rgb)
+          : `rgba(${surface.rgb.join(", ")}, ${alpha})`;
+      } else {
+        values["ha-font-size-scale"] = value === 100 ? "" : String(value / 100);
+      }
+      ["ha-card-background", "ha-font-size-scale"].forEach((key) => {
+        const field = this.shadowRoot.querySelector(`[data-bind="theme.${mode}.${key}"]`);
+        if (field && field !== input) {
+          field.value = values[key] || "";
+        }
+        this._syncPicker(`theme.${mode}.${key}`);
+      });
+      this._syncCardSliders();
+      this._touch();
     }
 
     /**
@@ -9289,6 +9978,28 @@
             ${this._check(p("dash_image_scroll"), t.dash_image_scroll)}
           </div>
           <small class="field-hint">${escapeHtml(t.dash_image_hint)}</small>
+        </div>
+        <div class="sub-box">
+          ${this._check(p("dash_override"), t.dash_override, t.dash_override_hint)}
+        </div>
+        <div class="sub-box">
+          ${this._select(p("dash_motion"), t.dash_motion, [
+            ["", t.dash_motion_off],
+            ["blobs", t.dash_motion_blobs],
+            ["drift", t.dash_motion_drift],
+            ["hue", t.dash_motion_hue],
+          ])}
+          <div data-show-when="${p("dash_motion")}">
+            ${this._select(p("dash_motion_speed"), t.dash_motion_speed, [
+              ["slow", t.dash_speed_slow],
+              ["", t.dash_speed_normal],
+              ["fast", t.dash_speed_fast],
+            ])}
+          </div>
+          ${this._color(p("dash_motion_color1"), t.dash_motion_color1, `${p("dash_motion")}:blobs|hue`, t.dash_motion_color_auto)}
+          ${this._color(p("dash_motion_color2"), t.dash_motion_color2, `${p("dash_motion")}:blobs|hue`, t.dash_motion_color_auto)}
+          ${this._color(p("dash_motion_color3"), t.dash_motion_color3, `${p("dash_motion")}:hue`, t.dash_motion_color_auto)}
+          <small class="field-hint">${escapeHtml(t.dash_motion_hint)}</small>
         </div>`;
     }
 
@@ -9423,7 +10134,18 @@
             <button type="button" class="link-btn accent" id="theme-copy"></button>
             <button type="button" class="link-btn" id="theme-clear">${escapeHtml(t.theme_clear)}</button>`
           )}
-          ${this._fieldsCol(head, `<div class="theme-groups" id="theme-groups">${groups}</div>
+          ${this._fieldsCol(head, `<div class="theme-groups" id="theme-groups">${groups}${this._grp("theme:cards3p", t.bind_title, `
+            <p class="hint">${escapeHtml(t.bind_hint)}</p>
+            ${this._check("theme.bind_bubble", t.bind_bubble, t.bind_bubble_hint)}
+            ${this._check("theme.bind_mushroom", t.bind_mushroom, t.bind_mushroom_hint)}`)}${this._grp("theme:custom", t.custom_vars_title, `
+            <div id="cv-box">
+              <p class="hint">${escapeHtml(t.custom_vars_hint)}</p>
+              ${["dark", "light"].map((mode) => `
+              <div class="theme-mode" data-mode="${mode}">
+                <div class="cv-list" data-cv-list="${mode}"></div>
+                <button type="button" class="btn cv-add" data-cv-add="${mode}">${glyph("mdi:plus", "+")}<span>${escapeHtml(t.custom_vars_add)}</span></button>
+              </div>`).join("")}
+            </div>`)}</div>
             <p class="fields-note">${escapeHtml(t.theme_intro)}</p>`, foot, ' data-fields="theme"')}
         </section>`;
     }
@@ -9985,6 +10707,21 @@
       const view = this._view();
       const values = (view.theme && view.theme[mode]) || {};
       const fallback = THEME_FALLBACK[mode] || {};
+      this._syncCardSliders();
+      // 1.6.0: bewegter Hintergrund in der Vorschau
+      this._previewMotion(values);
+      // 1.6.0: eigene Variablen - auf der Vorschau (fuer var(--...) in den
+      // Feldern) und im Feldbereich des jeweiligen Modus (fuer die Farbfelder).
+      const ownVars = customVarMap(((view.theme && view.theme.custom) || {})[mode]);
+      targets.forEach((target) => {
+        (target.__shCv || []).forEach((name) => {
+          if (!(name in ownVars)) {
+            target.style.removeProperty(`--${name}`);
+          }
+        });
+        Object.keys(ownVars).forEach((name) => target.style.setProperty(`--${name}`, ownVars[name]));
+        target.__shCv = Object.keys(ownVars);
+      });
       // Per side / per corner beats the single value, same rule as theme.py.
       const composed = {};
       Object.keys(THEME_COMPOSED).forEach((target) => {
@@ -10565,6 +11302,7 @@
       THEME_VARIABLES.concat(Object.keys(THEME_EXTRAS)).forEach((key) => {
         this._config.theme[to][key] = this._config.theme[from][key];
       });
+      this._config.theme.custom[to] = clone(this._config.theme.custom[from] || []);
       this._fillInputs();
       this._touch();
       this._flash(this._t.theme_copied);
@@ -10599,6 +11337,7 @@
       Object.keys(THEME_EXTRAS).forEach((key) => {
         this._config.theme[this._mode][key] = THEME_EXTRAS[key];
       });
+      this._config.theme.custom[this._mode] = [];
       this._fillInputs();
       this._touch();
     }
@@ -11482,6 +12221,8 @@
         num("font_size", t.heading_font_size, 40),
         num("icon_size", t.heading_icon_size, 48),
         num("height", t.heading_height),
+        num("indent", t.heading_indent, 80),
+        num("space_below", t.heading_space_below, 40),
       ];
       if (!cfg.border_split) {
         nums.push(num("border_width", t.heading_border_width));
@@ -11494,6 +12235,7 @@
           <div class="head-block">
             <div class="grid-mini hd-nums" style="--n:${nums.length === 4 ? 2 : Math.min(3, nums.length)}">${nums.join("")}</div>
             <small class="field-hint">${escapeHtml(t.heading_height_hint)}</small>
+            <small class="field-hint">${escapeHtml(t.heading_indent_space_hint)}</small>
             <label class="field hd-color"><span>${escapeHtml(t.header_border_color)}</span>
               <span class="color-field">
                 <input type="color" data-item-color="${k}" data-prop="border_color" />
@@ -11950,6 +12692,22 @@
       on("theme-copy", "click", () => this._copyMode());
       on("theme-clear", "click", () => this._clearMode());
       on("theme-delete", "click", () => this._deleteTheme());
+      // 1.6.0: Schnellregler im Card-Design
+      root.querySelectorAll("input[data-card-slider]").forEach((input) => {
+        input.addEventListener("input", () => this._cardSliderInput(input));
+      });
+      // 1.6.0: Eigene Variablen
+      on("cv-box", "input", (event) => {
+        if (event.target && event.target.dataset && event.target.dataset.cv) {
+          this._customVarInput(event.target);
+        }
+      });
+      on("cv-box", "click", (event) => {
+        const button = event.target.closest && event.target.closest("[data-cv-add], [data-cv-del]");
+        if (button) {
+          this._customVarClick(button);
+        }
+      });
       on("open-palette", "click", () => this._openPalette());
       on("open-presets", "click", () => this._openPresets());
       on("palette-cancel", "click", () => {
@@ -12668,8 +13426,144 @@
     _syncPicker(path) {
       const picker = this.shadowRoot.querySelector(`input[data-color-for="${path}"]`);
       if (picker) {
-        picker.value = asHexColor(this._readPath(path));
+        picker.value = this._pickerHex(path);
       }
+    }
+
+    /**
+     * 1.6.0: Farbe fuers Farbfeld - bei Theme-Feldern mit aufgeloesten
+     * eigenen Variablen, damit var(--my-accent-color) nicht grau bleibt.
+     */
+    _pickerHex(path) {
+      const value = this._readPath(path);
+      const m = /^theme\.(dark|light)\./.exec(String(path));
+      if (!m || String(value || "").indexOf("var(") < 0 || !this._config || !this._config.theme) {
+        return asHexColor(value);
+      }
+      const theme = this._config.theme;
+      const lookup = Object.assign({}, theme[m[1]] || {}, customVarMap((theme.custom || {})[m[1]]));
+      return asHexColor(resolveVars(value, lookup));
+    }
+
+    /** 1.6.0: Liste "Eigene Variablen" fuer beide Modi neu zeichnen. */
+    _renderCustomVars() {
+      const root = this.shadowRoot;
+      const t = this._t;
+      const theme = (this._config && this._config.theme) || {};
+      if (!theme.custom) {
+        theme.custom = { dark: [], light: [] };
+      }
+      ["dark", "light"].forEach((mode) => {
+        const box = root.querySelector(`[data-cv-list="${mode}"]`);
+        if (!box) {
+          return;
+        }
+        const list = theme.custom[mode] || [];
+        const lookup = Object.assign({}, theme[mode] || {}, customVarMap(list));
+        const seen = {};
+        box.innerHTML = list.length
+          ? list
+              .map((one, index) => {
+                const name = String(one.name || "");
+                const value = String(one.value || "");
+                const problem = name || value ? customVarProblem(name, value, seen) : "";
+                if (!problem && name) {
+                  seen[name] = true;
+                }
+                return `
+                <div class="cv-row" data-cv-row="${index}">
+                  <input type="text" class="cv-name" data-cv="${mode}" data-cv-i="${index}" data-cv-f="name"
+                    value="${escapeHtml(name)}" placeholder="my-accent-color" spellcheck="false" autocomplete="off"
+                    aria-label="${escapeHtml(t.custom_vars_name)}" title="${escapeHtml(t.custom_vars_name)}" />
+                  <span class="color-field cv-val">
+                    <input type="text" data-cv="${mode}" data-cv-i="${index}" data-cv-f="value"
+                      value="${escapeHtml(value)}" placeholder="rgba(97, 175, 255, 1)" spellcheck="false" autocomplete="off"
+                      aria-label="${escapeHtml(t.custom_vars_value)}" title="${escapeHtml(t.custom_vars_value)}" />
+                    <input type="color" data-cv="${mode}" data-cv-i="${index}" data-cv-f="color" value="${escapeHtml(asHexColor(resolveVars(value, lookup)))}" />
+                    <button type="button" class="clear" data-cv-del="${mode}" data-cv-i="${index}" title="${escapeHtml(t.custom_vars_remove)}">&#10005;</button>
+                  </span>
+                  <small class="field-hint warn cv-warn"${problem ? "" : " hidden"}>${escapeHtml(problem ? t["custom_vars_" + problem] : "")}</small>
+                </div>`;
+              })
+              .join("")
+          : `<p class="fields-note cv-empty">${escapeHtml(t.custom_vars_empty)}</p>`;
+      });
+    }
+
+    /** 1.6.0: Tippen in "Eigene Variablen". */
+    _customVarInput(input) {
+      const mode = input.dataset.cv;
+      const index = Number(input.dataset.cvI);
+      const list = ((this._config.theme.custom || {})[mode]) || [];
+      const one = list[index];
+      if (!one) {
+        return;
+      }
+      const row = input.closest(".cv-row");
+      if (input.dataset.cvF === "name") {
+        one.name = input.value.trim().replace(/^--/, "");
+      } else if (input.dataset.cvF === "color") {
+        one.value = input.value;
+        row.querySelector('[data-cv-f="value"]').value = input.value;
+      } else {
+        one.value = input.value;
+      }
+      // Hinweise und Farbfelder aller Zeilen dieses Modus nachziehen
+      const lookup = Object.assign({}, this._config.theme[mode] || {}, customVarMap(list));
+      const seen = {};
+      this.shadowRoot.querySelectorAll(`[data-cv-list="${mode}"] .cv-row`).forEach((line) => {
+        const item = list[Number(line.dataset.cvRow)] || {};
+        const name = String(item.name || "").trim();
+        const value = String(item.value || "").trim();
+        const problem = name || value ? customVarProblem(name, value, seen) : "";
+        if (!problem && name) {
+          seen[name] = true;
+        }
+        const warn = line.querySelector(".cv-warn");
+        warn.hidden = !problem;
+        warn.textContent = problem ? this._t["custom_vars_" + problem] : "";
+        const picker = line.querySelector('[data-cv-f="color"]');
+        if (picker && picker !== input) {
+          picker.value = asHexColor(resolveVars(value, lookup));
+        }
+      });
+      this.shadowRoot.querySelectorAll(`input[data-color-for^="theme.${mode}."]`).forEach((picker) => {
+        picker.value = this._pickerHex(picker.dataset.colorFor);
+      });
+      this._touch();
+    }
+
+    /** 1.6.0: Zeile anlegen oder entfernen. */
+    _customVarClick(button) {
+      const custom = this._config.theme.custom || (this._config.theme.custom = { dark: [], light: [] });
+      if (button.dataset.cvAdd) {
+        const mode = button.dataset.cvAdd;
+        custom[mode] = custom[mode] || [];
+        if (custom[mode].length >= CUSTOM_VARS_MAX) {
+          return;
+        }
+        custom[mode].push({ name: "", value: "" });
+        this._renderCustomVars();
+        const names = this.shadowRoot.querySelectorAll(`[data-cv-list="${mode}"] .cv-name`);
+        if (names.length) {
+          names[names.length - 1].focus();
+        }
+        this._touch();
+        return;
+      }
+      if (button.dataset.cvDel) {
+        const list = custom[button.dataset.cvDel] || [];
+        list.splice(Number(button.dataset.cvI), 1);
+        this._renderCustomVars();
+        this._fillThemePickers();
+        this._touch();
+      }
+    }
+
+    _fillThemePickers() {
+      this.shadowRoot.querySelectorAll('input[data-color-for^="theme."]').forEach((picker) => {
+        picker.value = this._pickerHex(picker.dataset.colorFor);
+      });
     }
 
     /** Push the loaded configuration into every input of the shell. */
@@ -12688,8 +13582,10 @@
         }
       });
       root.querySelectorAll("input[data-color-for]").forEach((picker) => {
-        picker.value = asHexColor(this._readPath(picker.dataset.colorFor));
+        picker.value = this._pickerHex(picker.dataset.colorFor);
       });
+      this._renderCustomVars();
+      this._syncCardSliders();
       this._updatePrimaryScales();
       this._syncShadowBoxes();
       this._checkContrast();
@@ -13190,6 +14086,34 @@
         if (out["primary-color"]) {
           Object.assign(out, primaryPalette(out["primary-color"]));
         }
+        // 1.6.0: Skalen fuer Fehler, Warnung und Erfolg (wie theme.py)
+        ROLE_FIELDS.forEach(([role, field]) => {
+          if (out[field]) {
+            const scale = rolePalette(role, out[field]);
+            Object.keys(scale).forEach((key) => {
+              if (!(key in out)) {
+                out[key] = scale[key];
+              }
+            });
+          }
+        });
+        // 1.6.0: eigene Variablen dazu - was die Felder setzen, geht vor.
+        const own = customVarMap(((theme.custom || {})[name]) || []);
+        Object.keys(own).forEach((key) => {
+          if (!(key in out)) {
+            out[key] = own[key];
+          }
+        });
+        // 1.6.0: Bubble Card / Mushroom anbinden (wie theme.py)
+        [[theme.bind_bubble, BIND_BUBBLE], [theme.bind_mushroom, BIND_MUSHROOM]].forEach(([on, list]) => {
+          if (on) {
+            list.forEach(([key, value]) => {
+              if (!(key in out)) {
+                out[key] = value;
+              }
+            });
+          }
+        });
         return out;
       };
 
@@ -13322,7 +14246,7 @@
       // message.
       const before = clone(this._config.theme);
       const result = this._takeTheme(found[index]);
-      if (!result.taken) {
+      if (!result.taken && !result.custom) {
         this._config.theme = before;
         this._themeError(this._t.theme_import_none);
         return;
@@ -13336,6 +14260,11 @@
         result.taken === 1
           ? t.theme_import_done_one
           : t.theme_import_done.replace("{taken}", result.taken);
+      if (result.custom === 1) {
+        text += t.theme_import_custom_one;
+      } else if (result.custom > 1) {
+        text += t.theme_import_custom.replace("{n}", result.custom);
+      }
       if (result.skipped.length === 1) {
         text += t.theme_import_skipped_one;
       } else if (result.skipped.length > 1) {
@@ -13363,6 +14292,11 @@
       // modes landet in beiden Modi, ist fuer den Benutzer aber eine Angabe.
       const taken = [];
 
+      // 1.6.0: Variablen ohne eigenes Feld (my-accent-color ...) kommen in
+      // "Eigene Variablen"; in den Feldern werden sie aufgeloest.
+      const own = [];
+      const custom = { dark: [], light: [] };
+
       ["dark", "light"].forEach((mode) => {
         THEME_VARIABLES.forEach((key) => {
           this._config.theme[mode][key] = "";
@@ -13374,19 +14308,34 @@
 
       ["dark", "light"].forEach((mode) => {
         const merged = Object.assign({}, theme.base, theme[mode]);
+        const lookup = {};
         Object.keys(merged).forEach((key) => {
-          const value = String(merged[key] === undefined ? "" : merged[key]).trim();
+          if (THEME_VARIABLES.indexOf(key) < 0) {
+            lookup[key] = String(merged[key] === undefined || merged[key] === null ? "" : merged[key]).trim();
+          }
+        });
+        Object.keys(merged).forEach((key) => {
+          let value = String(merged[key] === undefined || merged[key] === null ? "" : merged[key]).trim();
           if (!value) {
             return;
           }
           if (THEME_VARIABLES.indexOf(key) < 0) {
-            // rgb-* baut Home Assistant selbst aus den Hex-Werten, die tauchen
-            // deshalb nicht als "nicht uebernommen" auf.
-            if (key.indexOf("rgb-") !== 0 && skipped.indexOf(key) < 0) {
+            // rgb-* und die Skala der Primaerfarbe baut Home Assistant bzw.
+            // das Theme selbst, die tauchen nirgends auf.
+            if (CUSTOM_VAR_DERIVED.test(key)) {
+              return;
+            }
+            if (!customVarProblem(key, value) && custom[mode].length < CUSTOM_VARS_MAX) {
+              custom[mode].push({ name: key, value: value });
+              if (own.indexOf(key) < 0) {
+                own.push(key);
+              }
+            } else if (skipped.indexOf(key) < 0) {
               skipped.push(key);
             }
             return;
           }
+          value = resolveVars(value, lookup);
           if (taken.indexOf(key) < 0) {
             taken.push(key);
           }
@@ -13396,8 +14345,9 @@
           this._config.theme[mode][key] = value;
         });
       });
+      this._config.theme.custom = custom;
 
-      return { taken: taken.length, skipped: skipped };
+      return { taken: taken.length, skipped: skipped, custom: own.length };
     }
 
     /**
@@ -14497,11 +15447,13 @@
         return;
       }
       root.querySelectorAll(".primary-scale[data-scale-for]").forEach((box) => {
-        const palette = primaryPalette(this._readPath(box.dataset.scaleFor));
+        const role = box.dataset.scaleRole || "";
+        const value = this._readPath(box.dataset.scaleFor);
+        const palette = role ? rolePalette(role, value) : primaryPalette(value);
         const has = Object.keys(palette).length > 0;
         box.toggleAttribute("data-empty", !has);
         box.querySelectorAll("[data-step]").forEach((chip) => {
-          const key = `ha-color-primary-${String(chip.dataset.step).padStart(2, "0")}`;
+          const key = `ha-color-${role || "primary"}-${String(chip.dataset.step).padStart(2, "0")}`;
           chip.style.background = has ? palette[key] : "";
           chip.title = has ? `--${key}: ${palette[key]}` : "";
         });
@@ -14538,7 +15490,7 @@
               <span class="grow"></span>
               <button type="button" class="goto" data-goto="header">${escapeHtml(t.goto_header)} &#8599;</button>
             </div>
-            <div class="ts-dash" data-spot="dash">
+            <div class="ts-dash" data-spot="dash"><div class="ts-bg" aria-hidden="true"></div>
               <div class="ts-grid">
                 <div class="pv-card ts-card" data-spot="cards">
                   <div class="pv-card-head"${ctl("card_head")}>${escapeHtml(t.ts_light)}</div>
@@ -15306,7 +16258,7 @@ ${[
       // 1.5.8: in der Vorschau zugeklappte Ueberschriften (nur dieses Bild,
       // nichts davon wird gespeichert) - wie im Injector nur ausgeklappt.
       const folded = new Set(
-        closed ? [] : Array.from(this._pvFolded || []).filter((key) => {
+        closed && !layout.groups_collapsed ? [] : Array.from(this._pvFolded || []).filter((key) => {
           const head = items[key] || {};
           return isHeading(key) && head.collapsible === true;
         })
@@ -15348,6 +16300,10 @@ ${[
           if (Number(cfg.icon_size) > 0) {
             h.push(`--his:${Math.min(48, Math.max(8, Math.round(Number(cfg.icon_size))))}px`);
           }
+          // 1.6.0: Abstand darunter (nur ausgeklappt)
+          if (!closed && Number(cfg.space_below) > 0) {
+            h.push(`margin-bottom:${Math.min(40, Math.round(Number(cfg.space_below)))}px`);
+          }
           const borders = cfg.border_split
             ? [cfg.border_top, cfg.border_right, cfg.border_bottom, cfg.border_left].map(px).join(" ")
             : Number(cfg.border_width) > 0 ? px(cfg.border_width) : "";
@@ -15361,6 +16317,7 @@ ${[
           if (radius && radius !== "0px" && radius !== "0px 0px 0px 0px") h.push(`--hr:${radius}`);
           if (cfg.uppercase !== false) flags.push("data-upper");
           if (folded.has(entry.key)) flags.push("data-folded");
+          if (!text(cfg.icon)) flags.push("data-noicon");
           return `<div class="sbp-hd" tabindex="0" data-key="${k}"${mark}${drag} ${flags.join(" ")} style="${escapeHtml(h.join(";"))}">${
             text(cfg.icon) ? icon(cfg.icon) : ""
           }<span class="hd-text">${escapeHtml(this._entryName(entry, items))}</span>${
@@ -15370,6 +16327,11 @@ ${[
         const s = [];
         const span = Math.min(cols, Math.max(1, Number(cfg.span) || 1));
         if (span > 1) s.push(`grid-column: span ${span}`);
+        // 1.6.0: Einrueckung der Gruppe, der der Eintrag zugeordnet ist
+        const group = cfg.parent && items[cfg.parent];
+        if (!closed && group && Number(group.indent) > 0) {
+          s.push(`margin-inline-start:${Math.min(80, Math.round(Number(group.indent)))}px`);
+        }
         if (text(cfg.text_color)) s.push(`--tc:${cssValue(cfg.text_color)}`);
         if (text(cfg.icon_color)) s.push(`--ic:${cssValue(cfg.icon_color)}`);
         if (text(cfg.background)) s.push(`--ibg:${cssValue(cfg.background)}`);
@@ -15405,7 +16367,7 @@ ${[
       const title = text(look.title) || "Home Assistant";
       const nolabels = closed && look.hide_labels_collapsed !== false;
       host.innerHTML = `
-        <div class="sbp"${tiles ? " data-tiles" : ""}${nolabels ? " data-nolabels" : ""}${closed ? " data-closed" : ""}${text(look.hover_background) ? " data-own-hover" : ""}${text(look.hover_text_color) ? " data-hover-text" : ""}${text(look.hover_icon_color) ? " data-hover-icon" : ""}${layout.hide_scrollbar ? " data-noscroll" : ""} data-zone="${escapeHtml(zone)}" style="${escapeHtml(vars.join(";"))}">
+        <div class="sbp"${tiles ? " data-tiles" : ""}${nolabels ? " data-nolabels" : ""}${closed ? " data-closed" : ""}${closed && layout.groups_collapsed ? " data-groups" : ""}${text(look.hover_background) ? " data-own-hover" : ""}${text(look.hover_text_color) ? " data-hover-text" : ""}${text(look.hover_icon_color) ? " data-hover-icon" : ""}${layout.hide_scrollbar ? " data-noscroll" : ""} data-zone="${escapeHtml(zone)}" style="${escapeHtml(vars.join(";"))}">
           ${look.hide_title && look.hide_toggle ? "" : `<div class="sbp-head">${look.hide_toggle ? "" : icon("mdi:menu")}${look.hide_title || closed ? "" : `<span>${escapeHtml(title)}</span>`}</div>`}
           <div class="sbp-grid">${main.map(tile).join("")}</div>
           ${fixed.length ? `<div class="sbp-fixed">${fixed.map(tile).join("")}</div>` : ""}
