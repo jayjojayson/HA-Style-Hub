@@ -11,13 +11,6 @@ Nebenversion (1.2.9 → 1.3.0 → 1.3.1 → 1.3.2 → 1.3.3 → 1.3.4 → 1.3.5 
 
 ## 1.6.1
 
-* **Fix: Schalter für den zweifarbigen Kartenrahmen fehlte.** Der Schalter
-  steht jetzt direkt unter dem Feld *Rahmenfarbe* im *Card-Design* (vorher am
-  Ende der Box nach *Seiten einzeln festlegen*). Zusätzlich werden die beiden
-  JavaScript-Dateien mit einem Prüfwert ihres Inhalts geladen
-  (`?v=1.6.1-…`): Mit der Version allein konnte ein Browser bzw. die HA-App eine
-  ältere Datei derselben Version aus dem Zwischenspeicher weiterverwenden – der
-  Schalter fehlte dann, obwohl die Integration aktuell war.
 * **Theme-Import: Verweise behalten statt auflösen.** Neuer Haken im
   Import-Dialog der Theme-Seite. Aus (wie in 1.6.0): Ein Feld, das eine eigene
   Variable nutzt (`var(--my-accent-color)`), bekommt ihren Wert aus der Datei.
