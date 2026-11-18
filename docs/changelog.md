@@ -11,6 +11,13 @@ Version numbers count up to `.9` and then move on to the next minor (1.2.9 →
 
 ## 1.6.1
 
+* **Fix: switch for the two-coloured card border missing.** The switch now
+  sits right below the field *Border color* in *Card design* (before it was at
+  the end of the box, after *Set each side separately*). In addition the two
+  JavaScript files are loaded with a checksum of their content
+  (`?v=1.6.1-…`): with the version alone a browser or the companion app could
+  keep an older file of the same version from its cache - the switch was
+  missing although the integration was up to date.
 * **Theme import: keep references instead of resolving them.** New tick in
   the import dialog of the theme page. Off (as in 1.6.0): a field that uses an
   own variable (`var(--my-accent-color)`) gets its value from the file. On: the

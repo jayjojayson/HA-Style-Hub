@@ -10023,6 +10023,19 @@
         </div>
         <div class="rows">
           ${this._themeField(mode, field("ha-card-border-color"))}
+        </div>
+        <div class="sub-box">
+          ${this._check(`theme.${mode}.card_border_two`, t.card_border_two, t.card_border_two_hint)}
+          <div class="stack sub" data-show-when="theme.${mode}.card_border_two">
+            ${this._color(`theme.${mode}.card_border_color2`, t.card_border_color2, "", t.card_border_color2_ph)}
+            ${this._select(`theme.${mode}.card_border_two_sides`, t.card_border_two_sides, [
+              ["", t.card_border_two_br],
+              ["lr", t.card_border_two_lr],
+              ["b", t.card_border_two_b],
+            ])}
+          </div>
+        </div>
+        <div class="rows">
           ${this._themeField(mode, field("ha-card-box-shadow"))}
           ${this._themeField(mode, field("ha-card-header-color"))}
           ${this._themeField(mode, field("ha-card-header-font-size"))}
@@ -10044,15 +10057,6 @@
             ${side("card_radius_tr", t.corner_tr)}
             ${side("card_radius_br", t.corner_br)}
             ${side("card_radius_bl", t.corner_bl)}
-          </div>
-          ${this._check(`theme.${mode}.card_border_two`, t.card_border_two, t.card_border_two_hint)}
-          <div class="stack sub" data-show-when="theme.${mode}.card_border_two">
-            ${this._color(`theme.${mode}.card_border_color2`, t.card_border_color2, "", t.card_border_color2_ph)}
-            ${this._select(`theme.${mode}.card_border_two_sides`, t.card_border_two_sides, [
-              ["", t.card_border_two_br],
-              ["lr", t.card_border_two_lr],
-              ["b", t.card_border_two_b],
-            ])}
           </div>
         </div>`;
     }

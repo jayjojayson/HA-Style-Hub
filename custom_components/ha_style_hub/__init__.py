@@ -14,7 +14,9 @@ The integration has two halves:
 
 from __future__ import annotations
 
+import hashlib
 import logging
+from pathlib import Path
 
 from homeassistant.components import frontend, panel_custom
 from homeassistant.components.http import StaticPathConfig
@@ -46,13 +48,28 @@ DATA_STORE = "store"
 DATA_THEME = "theme"
 DATA_STATIC = "static_registered"
 DATA_WS = "websocket_registered"
+DATA_INJECTOR_URL = "injector_url"
 
 # Der Schalter, mit dem sich die Kopfzeile von einem Dashboard aus ausblenden
 # laesst - siehe switch.py.
 PLATFORMS: list[Platform] = [Platform.SWITCH]
 
-INJECTOR_URL = f"{URL_BASE}/{INJECTOR_FILE}?v={VERSION}"
-PANEL_MODULE_URL = f"{URL_BASE}/{PANEL_FILE}?v={VERSION}"
+WWW_DIR = Path(__file__).parent / "www"
+
+
+def _asset_url(name: str) -> str:
+    """URL of a JavaScript file with version and a checksum of its content.
+
+    With the version alone a browser or the companion app could keep an older
+    file of the same version from its cache - e.g. a 1.6.1 panel without the
+    switch for the two-coloured card border. The checksum changes with every
+    change of the file, so the new one is always loaded.
+    """
+    try:
+        digest = hashlib.sha256((WWW_DIR / name).read_bytes()).hexdigest()[:8]
+    except OSError:
+        return f"{URL_BASE}/{name}?v={VERSION}"
+    return f"{URL_BASE}/{name}?v={VERSION}-{digest}"
 
 
 async def async_setup_entry(hass: HomeAssistant, entry: ConfigEntry) -> bool:
@@ -93,7 +110,10 @@ async def async_setup_entry(hass: HomeAssistant, entry: ConfigEntry) -> bool:
         data[DATA_STATIC] = True
 
     # 3. Load the injector on every page -------------------------------------
-    frontend.add_extra_js_url(hass, INJECTOR_URL)
+    injector_url = await hass.async_add_executor_job(_asset_url, INJECTOR_FILE)
+    panel_url = await hass.async_add_executor_job(_asset_url, PANEL_FILE)
+    data[DATA_INJECTOR_URL] = injector_url
+    frontend.add_extra_js_url(hass, injector_url)
 
     # 4. Register the configuration panel ------------------------------------
     if not frontend.async_panel_exists(hass, PANEL_URL_PATH):
@@ -101,7 +121,7 @@ async def async_setup_entry(hass: HomeAssistant, entry: ConfigEntry) -> bool:
             hass,
             frontend_url_path=PANEL_URL_PATH,
             webcomponent_name=PANEL_COMPONENT_NAME,
-            module_url=PANEL_MODULE_URL,
+            module_url=panel_url,
             sidebar_title=PANEL_TITLE,
             sidebar_icon=PANEL_ICON,
             require_admin=True,
@@ -139,10 +159,12 @@ async def async_unload_entry(hass: HomeAssistant, entry: ConfigEntry) -> bool:
     if isinstance(theme, SidebarHubTheme):
         theme.async_stop()
 
-    try:
-        frontend.remove_extra_js_url(hass, INJECTOR_URL)
-    except KeyError:
-        pass
+    injector_url = data.pop(DATA_INJECTOR_URL, None)
+    if injector_url:
+        try:
+            frontend.remove_extra_js_url(hass, injector_url)
+        except (KeyError, ValueError):
+            pass
 
     return True
 
