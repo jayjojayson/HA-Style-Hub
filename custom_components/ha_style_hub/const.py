@@ -7,7 +7,7 @@ from typing import Any, Final
 
 DOMAIN: Final = "ha_style_hub"
 NAME: Final = "HA Style Hub"
-VERSION: Final = "1.6.0"
+VERSION: Final = "1.6.1"
 
 # Storage
 STORAGE_KEY: Final = f"{DOMAIN}.config"
@@ -221,10 +221,18 @@ DEFAULT_HEADER: Final[dict[str, Any]] = {
     # Freier und belegter Speicherplatz als zwei weitere kleine Werte daneben
     # (dieselbe Quelle wie der Systemmonitor, jede Minute neu).
     "show_disk": False,
+    # 1.6.1: ausklappbares Menue ganz rechts in der Kopfzeile. Ein Knopf
+    # (Symbol menu_icon) oeffnet eine Liste mit eigenen Links: Seiten von Home
+    # Assistant, eigene Seiten oder Webadressen - {path, name, icon, color}.
+    "menu": False,
+    "menu_icon": "mdi:menu",
+    "menu_links": [],
 }
 
 # Hoechstens so viele Links in der Kopfzeile - mehr passt dort nicht hin.
 HEADER_LINKS_MAX: Final = 12
+# Hoechstens so viele Links im ausklappbaren Menue der Kopfzeile (1.6.1).
+HEADER_MENU_LINKS_MAX: Final = 24
 # Hoechstens so viele Pfade in menu_order / menu_hidden.
 MENU_PATHS_MAX: Final = 80
 # Hoechstens so lang darf das Template einer Infozeile sein (1.5.9).
@@ -884,6 +892,19 @@ THEME_VARIABLES: Final[tuple[str, ...]] = (
     "ha-switch-size",
     "ha-switch-width",
     "ha-switch-thumb-size",
+    # 1.6.1: Kalender und Knoepfe - die Farben, aus denen ha-button (und damit
+    # die Knoepfe der Kalender-Karte) gezeichnet wird. Home Assistant setzt sie
+    # am <html> auf die Design-Tokens (wa.globals.ts); ein Theme darf sie
+    # ueberschreiben.
+    "wa-color-brand-fill-loud",
+    "wa-color-brand-on-loud",
+    "wa-color-brand-fill-normal",
+    "wa-color-brand-on-normal",
+    "wa-color-brand-border-normal",
+    "wa-color-brand-fill-quiet",
+    "wa-color-brand-on-quiet",
+    "wa-color-brand-border-loud",
+    "wa-color-brand-border-quiet",
 )
 
 # Per mode, next to the variables above, the theme page keeps a few values
@@ -904,6 +925,15 @@ THEME_EXTRAS: Final[dict[str, Any]] = {
     "card_radius_tr": "",
     "card_radius_br": "",
     "card_radius_bl": "",
+    # 1.6.1: zweifarbiger Rahmen der Karten. --ha-card-border-color fliesst in
+    # ha-card.ts in border-color (nicht in die Kurzform border) - dort sind bis
+    # zu vier Farben gueltig: oben rechts unten links. Farbe 1 ist das Feld
+    # Rahmenfarbe, Farbe 2 kommt von hier; card_border_two_sides sagt, welche
+    # Seiten sie bekommen ("" = rechts und unten, "lr" = links und rechts,
+    # "b" = nur unten).
+    "card_border_two": False,
+    "card_border_color2": "",
+    "card_border_two_sides": "",
     # Dashboard-Hintergrund: Farbverlauf und Bild. Die Variable
     # --lovelace-background selbst bleibt das Feld "Farbe 1"; aus ihr und den
     # Werten hier wird der fertige CSS-Hintergrund zusammengesetzt (theme.py,
@@ -943,6 +973,13 @@ DASH_DIRECTIONS: Final[tuple[str, ...]] = (
 DASH_IMAGE_SIZES: Final[tuple[str, ...]] = ("cover", "contain", "tile")
 DASH_MOTIONS: Final[tuple[str, ...]] = ("blobs", "drift", "hue")
 DASH_MOTION_SPEEDS: Final[tuple[str, ...]] = ("slow", "fast")
+# 1.6.1: welche Seiten des Kartenrahmens die zweite Farbe bekommen - je Seite
+# (oben, rechts, unten, links) 1 = zweite Farbe. "" ist rechts und unten.
+CARD_BORDER_TWO_SIDES: Final[dict[str, tuple[int, int, int, int]]] = {
+    "": (0, 1, 1, 0),
+    "lr": (0, 1, 0, 1),
+    "b": (0, 0, 1, 0),
+}
 
 # Hochgeladene Hintergrundbilder ------------------------------------------------
 # Ordner in der Home-Assistant-Konfiguration (im bekannten Ordner www) und der
@@ -1114,7 +1151,7 @@ def default_config() -> dict[str, Any]:
         "appearance": dict(DEFAULT_APPEARANCE),
         "advanced": dict(DEFAULT_ADVANCED),
         # The links are a list - a fresh one, never the one of the defaults.
-        "header": {**DEFAULT_HEADER, "links": []},
+        "header": {**DEFAULT_HEADER, "links": [], "menu_links": []},
         # Fresh lists here as well, never the ones of the defaults.
         "settings": {
             **DEFAULT_SETTINGS,

@@ -6,7 +6,7 @@
 
 <p align="center">
   <a href="https://hacs.xyz"><img src="https://img.shields.io/badge/HACS-custom-orange.svg" alt="HACS"></a>
-  <a href="https://github.com/jayjojayson/HA-Style-Hub/releases"><img src="https://img.shields.io/badge/version-1.6.0-blue.svg" alt="Version"></a>
+  <a href="https://github.com/jayjojayson/HA-Style-Hub/releases"><img src="https://img.shields.io/badge/version-1.6.1-blue.svg" alt="Version"></a>
   <a href="https://github.com/jayjojayson/HA-Style-Hub/actions/workflows/validate.yml"><img src="https://github.com/jayjojayson/HA-Style-Hub/actions/workflows/validate.yml/badge.svg" alt="Validate"></a>
   <a href="https://github.com/jayjojayson/HA-Style-Hub/releases"><img src="https://img.shields.io/github/downloads/jayjojayson/HA-Style-Hub/total.svg" alt="Downloads"></a>
   <a href="https://github.com/jayjojayson/HA-Style-Hub/blob/main/LICENSE"><img src="https://img.shields.io/github/license/jayjojayson/HA-Style-Hub.svg" alt="License"></a>
@@ -56,7 +56,7 @@ through a real theme built in the same panel.
 | 📐 **Borders per side** | border width per side and corner radius per corner |
 | 🔔 **Notification drawer** | optionally styled to match the sidebar |
 | 🌓 **Theme editor** | builds a real Home Assistant theme with 309 variables, dark and light - including the dashboard background (color, gradient or image) and the state colors per device type - with an anchored live preview, YAML export and import of existing themes |
-| 🧭 **Dashboard header** | colours, gradient, opacity and blur, height, border, corners, a border around each button and tab, icon and title size, tab colours, the four buttons on the right, the bar at the top or at the bottom - and a switch that hides the bar completely |
+| 🧭 **Dashboard header** | colours, gradient, opacity and blur, height, border, corners, a border around each button and tab, icon and title size, tab colours, the four buttons on the right, an own drop-down menu on the far right, the bar at the top or at the bottom - and a switch that hides the bar completely |
 | 🏠 **HA-Settings** | settings for Home Assistant itself: the menu entries of the Settings page as rounded boxes with your own colors and sizes, Devices & services (and optionally Apps) as a slim list instead of a grid with its own row shadow and hover, own colors and fonts for the group headers of the tables, striped rows, and the Settings page itself: order, hidden entries, own names, subtitles and icon colors per entry, columns, tiles, a favourites bar, a system monitor with own entities, the last backup with *Create backup now* and an overview with counters - the profile page and the page of an integration follow along |
 | 🎨 **Choose a palette** | pick a main color and both theme modes are worked out from it - with text that stays readable |
 | 🕘 **History** | the last 10 saved states with what changed and who saved; one click loads an earlier state back into the page |
@@ -413,6 +413,21 @@ colouring the tabs. The theme has only one variable for this
 (`--app-header-text-color`, *Text and icons* under *Theme colors of the
 header*); it applies to the whole header.
 
+**Drop-down menu in the header (1.6.1):** the group *Drop-down menu* on the
+**Header** page puts a button on the far right of the header, after Home
+Assistant's buttons (*Icon of the button*, default `mdi:menu`). A click opens
+a list below it - above it when the header sits at the bottom. The **plus**
+next to *Entries* opens the same dialog as in the sidebar: *Group* adds a
+title between the entries, *Link* adds a page of Home Assistant, an own path
+or a web address (`https://…`, opens in a new tab). Each entry is a row with
+name, icon and colour; the arrows change the order, at most 24 entries.
+Ctrl or middle click opens a link in a new tab, the current page is
+highlighted. The menu closes on a click next to it, with Esc and on a page
+change; the arrow keys move through it. Links into the settings are only
+shown to administrators, a group without visible links is left out and
+without any link there is no button. While the group is selected the preview
+shows the menu opened.
+
 > **Settings, Notifications and the user entry**
 > They only become sortable when *"Move Settings, Notifications and the user
 > entry into the grid"* is switched on in the **Layout** tab. Without it, Home
@@ -475,7 +490,18 @@ as a real Home Assistant theme, exactly like a theme from `configuration.yaml`.
   screen it stays anchored on the right while the fields scroll. It also picks
   up the font, the scale and the weight
 * **Card border and radius** can be set per side and per corner, exactly like
-  the sidebar entries on the appearance tab
+  the sidebar entries on the appearance tab - e.g. only the top left and the
+  bottom right corner rounded
+* **Two-coloured card border** (1.6.1): *Two-coloured border* below the
+  corners gives the border a second colour. Colour 1 is the field *Border
+  color*, colour 2 goes to the right and bottom side, to the left and right
+  side or to the bottom only. Home Assistant puts `--ha-card-border-color`
+  into `border-color` of its cards, where up to four colours are valid - so
+  this is a plain theme value (e.g. `#00e5ff #ff9800 #ff9800 #00e5ff`) and works
+  for all cards built on Home Assistant's card (`ha-card`), Mushroom included.
+  Bubble Card only knows a single border (`--bubble-border` as shorthand) and
+  keeps colour 1; with a border per side it takes the widest side. A colour
+  gradient along the border is not possible with a theme.
 * **Shadow of the cards** without CSS: below the field, the checkbox *Design
   the shadow* opens (like *Set each side separately*) templates (no shadow,
   hint, soft, medium, strong, all around) and sliders for direction,
@@ -552,7 +578,23 @@ as a real Home Assistant theme, exactly like a theme from `configuration.yaml`.
   left behind: they go to **Own variables**; wherever a field uses one of
   them (`var(--my-accent-color)`) the field gets the resolved value - also
   through chains and with a fallback (`var(--x, red)`). Variables of Home
-  Assistant itself (`var(--primary-color)`) stay as they are
+  Assistant itself (`var(--primary-color)`) stay as they are. With **Keep
+  references instead of resolving them** (1.6.1, in the import dialog) the
+  fields keep `var(--my-…)` instead and follow the own variable - change it
+  once under *Own variables* and every field that uses it changes too. The
+  dialog remembers the choice in this browser
+* **Calendar** (1.6.1): the preview shows the calendar card of Home Assistant -
+  three weeks around today with the *Today* button and the view switch. Every
+  part is clickable: the today circle leads to *Primary color* and *Text on
+  primary*, day numbers and month to the text colors, the grid to *Dividers*,
+  the buttons to the new group **Calendar**. That group holds the nine
+  `--wa-color-brand-*` variables Home Assistant draws its buttons from
+  (active view: `fill-loud` / `on-loud`, other views: `fill-normal` /
+  `on-normal` / `border-normal`, Today button: `on-quiet` / `fill-quiet`).
+  They apply to every button of this kind, not only in the calendar; empty
+  means the design tokens. The calendar's own `--fc-*` variables are fixed
+  inside the card by Home Assistant and cannot be set by a theme; the color
+  of an event comes from the calendar entity
 * **Scales for alerts** (1.6.0): from **Error**, **Warning** and **Success**
   the theme works out the scales `--ha-color-red-*`, `--ha-color-orange-*` and
   `--ha-color-green-*` (05 to 95) that newer alerts, badges and buttons use.

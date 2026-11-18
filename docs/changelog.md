@@ -7,7 +7,64 @@ called *Sidebar Hub*), newest first. A German version is in
 Version numbers count up to `.9` and then move on to the next minor (1.2.9 →
 1.3.0 → 1.3.1 → 1.3.2 → 1.3.3 → 1.3.4 → 1.3.5 → 1.3.6 → 1.3.7 →
 1.3.8 → 1.3.9 → 1.4.0 → 1.4.1 → 1.4.2 → 1.4.3 → 1.4.4 → 1.4.5 →
-1.4.6 → 1.4.7 → 1.4.8 → 1.4.9 → 1.5.0 → 1.5.1 → 1.5.2 → 1.5.3 → 1.5.4 → 1.5.5 → 1.5.6 → 1.5.7 → 1.5.8 → 1.5.9 → 1.6.0).
+1.4.6 → 1.4.7 → 1.4.8 → 1.4.9 → 1.5.0 → 1.5.1 → 1.5.2 → 1.5.3 → 1.5.4 → 1.5.5 → 1.5.6 → 1.5.7 → 1.5.8 → 1.5.9 → 1.6.0 → 1.6.1).
+
+## 1.6.1
+
+* **Theme import: keep references instead of resolving them.** New tick in
+  the import dialog of the theme page. Off (as in 1.6.0): a field that uses an
+  own variable (`var(--my-accent-color)`) gets its value from the file. On: the
+  field keeps `var(--my-…)` and follows the variable under *Own variables* -
+  change it once there and every field that uses it changes too; the colour
+  boxes still show the resolved colour. The dialog remembers the choice in
+  this browser (`localStorage`, only a convenience). Wish from the forum.
+* **Theme: calendar card in the preview.** New card *Calendar* in the theme
+  preview (three weeks around today, *Today* button, view switch) with
+  clickable parts plus a new group *Calendar* with nine variables:
+  `wa-color-brand-fill-loud`, `-on-loud`, `-fill-normal`, `-on-normal`,
+  `-border-normal`, `-fill-quiet`, `-on-quiet`, `-border-loud` and
+  `-border-quiet`. Home Assistant sets them on `<html>` from the design tokens
+  (`wa.globals.ts`) and draws `ha-button` from them - the view switch of the
+  calendar uses *accent* (loud) for the active view and *filled* (normal) for
+  the others. They apply to all such buttons. Today circle (`primary-color`,
+  `text-primary-color`), grid (`divider-color`) and text come from fields that
+  already exist; the preview leads there. Not themeable: the `--fc-classic-*`
+  variables (declared on the host of `ha-full-calendar`) and event colors
+  (from the calendar entity).
+* **Header: drop-down menu.** New group *Drop-down menu* on the header page.
+  Switched on, a button sits on the far right of the header (after Home
+  Assistant's buttons; icon selectable, default `mdi:menu`). A click opens a
+  list below it - above it when the header sits at the bottom - with entries
+  of your own: pages of Home Assistant, your own paths and web addresses
+  (these open in a new tab), each with name, icon and colour. Groups put a
+  title between the entries. The entries are added with the same dialog as in
+  the sidebar (*Group* or *Link*) and sorted with the arrows; at most 24.
+  Ctrl or middle click opens a link in a new tab; the current page is
+  highlighted. The menu closes on a click next to it, with Esc and on a page
+  change; the arrow keys move through the entries. Links into the settings
+  are only shown to administrators, a group without visible links is left
+  out and without any link there is no button. The preview shows the menu
+  opened as long as its group is selected. Backend `header.menu`,
+  `header.menu_icon` and `header.menu_links`.
+* **Theme: two-coloured card border.** In *Card design* the new switch
+  *Two-coloured border* gives the card border a second colour: colour 1 is
+  the field *Border color*, colour 2 goes to the right and bottom side, to the
+  left and right side or to the bottom only. Home Assistant puts
+  `--ha-card-border-color` into `border-color`, where up to four colours are
+  valid - so the theme gets e.g. `#00e5ff #ff9800 #ff9800 #00e5ff` and every
+  card built on `ha-card` follows. Together with *Set each corner separately*
+  this gives cards rounded only at the top left and the bottom right. An
+  imported theme with such a value is split back into the fields. The
+  binding of Bubble Card writes `--bubble-border` (a shorthand with one width
+  and one colour) as a valid value now: colour 1 and, with a border per side,
+  the widest side - before, a border per side made it invalid. A gradient
+  fill for sliders was checked as well: the sliders of Home Assistant, Bubble
+  Card and Mushroom paint their fill with `background-color`, a theme cannot
+  put a gradient there - so it is not offered.
+* **Theme preview: controls next to the calendar.** The card *Controls* now
+  sits in the free column right of the calendar instead of a row of its own
+  across the full width. With two columns (narrow window) both still take
+  the full width.
 
 ## 1.6.0
 

@@ -6,7 +6,7 @@
 
 <p align="center">
   <a href="https://hacs.xyz"><img src="https://img.shields.io/badge/HACS-custom-orange.svg" alt="HACS"></a>
-  <a href="https://github.com/jayjojayson/HA-Style-Hub/releases"><img src="https://img.shields.io/badge/version-1.6.0-blue.svg" alt="Version"></a>
+  <a href="https://github.com/jayjojayson/HA-Style-Hub/releases"><img src="https://img.shields.io/badge/version-1.6.1-blue.svg" alt="Version"></a>
   <a href="https://github.com/jayjojayson/HA-Style-Hub/actions/workflows/validate.yml"><img src="https://github.com/jayjojayson/HA-Style-Hub/actions/workflows/validate.yml/badge.svg" alt="Validate"></a>
   <a href="https://github.com/jayjojayson/HA-Style-Hub/releases"><img src="https://img.shields.io/github/downloads/jayjojayson/HA-Style-Hub/total.svg" alt="Downloads"></a>
   <a href="https://github.com/jayjojayson/HA-Style-Hub/blob/main/LICENSE"><img src="https://img.shields.io/github/license/jayjojayson/HA-Style-Hub.svg" alt="License"></a>
@@ -72,8 +72,9 @@ das komplette Aussehen — inklusive *Einstellungen*, *Benachrichtigungen* und
   Export als `.yaml` und Import bestehender Themes
 * **Headermenu des Dashboards**: Farben und Verlauf, Deckkraft und
   Weichzeichner, Höhe, Rahmen, Ecken, ein Rahmen um jeden Button und Reiter,
-  Icon- und Titelgröße, Farben der Reiter, die vier Button rechts, die Leiste
-  oben oder unten — und ein Schalter, der die Leiste ganz ausblendet
+  Icon- und Titelgröße, Farben der Reiter, die vier Button rechts, ein eigenes
+  ausklappbares Menü ganz rechts, die Leiste oben oder unten — und ein
+  Schalter, der die Leiste ganz ausblendet
 * **HA-Settings**: Einstellungen für Home Assistant selbst: die Menüpunkte der
   Einstellungsseite als abgerundete Boxen in eigenen Farben und Größen,
   Geräte & Dienste (auf Wunsch auch Apps) als schmale Liste statt als Raster
@@ -498,6 +499,22 @@ Reiter färbt. Das Theme hat dafür nur eine Variable
 (`--app-header-text-color`, *Text und Icons* unter *Theme-Farben der
 Kopfzeile*); sie gilt für die ganze Kopfzeile.
 
+**Ausklappbares Menü im Header (1.6.1):** Die Gruppe *Ausklappbares Menü* auf
+der Seite **Header** setzt ganz rechts in den Header einen Button, hinter die
+Buttons von Home Assistant (*Icon des Buttons*, Standard `mdi:menu`). Ein
+Klick öffnet darunter eine Liste – darüber, wenn der Header unten steht. Das
+**Plus** neben *Einträge* öffnet denselben Dialog wie in der Sidebar:
+*Gruppe* setzt einen Zwischentitel zwischen die Einträge, *Link* eine Seite
+von Home Assistant, einen eigenen Pfad oder eine Webadresse (`https://…`,
+öffnet in einem neuen Tab). Jeder Eintrag ist eine Zeile mit Name, Icon und
+Farbe; die Pfeile ändern die Reihenfolge, höchstens 24 Einträge. Strg- oder
+Mittelklick öffnet einen Link in einem neuen Tab, die aktuelle Seite ist
+hervorgehoben. Das Menü schließt sich bei einem Klick daneben, mit Esc und
+beim Seitenwechsel; mit den Pfeiltasten geht es durch die Liste. Links in die
+Einstellungen sehen nur Administratoren, eine Gruppe ohne sichtbare Links
+fällt weg und ohne einen einzigen Link gibt es keinen Button. Solange die
+Gruppe gewählt ist, zeigt die Vorschau das Menü aufgeklappt.
+
 > **Einstellungen, Benachrichtigungen und Profil**
 > Diese drei Einträge lassen sich erst sortieren, wenn im Reiter **Layout** die
 > Option *„Einstellungen, Benachrichtigungen und Profil ins Raster übernehmen“*
@@ -564,7 +581,19 @@ Theme aus der `configuration.yaml`.
   Bildschirmen bleibt sie rechts stehen, während links die Felder scrollen.
   Schriftart, Skalierung und Stärke nimmt sie ebenfalls mit
 * **Rahmen und Ecken der Karten** lassen sich je Seite und je Ecke festlegen,
-  genau wie die Einträge der Seitenleiste unter Aussehen
+  genau wie die Einträge der Seitenleiste unter Aussehen – z. B. nur die Ecken
+  oben links und unten rechts gerundet
+* **Zweifarbiger Kartenrahmen** (1.6.1): *Zweifarbiger Rahmen* unter den Ecken
+  gibt dem Rahmen eine zweite Farbe. Farbe 1 ist das Feld *Rahmenfarbe*,
+  Farbe 2 bekommen die rechte und die untere Seite, die linke und die rechte
+  Seite oder nur die untere. Home Assistant setzt `--ha-card-border-color` bei
+  seinen Karten in `border-color` ein, dort sind bis zu vier Farben gültig –
+  es ist also ein ganz normaler Wert des Themes (z. B. `#00e5ff #ff9800
+  #ff9800 #00e5ff`) und wirkt bei allen Karten, die auf der Karte von Home
+  Assistant (`ha-card`) aufbauen, Mushroom eingeschlossen. Bubble Card kennt
+  nur einen Rahmen (`--bubble-border` als Kurzform) und behält Farbe 1; bei
+  Rahmen je Seite nimmt sie die breiteste Seite. Ein Farbverlauf entlang des
+  Rahmens ist mit einem Theme nicht möglich.
 * **Schatten der Karten** ohne CSS: Unter dem Feld klappt die Checkbox
   *Schatten gestalten* (wie *Seiten einzeln festlegen*) Vorlagen (kein
   Schatten, Hauch, sanft, mittel, stark, rundum) und Regler für Richtung,
@@ -636,7 +665,24 @@ Theme aus der `configuration.yaml`.
   liegen: Sie landen unter **Eigene Variablen**; wo ein Feld eine davon
   nutzt (`var(--my-accent-color)`), bekommt es den aufgelösten Wert – auch über
   Ketten und mit Ersatzwert (`var(--x, red)`). Variablen von Home Assistant
-  selbst (`var(--primary-color)`) bleiben stehen
+  selbst (`var(--primary-color)`) bleiben stehen. Mit **Verweise behalten statt
+  auflösen** (1.6.1, im Import-Dialog) behalten die Felder stattdessen
+  `var(--my-…)` und folgen der eigenen Variable – einmal unter *Eigene
+  Variablen* ändern und jedes Feld, das sie nutzt, ändert sich mit. Der Dialog
+  merkt sich die Wahl in diesem Browser
+* **Kalender** (1.6.1): Die Vorschau zeigt die Kalender-Karte von Home
+  Assistant – drei Wochen rund um heute mit dem Knopf *Heute* und dem
+  Umschalter der Ansicht. Jedes Teil ist anklickbar: Der Heute-Kreis führt zu
+  *Primärfarbe* und *Text auf Primärfarbe*, Tageszahlen und Monat zu den
+  Textfarben, das Raster zu *Trennlinien*, die Knöpfe zur neuen Gruppe
+  **Kalender**. Sie enthält die neun `--wa-color-brand-*`-Variablen, aus denen
+  Home Assistant seine Knöpfe zeichnet (aktive Ansicht: `fill-loud` /
+  `on-loud`, andere Ansichten: `fill-normal` / `on-normal` / `border-normal`,
+  Heute-Knopf: `on-quiet` / `fill-quiet`). Sie gelten für alle Knöpfe dieser
+  Art, nicht nur im Kalender; leer heißt: aus den Design-Tokens. Die eigenen
+  `--fc-*`-Variablen des Kalenders legt Home Assistant in der Karte fest, ein
+  Theme kann sie nicht setzen; die Farbe eines Termins kommt von der
+  Kalender-Entität
 * **Abstufungen für Hinweise** (1.6.0): Aus **Fehler**, **Warnung** und
   **Erfolg** rechnet das Theme die Skalen `--ha-color-red-*`,
   `--ha-color-orange-*` und `--ha-color-green-*` (05 bis 95), die neuere

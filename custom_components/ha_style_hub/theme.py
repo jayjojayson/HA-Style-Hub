@@ -29,6 +29,7 @@ from homeassistant.core import HomeAssistant, callback
 from .const import (
     CUSTOM_VAR_VALUE_MAX,
     CUSTOM_VARS_MAX,
+    CARD_BORDER_TWO_SIDES,
     DASH_DIRECTIONS,
     DASH_IMAGE_SIZES,
     THEME_COMPOSED,
@@ -139,6 +140,44 @@ def _length(value: Any) -> str:
         return "0"
     number = float(text)
     return str(int(number)) if number.is_integer() else str(number)
+
+
+def border_color_value(raw: dict[str, Any], base: str) -> str | None:
+    """1.6.1: die Rahmenfarbe der Karten in zwei Farben, oder None.
+
+    ``base`` ist das Feld Rahmenfarbe (Farbe 1, leer = die Trennlinienfarbe).
+    Home Assistant setzt --ha-card-border-color in ha-card.ts als border-color
+    ein; dort sind vier Farben (oben rechts unten links) gueltig.
+    """
+    if not raw.get("card_border_two"):
+        return None
+    second = raw.get("card_border_color2")
+    second = second.strip() if isinstance(second, str) else ""
+    if not second:
+        return None
+    first = base or "var(--divider-color)"
+    pattern = CARD_BORDER_TWO_SIDES.get(raw.get("card_border_two_sides") or "", CARD_BORDER_TWO_SIDES[""])
+    return " ".join(second if side else first for side in pattern)
+
+
+def bubble_border(raw: Any) -> str:
+    """1.6.1: --bubble-border fuer die Anbindung von Bubble Card.
+
+    Bubble setzt den Wert in die Kurzform ``border`` - die nimmt nur EINE
+    Breite und EINE Farbe. Bei Rahmen pro Seite gilt die breiteste Seite, bei
+    zwei Farben die erste.
+    """
+    raw = raw if isinstance(raw, dict) else {}
+    width = "var(--ha-card-border-width, 1px)"
+    if raw.get("card_border_split"):
+        _switch, parts = THEME_COMPOSED["ha-card-border-width"]
+        widest = max(float(_length(raw.get(part))) for part in parts)
+        width = f"{int(widest) if widest.is_integer() else widest}px"
+    color = "var(--ha-card-border-color, var(--divider-color))"
+    if border_color_value(raw, "x"):
+        first = raw.get("ha-card-border-color")
+        color = first.strip() if isinstance(first, str) and first.strip() else "var(--divider-color)"
+    return f"{width} solid {color}"
 
 
 #: Wird verwendet, wenn eine der beiden Verlaufsfarben leer ist.
@@ -438,6 +477,11 @@ def _mode_values(raw: Any) -> dict[str, str]:
         else:
             values[target] = "0"
 
+    # 1.6.1: zweifarbiger Rahmen - schlaegt das einfache Feld
+    two = border_color_value(raw, values.get("ha-card-border-color", ""))
+    if two:
+        values["ha-card-border-color"] = two
+
     # Dashboard background: gradient and / or an uploaded image on top of the
     # color from the field. Beats the plain field, exactly like the per side
     # values beat the single border width.
@@ -494,6 +538,9 @@ def build(theme_config: Any) -> dict[str, Any]:
         # 1.6.0: Bubble Card / Mushroom anbinden
         if theme_config.get("bind_bubble"):
             for key, value in BIND_BUBBLE:
+                if key == "bubble-border":
+                    # 1.6.1: gueltig auch bei Rahmen pro Seite / zwei Farben
+                    value = bubble_border(theme_config.get(name))
                 values.setdefault(key, value)
         if theme_config.get("bind_mushroom"):
             for key, value in BIND_MUSHROOM:

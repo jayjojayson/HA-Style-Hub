@@ -7,7 +7,69 @@ englische Fassung steht in [changelog.md](changelog.md).
 Die Versionsnummern zählen bis `.9` und springen dann auf die nächste
 Nebenversion (1.2.9 → 1.3.0 → 1.3.1 → 1.3.2 → 1.3.3 → 1.3.4 → 1.3.5 → 1.3.6 →
 1.3.7 → 1.3.8 → 1.3.9 → 1.4.0 → 1.4.1 → 1.4.2 → 1.4.3 → 1.4.4 → 1.4.5 →
-1.4.6 → 1.4.7 → 1.4.8 → 1.4.9 → 1.5.0 → 1.5.1 → 1.5.2 → 1.5.3 → 1.5.4 → 1.5.5 → 1.5.6 → 1.5.7 → 1.5.8 → 1.5.9 → 1.6.0).
+1.4.6 → 1.4.7 → 1.4.8 → 1.4.9 → 1.5.0 → 1.5.1 → 1.5.2 → 1.5.3 → 1.5.4 → 1.5.5 → 1.5.6 → 1.5.7 → 1.5.8 → 1.5.9 → 1.6.0 → 1.6.1).
+
+## 1.6.1
+
+* **Theme-Import: Verweise behalten statt auflösen.** Neuer Haken im
+  Import-Dialog der Theme-Seite. Aus (wie in 1.6.0): Ein Feld, das eine eigene
+  Variable nutzt (`var(--my-accent-color)`), bekommt ihren Wert aus der Datei.
+  An: Das Feld behält `var(--my-…)` und folgt der Variable unter *Eigene
+  Variablen* – einmal dort ändern und jedes Feld, das sie nutzt, ändert sich
+  mit; die Farbfelder zeigen trotzdem die aufgelöste Farbe. Der Dialog merkt
+  sich die Wahl in diesem Browser (`localStorage`, nur eine Bequemlichkeit).
+  Wunsch aus dem Forum.
+* **Theme: Kalender-Karte in der Vorschau.** Neue Karte *Kalender* im
+  Vorschaubild des Themes (drei Wochen rund um heute, Knopf *Heute*,
+  Umschalter der Ansicht) mit anklickbaren Teilen und eine neue Gruppe
+  *Kalender* mit neun Variablen: `wa-color-brand-fill-loud`, `-on-loud`,
+  `-fill-normal`, `-on-normal`, `-border-normal`, `-fill-quiet`, `-on-quiet`,
+  `-border-loud` und `-border-quiet`. Home Assistant setzt sie am `<html>` aus
+  den Design-Tokens (`wa.globals.ts`) und zeichnet `ha-button` daraus – der
+  Umschalter des Kalenders nimmt *accent* (loud) für die aktive Ansicht und
+  *filled* (normal) für die anderen. Sie gelten für alle Knöpfe dieser Art.
+  Heute-Kreis (`primary-color`, `text-primary-color`), Raster
+  (`divider-color`) und Text kommen aus Feldern, die es schon gibt; die
+  Vorschau führt dorthin. Nicht per Theme einstellbar: die
+  `--fc-classic-*`-Variablen (am Host von `ha-full-calendar` festgelegt) und
+  die Farben der Termine (von der Kalender-Entität).
+* **Header: ausklappbares Menü.** Neue Gruppe *Ausklappbares Menü* auf der
+  Header-Seite. Eingeschaltet steht ganz rechts im Header ein Button (hinter
+  den Buttons von Home Assistant; Icon wählbar, Standard `mdi:menu`). Ein
+  Klick öffnet darunter eine Liste – darüber, wenn der Header unten steht –
+  mit deinen eigenen Einträgen: Seiten von Home Assistant, eigene Pfade und
+  Webadressen (die öffnen sich in einem neuen Tab), jeweils mit Name, Icon
+  und Farbe. Gruppen setzen einen Zwischentitel zwischen die Einträge. Die
+  Einträge kommen über denselben Dialog wie in der Sidebar dazu (*Gruppe*
+  oder *Link*) und lassen sich mit den Pfeilen sortieren; höchstens 24.
+  Strg- oder Mittelklick öffnet einen Link in einem neuen Tab; die aktuelle
+  Seite ist hervorgehoben. Das Menü schließt sich bei einem Klick daneben,
+  mit Esc und beim Seitenwechsel; mit den Pfeiltasten geht es durch die
+  Einträge. Links in die Einstellungen sehen nur Administratoren, eine
+  Gruppe ohne sichtbare Links fällt weg und ohne einen einzigen Link gibt es
+  keinen Button. Die Vorschau zeigt das Menü aufgeklappt, solange seine
+  Gruppe gewählt ist. Backend `header.menu`, `header.menu_icon` und
+  `header.menu_links`.
+* **Theme: zweifarbiger Kartenrahmen.** Unter *Card-Design* gibt der neue
+  Schalter *Zweifarbiger Rahmen* dem Rahmen der Karten eine zweite Farbe:
+  Farbe 1 ist das Feld *Rahmenfarbe*, Farbe 2 bekommen die rechte und die
+  untere Seite, die linke und die rechte Seite oder nur die untere. Home
+  Assistant setzt `--ha-card-border-color` in `border-color` ein, dort sind
+  bis zu vier Farben gültig – das Theme bekommt also z. B. `#00e5ff #ff9800
+  #ff9800 #00e5ff` und jede Karte auf Basis von `ha-card` folgt. Zusammen mit
+  *Ecken einzeln festlegen* sind so Karten möglich, die nur oben links und
+  unten rechts gerundet sind. Ein importiertes Theme mit so einem Wert wird
+  wieder auf die Felder verteilt. Die Anbindung von Bubble Card schreibt
+  `--bubble-border` (eine Kurzform mit einer Breite und einer Farbe) jetzt
+  als gültigen Wert: Farbe 1 und bei Rahmen je Seite die breiteste Seite –
+  vorher machte ein Rahmen je Seite den Wert ungültig. Geprüft wurde auch
+  eine Füllung mit Verlauf für Schieberegler: Die Regler von Home Assistant,
+  Bubble Card und Mushroom malen ihre Füllung mit `background-color`, dort
+  kann ein Theme keinen Verlauf einsetzen – deshalb gibt es das nicht.
+* **Theme-Vorschau: Bedienelemente neben dem Kalender.** Die Karte
+  *Bedienelemente* steht jetzt in der freien Spalte rechts neben dem Kalender
+  statt in einer eigenen Zeile über die volle Breite. Bei zwei Spalten
+  (schmales Fenster) nehmen beide weiter die ganze Breite ein.
 
 ## 1.6.0
 

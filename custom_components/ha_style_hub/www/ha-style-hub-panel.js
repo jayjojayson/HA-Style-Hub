@@ -1,6 +1,6 @@
 /*
  * HA Style Hub - ha-style-hub-panel.js
- * Version: 1.6.0
+ * Version: 1.6.1
  *
  * Configuration panel for the sidebar. Registered by the Python part of the
  * integration through panel_custom, so Home Assistant sets the properties
@@ -22,7 +22,7 @@
 (() => {
   "use strict";
 
-  const VERSION = "1.6.0";
+  const VERSION = "1.6.1";
   // Das Logo liegt neben dieser Datei im Ordner www (siehe URL_BASE in const.py).
   const LOGO_URL = `/ha_style_hub-static/ha-style-hub-logo.png?v=${VERSION}`;
   const EVENT_PREVIEW = "ha-style-hub-preview";
@@ -309,6 +309,10 @@
     links: [],
     show_system: false,
     show_disk: false,
+    // 1.6.1: ausklappbares Menue ganz rechts in der Kopfzeile
+    menu: false,
+    menu_icon: "mdi:menu",
+    menu_links: [],
   };
 
   const DEFAULT_ITEM = {
@@ -1509,6 +1513,26 @@
         ["ha-switch-thumb-size", "Knopfgröße (px)", "Thumb size (px)", "text"],
       ],
     },
+    {
+      // 1.6.1: Kalender-Karte. Der Kalender selbst nimmt Grundfarben und
+      // Text (Primaerfarbe fuer "heute", Trennlinien, Textfarben); eigene
+      // Variablen haben nur seine Knoepfe - die von ha-button (wa-color-brand-*).
+      de: "Kalender",
+      en: "Calendar",
+      hint_de: "Die Knöpfe der Kalender-Karte (Heute, Monat / Woche / Tag). Home Assistant zeichnet alle Knöpfe dieser Art aus diesen Farben \u2013 sie wirken also auch außerhalb des Kalenders. Leer heißt: aus den Design-Tokens. Heute-Kreis, Linien und Text des Kalenders kommen aus Grundfarben und Text; die Farbe eines Termins stellst du an der Kalender-Entität ein.",
+      hint_en: "The buttons of the calendar card (Today, month / week / day). Home Assistant draws every button of this kind from these colors - so they also apply outside the calendar. Empty means: from the design tokens. Today circle, lines and text of the calendar come from base colors and text; the color of an event is set at the calendar entity.",
+      fields: [
+        ["wa-color-brand-fill-loud", "Aktive Ansicht: Fläche", "Active view: fill"],
+        ["wa-color-brand-on-loud", "Aktive Ansicht: Icon und Text", "Active view: icon and text"],
+        ["wa-color-brand-fill-normal", "Andere Ansichten: Fläche", "Other views: fill"],
+        ["wa-color-brand-on-normal", "Andere Ansichten: Icon und Text", "Other views: icon and text"],
+        ["wa-color-brand-border-normal", "Andere Ansichten: Rand", "Other views: border"],
+        ["wa-color-brand-fill-quiet", "Heute-Knopf: Fläche bei Hover", "Today button: fill on hover"],
+        ["wa-color-brand-on-quiet", "Heute-Knopf: Text", "Today button: text"],
+        ["wa-color-brand-border-loud", "Knöpfe mit Rand: Randfarbe", "Outlined buttons: border"],
+        ["wa-color-brand-border-quiet", "Knöpfe mit Rand: leiser Rand", "Outlined buttons: quiet border"],
+      ],
+    },
   ];
 
   /**
@@ -2012,6 +2036,10 @@
     card_radius_tr: "",
     card_radius_br: "",
     card_radius_bl: "",
+    // 1.6.1: zweifarbiger Kartenrahmen (siehe borderColorValue)
+    card_border_two: false,
+    card_border_color2: "",
+    card_border_two_sides: "",
     // Dashboard background: gradient and uploaded image (see backgroundValue).
     dash_gradient: false,
     dash_color2: "",
@@ -2058,6 +2086,45 @@
     return pieces.some((piece) => piece !== "0")
       ? pieces.map((piece) => piece + "px").join(" ")
       : "0";
+  };
+
+  /**
+   * 1.6.1: zweifarbiger Rahmen der Karten - wie border_color_value() in
+   * theme.py. --ha-card-border-color steht in ha-card.ts in border-color, dort
+   * sind vier Farben gueltig (oben rechts unten links). Je Seite 1 = Farbe 2.
+   */
+  const CARD_BORDER_TWO_SIDES = { "": [0, 1, 1, 0], lr: [0, 1, 0, 1], b: [0, 0, 1, 0] };
+  const borderColorValue = (values, base) => {
+    if (!values || !values.card_border_two) {
+      return "";
+    }
+    const second = String(values.card_border_color2 || "").trim();
+    if (!second) {
+      return "";
+    }
+    const first = String(base || "").trim() || "var(--divider-color)";
+    const pattern = CARD_BORDER_TWO_SIDES[values.card_border_two_sides || ""] || CARD_BORDER_TWO_SIDES[""];
+    return pattern.map((side) => (side ? second : first)).join(" ");
+  };
+  /**
+   * 1.6.1: --bubble-border fuer die Anbindung von Bubble Card - wie
+   * bubble_border() in theme.py. Bubble setzt den Wert in die Kurzform border,
+   * die nur EINE Breite und EINE Farbe kennt.
+   */
+  const bubbleBorder = (values) => {
+    values = values || {};
+    let width = "var(--ha-card-border-width, 1px)";
+    if (values.card_border_split) {
+      const widest = Math.max(
+        ...THEME_COMPOSED["ha-card-border-width"][1].map((part) => parseFloat(composedValue({ x: values[part] }, ["x"])) || 0)
+      );
+      width = `${widest}px`;
+    }
+    let color = "var(--ha-card-border-color, var(--divider-color))";
+    if (borderColorValue(values, "x")) {
+      color = String(values["ha-card-border-color"] || "").trim() || "var(--divider-color)";
+    }
+    return `${width} solid ${color}`;
   };
 
   /** Mirror of MEDIA_URL / MEDIA_UPLOAD_URL / MEDIA_MAX_BYTES in const.py. */
@@ -2513,6 +2580,11 @@
   // gezeichnet werden. Einzelne Variablen stehen direkt am Element als
   // data-ctl="v:<variable>[,<variable>]".
   Object.assign(CONTROL_FIELDS, {
+    // 1.6.1: Kalender-Karte
+    cal_today_btn: ["wa-color-brand-on-quiet", "wa-color-brand-fill-quiet"],
+    cal_view_on: ["wa-color-brand-fill-loud", "wa-color-brand-on-loud"],
+    cal_view_off: ["wa-color-brand-fill-normal", "wa-color-brand-on-normal", "wa-color-brand-border-normal"],
+    cal_day_today: ["primary-color", "text-primary-color"],
     card_head: ["ha-card-header-color", "ha-card-header-font-size"],
     icon_on: ["state-active-color", "state-icon-color"],
     icon_off: ["state-inactive-color", "state-icon-color"],
@@ -3049,6 +3121,36 @@
     });
     return links;
   };
+  // 1.6.1: die Eintraege des ausklappbaren Menues der Kopfzeile - Links wie
+  // in einem PopUp (auch Webadressen) mit Farbe, dazu Gruppen als
+  // Zwischentitel ({group: true, name, icon, color}). Wie store.py.
+  const HEADER_MENU_LINKS_MAX = 24;
+  const HEADER_MENU_GROUP_ICON = "mdi:label-outline";
+  const cleanMenuLinks = (raw) => {
+    const links = [];
+    const seen = new Set();
+    (Array.isArray(raw) ? raw : []).forEach((one) => {
+      if (!one || typeof one !== "object" || links.length >= HEADER_MENU_LINKS_MAX) {
+        return;
+      }
+      const name = typeof one.name === "string" ? one.name.trim().slice(0, 60) : "";
+      const icon = typeof one.icon === "string" && ICON_NAME.test(one.icon) ? one.icon : "";
+      const color = typeof one.color === "string" ? one.color.trim().slice(0, 80) : "";
+      if (one.group === true) {
+        links.push({ group: true, path: "", name, icon, color });
+        return;
+      }
+      const path = typeof one.path === "string" ? one.path : "";
+      const inside = LINK_PATH.test(path) && path !== "/" && path.length <= 200;
+      if ((!inside && !isExternalUrl(path)) || seen.has(path)) {
+        return;
+      }
+      seen.add(path);
+      links.push({ path, name, icon, color });
+    });
+    return links;
+  };
+
   /**
    * Die Favoriten: wie die Links der Kopfzeile, dazu je Favorit sein
    * Aussehen. Wie _clean_favorites() in store.py und im Injector.
@@ -3256,6 +3358,7 @@
       hsec_frame: "Border and corners",
       hsec_tabs: "View tabs",
       hsec_buttons: "Buttons on the right side",
+      hsec_menu: "Drop-down menu",
       header_view_three: "Garden",
       settings_icons_title_short: "Menu entries",
       topic_tables_title: "Tables",
@@ -3424,6 +3527,15 @@
       ts_charts: "Chart",
       ts_charts_sub: "History · colors 1–54",
       ts_history_line: "History line: on, unknown, off, unavailable",
+      ts_calendar: "Calendar",
+      ts_calendar_sub: "Calendar card",
+      ts_cal_today: "Today",
+      ts_cal_more: "+ 1 more",
+      ts_cal_event: "The color of an event comes from the calendar entity (its settings), not from the theme.",
+      ctl_cal_today_btn: "Today button",
+      ctl_cal_view_on: "Active view",
+      ctl_cal_view_off: "Other views",
+      ctl_cal_day_today: "Today",
       ts_controls: "Controls",
       ts_controls_sub: "Design tokens · switches",
       ts_btn_more: "More",
@@ -3690,6 +3802,8 @@
       theme_import_hint:
         "Pick a theme file or paste its contents - an export from here, a file from your themes folder, or the themes block of your configuration.yaml. Only the variables this page offers are taken over, everything else is left behind. The current theme is replaced; the name stays as it is, and nothing is stored until you press \u201eSave\u201c.",
       theme_import_file: "Choose file",
+      theme_keep_refs: "Keep references instead of resolving them",
+      theme_keep_refs_hint: "Off: fields that use an own variable (var(--my-accent-color)) get its value - change it in the field afterwards. On: the field keeps var(--my-…) and follows the variable under Own variables - change it once there for every field that uses it.",
       theme_import_pick: "Theme in the file",
       theme_import_empty: "No theme found in there.",
       theme_import_none: "That theme has no variable this page knows.",
@@ -3710,7 +3824,7 @@
       card_text_scale: "Text size",
       card_sliders_hint: "Transparency sets the alpha of --ha-card-background (0 % = opaque). Text size sets --ha-font-size-scale - Home Assistant multiplies every font size with it. Both apply to the mode you are editing.",
       custom_vars_title: "Own variables",
-      custom_vars_hint: "Variables of your own such as my-accent-color. They become part of the theme and work anywhere with var(--name) - in the fields above and in your cards. A theme import puts every variable without a field of its own here and fills the fields above with the resolved values.",
+      custom_vars_hint: "Variables of your own such as my-accent-color. They become part of the theme and work anywhere with var(--name) - in the fields above and in your cards. A theme import puts every variable without a field of its own here and fills the fields above with the resolved values or keeps the references (your choice in the import dialog).",
       custom_vars_add: "Add variable",
       custom_vars_name: "Name (without --)",
       custom_vars_value: "Value",
@@ -3769,6 +3883,21 @@
         "The page gets a button on the right of the header, in front of Home Assistant's buttons.",
       header_links_empty: "No links yet - the plus adds one.",
       header_links_full: "The header holds at most 12 links.",
+      header_menu: "Drop-down menu",
+      header_menu_hint:
+        "Adds a button on the far right of the header. A click opens a list with your own entries: pages of Home Assistant, your own pages and web addresses - sorted into groups if you like. Links into the settings are only shown to administrators.",
+      header_menu_icon: "Icon of the button",
+      hmenu_entries: "Entries",
+      hmenu_hint:
+        "The plus adds a group or a link. Name, icon and colour can be changed here; the arrows set the order. A web address opens in a new tab.",
+      hmenu_add: "Add an entry to the menu",
+      hmenu_add_hint:
+        "The page becomes an entry of the drop-down menu - a page of Home Assistant, your own path or a web address (https://…).",
+      hmenu_group_hint: "A title between the entries of the menu. It has no target - the links below it belong to it.",
+      hmenu_group_sub: "Title in the menu",
+      hmenu_group_icon_ph: "no icon",
+      hmenu_empty: "No entries yet - the plus adds one.",
+      hmenu_full: "The menu holds at most 24 entries.",
       header_link_color: "Icon colour",
       header_link_up: "Move forward",
       header_link_down: "Move back",
@@ -4190,6 +4319,15 @@
       side_bottom: "Bottom (px)",
       side_left: "Left (px)",
       item_radius_split: "Set each corner separately",
+      card_border_two: "Two-coloured border",
+      card_border_two_hint:
+        "Colour 1 is the border colour above, colour 2 goes to the sides chosen here. Works for all cards that use the border of Home Assistant's cards (ha-card) - Bubble Card only knows a single border colour and keeps colour 1.",
+      card_border_color2: "Colour 2",
+      card_border_color2_ph: "e.g. #ff9800",
+      card_border_two_sides: "Colour 2 on",
+      card_border_two_br: "Right and bottom",
+      card_border_two_lr: "Left and right",
+      card_border_two_b: "Bottom only",
       corner_tl: "Top left (px)",
       corner_tr: "Top right (px)",
       corner_br: "Bottom right (px)",
@@ -4330,6 +4468,7 @@
       hsec_frame: "Rahmen und Ecken",
       hsec_tabs: "Reiter der Ansichten",
       hsec_buttons: "Buttons rechte Seite",
+      hsec_menu: "Ausklappbares Men\u00fc",
       header_view_three: "Garten",
       settings_icons_title_short: "Menüpunkte",
       topic_tables_title: "Tabellen",
@@ -4498,6 +4637,15 @@
       ts_charts: "Diagramm",
       ts_charts_sub: "Verlauf · Farben 1–54",
       ts_history_line: "Verlaufslinie: an, unbekannt, aus, nicht verfügbar",
+      ts_calendar: "Kalender",
+      ts_calendar_sub: "Kalender-Karte",
+      ts_cal_today: "Heute",
+      ts_cal_more: "+ weitere 1",
+      ts_cal_event: "Die Farbe eines Termins kommt von der Kalender-Entität (ihren Einstellungen), nicht aus dem Theme.",
+      ctl_cal_today_btn: "Heute-Knopf",
+      ctl_cal_view_on: "Aktive Ansicht",
+      ctl_cal_view_off: "Andere Ansichten",
+      ctl_cal_day_today: "Heute",
       ts_controls: "Bedienelemente",
       ts_controls_sub: "Design-Tokens · Schalter",
       ts_btn_more: "Mehr",
@@ -4764,6 +4912,8 @@
       theme_import_hint:
         "Theme-Datei w\u00e4hlen oder ihren Inhalt einf\u00fcgen - ein Export von hier, eine Datei aus deinem themes-Ordner oder der themes-Block der configuration.yaml. \u00dcbernommen wird nur, was diese Seite auch anbietet, alles andere bleibt liegen. Das aktuelle Theme wird ersetzt, der Name bleibt stehen, und gespeichert wird erst mit \u201eSpeichern\u201c.",
       theme_import_file: "Datei w\u00e4hlen",
+      theme_keep_refs: "Verweise behalten statt auflösen",
+      theme_keep_refs_hint: "Aus: Felder, die eine eigene Variable nutzen (var(--my-accent-color)), bekommen deren Wert \u2013 geändert wird danach im Feld. An: Das Feld behält var(--my-…) und folgt der Variable unter Eigene Variablen \u2013 einmal dort ändern wirkt in allen Feldern, die sie nutzen.",
       theme_import_pick: "Theme in der Datei",
       theme_import_empty: "Darin steckt kein Theme.",
       theme_import_none: "Dieses Theme enth\u00e4lt keine Variable, die diese Seite kennt.",
@@ -4784,7 +4934,7 @@
       card_text_scale: "Textgröße",
       card_sliders_hint: "Transparenz setzt die Deckkraft von --ha-card-background (0 % = deckend). Textgröße setzt --ha-font-size-scale \u2013 damit multipliziert Home Assistant alle Schriftgrößen. Beides gilt für den Modus, den du gerade bearbeitest.",
       custom_vars_title: "Eigene Variablen",
-      custom_vars_hint: "Variablen ganz nach deinem Geschmack wie my-accent-color. Sie werden Teil des Themes und wirken überall mit var(--name) \u2013 in den Feldern oben und in deinen Karten. Ein Theme-Import legt hier jede Variable ohne eigenes Feld ab und füllt die Felder oben mit den aufgelösten Werten.",
+      custom_vars_hint: "Variablen ganz nach deinem Geschmack wie my-accent-color. Sie werden Teil des Themes und wirken überall mit var(--name) \u2013 in den Feldern oben und in deinen Karten. Ein Theme-Import legt hier jede Variable ohne eigenes Feld ab und füllt die Felder oben mit den aufgelösten Werten oder behält die Verweise (Wahl im Import-Dialog).",
       custom_vars_add: "Variable hinzufügen",
       custom_vars_name: "Name (ohne --)",
       custom_vars_value: "Wert",
@@ -4843,6 +4993,21 @@
         "Die Seite bekommt einen Button rechts im Header, vor den Buttons von Home Assistant.",
       header_links_empty: "Noch keine Links \u2013 \u00fcber das Plus kommt einer dazu.",
       header_links_full: "Im Header haben h\u00f6chstens 12 Links Platz.",
+      header_menu: "Ausklappbares Men\u00fc",
+      header_menu_hint:
+        "F\u00fcgt ganz rechts im Header einen Button hinzu. Ein Klick \u00f6ffnet eine Liste mit deinen eigenen Eintr\u00e4gen: Seiten von Home Assistant, eigene Seiten und Webadressen \u2013 auf Wunsch in Gruppen sortiert. Links in die Einstellungen sehen nur Administratoren.",
+      header_menu_icon: "Icon des Buttons",
+      hmenu_entries: "Eintr\u00e4ge",
+      hmenu_hint:
+        "\u00dcber das Plus kommt eine Gruppe oder ein Link dazu. Name, Icon und Farbe lassen sich hier \u00e4ndern; die Pfeile legen die Reihenfolge fest. Eine Webadresse \u00f6ffnet sich in einem neuen Tab.",
+      hmenu_add: "Eintrag zum Men\u00fc hinzuf\u00fcgen",
+      hmenu_add_hint:
+        "Die Seite wird ein Eintrag im ausklappbaren Men\u00fc \u2013 eine Seite von Home Assistant, ein eigener Pfad oder eine Webadresse (https://\u2026).",
+      hmenu_group_hint: "Ein Zwischentitel im Men\u00fc. Sie hat kein Ziel \u2013 die Links darunter geh\u00f6ren zu ihr.",
+      hmenu_group_sub: "Titel im Men\u00fc",
+      hmenu_group_icon_ph: "kein Icon",
+      hmenu_empty: "Noch keine Eintr\u00e4ge \u2013 \u00fcber das Plus kommt einer dazu.",
+      hmenu_full: "Im Men\u00fc haben h\u00f6chstens 24 Eintr\u00e4ge Platz.",
       header_link_color: "Icon-Farbe",
       header_link_up: "Nach vorn",
       header_link_down: "Nach hinten",
@@ -5265,6 +5430,15 @@
       side_bottom: "Unten (px)",
       side_left: "Links (px)",
       item_radius_split: "Ecken einzeln festlegen",
+      card_border_two: "Zweifarbiger Rahmen",
+      card_border_two_hint:
+        "Farbe 1 ist die Rahmenfarbe oben, Farbe 2 bekommen die hier gew\u00e4hlten Seiten. Wirkt bei allen Karten, die den Rahmen der Karten von Home Assistant (ha-card) nutzen \u2013 Bubble Card kennt nur eine Rahmenfarbe und beh\u00e4lt Farbe 1.",
+      card_border_color2: "Farbe 2",
+      card_border_color2_ph: "z. B. #ff9800",
+      card_border_two_sides: "Farbe 2 auf",
+      card_border_two_br: "Rechts und unten",
+      card_border_two_lr: "Links und rechts",
+      card_border_two_b: "Nur unten",
       corner_tl: "Oben links (px)",
       corner_tr: "Oben rechts (px)",
       corner_br: "Unten rechts (px)",
@@ -5422,6 +5596,13 @@
       // Die Links immer als eigene, frische Liste - nie die der Vorgaben.
       header: Object.assign(section(DEFAULT_HEADER, data.header), {
         links: cleanHeaderLinks(isObject(data.header) ? data.header.links : null, true),
+        // 1.6.1: ausklappbares Menue
+        menu: isObject(data.header) && data.header.menu === true,
+        menu_icon:
+          isObject(data.header) && typeof data.header.menu_icon === "string" && ICON_NAME.test(data.header.menu_icon)
+            ? data.header.menu_icon
+            : DEFAULT_HEADER.menu_icon,
+        menu_links: cleanMenuLinks(isObject(data.header) ? data.header.menu_links : null),
       }),
       settings: Object.assign(section(DEFAULT_SETTINGS, data.settings), {
         menu_order: cleanPaths(isObject(data.settings) ? data.settings.menu_order : null),
@@ -6188,7 +6369,9 @@
     .hpv-card {
       height: 46px; border-radius: var(--ha-card-border-radius, 12px);
       background: var(--ha-card-background, var(--card-background-color, #1c1c1c));
-      border: 1px solid var(--ha-card-border-color, transparent);
+      /* 1.6.1: einzeln statt Kurzform - die Rahmenfarbe kann vier Farben haben */
+      border-style: solid; border-width: 1px;
+      border-color: var(--ha-card-border-color, transparent);
     }
     /* Vorschau der Menuepunkte: Groesse, Farben und Eckenradius kommen als
        Variablen aus _updateSettingsPreview(). */
@@ -6899,6 +7082,33 @@
     .ts-card { padding: 12px 14px; min-width: 0; display: flex; flex-direction: column; gap: 8px; }
     .ts-card .pv-card-head { font-size: 1em; font-weight: 700; margin: 0; }
     .ts-wide { grid-column: span 2; }
+    /* 1.6.1: Kalender-Karte - Farben wie ha-full-calendar und ha-button */
+    .cal-top { display: flex; align-items: center; justify-content: space-between; font-size: 1.15em; color: var(--primary-text-color); }
+    .cal-top strong { font-weight: 400; }
+    .cal-nav { font-size: 1.3em; line-height: 1; }
+    .cal-bar { display: flex; align-items: center; justify-content: space-between; }
+    .cal-today { padding: 4px 10px; font-size: .86em; font-weight: 500; border-radius: var(--ha-border-radius-pill, 999px);
+      color: var(--wa-color-brand-on-quiet, var(--ha-color-on-primary-quiet, var(--primary-color))); }
+    .cal-today:hover { background: var(--wa-color-brand-fill-quiet, var(--ha-color-fill-primary-quiet-hover, transparent)); }
+    .cal-views { display: inline-flex; border-radius: var(--ha-border-radius-pill, 999px); overflow: hidden; }
+    .cal-views i { font-style: normal; padding: 4px 12px; font-size: .9em; line-height: 1.3;
+      background: var(--wa-color-brand-fill-normal, var(--ha-color-fill-primary-normal-resting, rgba(127,127,127,.2)));
+      color: var(--wa-color-brand-on-normal, var(--ha-color-on-primary-normal, var(--primary-color)));
+      box-shadow: inset 0 0 0 1px color-mix(in srgb, var(--wa-color-brand-border-normal, transparent) 60%, transparent); }
+    .cal-views i[data-on] { background: var(--wa-color-brand-fill-loud, var(--ha-color-fill-primary-loud-resting, var(--primary-color)));
+      color: var(--wa-color-brand-on-loud, var(--ha-color-on-primary-loud, #fff)); box-shadow: none; }
+    .cal-grid { display: grid; grid-template-columns: repeat(7, minmax(0, 1fr)); border-top: 1px solid var(--divider-color);
+      border-left: 1px solid var(--divider-color); }
+    .cal-grid > span { border-right: 1px solid var(--divider-color); border-bottom: 1px solid var(--divider-color); }
+    .cal-wd { padding: 3px 0; text-align: center; font-size: .68em; font-weight: 700; text-transform: uppercase;
+      color: var(--secondary-text-color); }
+    .cal-cell { position: relative; min-height: 38px; display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 2px; }
+    .cal-cell b { font-weight: 400; font-size: .8em; color: var(--primary-text-color); }
+    .cal-cell b[data-other] { color: var(--disabled-text-color); }
+    .cal-cell b.cal-now { display: inline-flex; align-items: center; justify-content: center; width: 22px; height: 22px;
+      border-radius: 50%; background: var(--primary-color); color: var(--text-primary-color); }
+    .cal-cell small { font-size: .6em; color: var(--secondary-text-color); white-space: nowrap; }
+    .cal-ev { width: 70%; height: 5px; border-radius: 3px; background: #3788d8; }
     /* Zwei Karten uebereinander in einer Spalte (Regler, Card-Design) */
     .ts-stack { display: flex; flex-direction: column; gap: 14px; min-width: 0; }
     .ts-stack > .ts-card { flex: 0 0 auto; }
@@ -6982,8 +7192,27 @@
     #header-preview .hpv-zone { border-radius: 8px; outline: 2px solid transparent; outline-offset: 3px; }
     #header-preview[data-mark="tabs"] .hpv-tabs,
     #header-preview[data-mark="buttons"] .hpv-right,
+    #header-preview[data-mark="menu"] .hpv-menu,
     #header-preview[data-mark="size"] .hpv-title { outline-color: var(--sh-accent); }
-    .hpv-right { display: flex; align-items: center; gap: 12px; margin-left: auto; flex: 0 0 auto; padding: 2px 4px; }
+    .hpv-right { display: flex; align-items: center; gap: 12px; margin-left: auto; flex: 0 0 auto; padding: 2px 4px; position: relative; }
+    /* 1.6.1: ausklappbares Menue im Vorschaubild - aufgeklappt, wenn seine Gruppe gewaehlt ist */
+    .hpv-drop { display: none; position: absolute; right: 0; top: calc(100% + 10px); z-index: 3; box-sizing: border-box;
+      min-width: 210px; max-width: 280px; max-height: 300px; overflow: auto; padding: 6px; text-align: left; cursor: pointer;
+      border-radius: var(--ha-card-border-radius, 12px); border: 1px solid var(--divider-color);
+      background: var(--ha-dialog-surface-background, var(--card-background-color)); color: var(--primary-text-color);
+      box-shadow: 0 12px 32px rgba(0, 0, 0, .3); font-size: 14px; font-weight: 400; line-height: 1.2; }
+    #header-preview[data-mark="menu"] .hpv-drop { display: block; }
+    #header-preview[data-hbottom] .hpv-drop { top: auto; bottom: calc(100% + 10px); }
+    .hpv-di, .hpv-dg { display: flex; align-items: center; gap: 12px; white-space: nowrap; }
+    .hpv-di { height: 38px; padding: 0 10px; border-radius: 8px; }
+    .hpv-di:first-child { background: color-mix(in srgb, var(--primary-text-color) 8%, transparent); }
+    .hpv-di ha-icon { --mdc-icon-size: 20px; color: var(--sidebar-icon-color, var(--secondary-text-color)); }
+    .hpv-di ha-icon.ext { --mdc-icon-size: 14px; opacity: .6; margin-left: auto; }
+    .hpv-di > span, .hpv-dg > span { overflow: hidden; text-overflow: ellipsis; }
+    .hpv-dg { padding: 10px 10px 4px; font-size: 11px; font-weight: 500; letter-spacing: .04em; text-transform: uppercase; color: var(--secondary-text-color); }
+    .hpv-dg ha-icon { --mdc-icon-size: 14px; }
+    .hpv-dg:not(:first-child) { margin-top: 4px; padding-top: 10px; border-top: 1px solid var(--divider-color); }
+    .hpv-dempty { display: block; padding: 8px 10px; opacity: .7; }
     .hpv-sys { display: flex; align-items: center; gap: 12px; font-variant-numeric: tabular-nums; line-height: 1.1; }
     .hpv-sys[hidden], .hpv-si[hidden] { display: none; }
     .hpv-si { display: flex; flex-direction: column; align-items: flex-end; min-width: 36px; }
@@ -7592,6 +7821,8 @@
       .hm-side { max-width: 50%; }
       .ts-grid, .stage .hpv-body { grid-template-columns: repeat(2, minmax(0, 1fr)); }
       .stage .hpv-card.wide { grid-column: span 2; }
+      /* 1.6.1: bei zwei Spalten steht der Kalender allein - die Bedienelemente nehmen dann die ganze Zeile */
+      .ts-ctl { grid-column: 1 / -1; }
       .fields-head { padding: 18px 18px 8px; }
       .fields-body { padding: 4px 18px 18px; }
       .fields-foot { padding: 12px 18px 14px; }
@@ -7752,6 +7983,8 @@
     .pv-st[data-s="w-snowy"] { color: var(--state-weather-snowy-color); }
     .pv-st[data-s="w-clear_night"] { color: var(--state-weather-clear_night-color); }
     .tc-row { display: flex; flex-wrap: wrap; align-items: center; gap: 8px; margin-top: 8px; }
+    /* 1.6.1: Bedienelemente neben dem Kalender - schmale Karte */
+    .ts-ctl .ts-head-row .ts-s { text-align: right; }
     .tc-btn { display: inline-flex; align-items: center; height: 30px; padding: 0 14px; font-size: .86em; font-weight: 500;
       border-radius: var(--ha-border-radius-pill, 9999px); }
     .tc-btn[data-v="primary-loud"] { background: var(--ha-color-fill-primary-loud-resting); color: var(--ha-color-on-primary-loud); }
@@ -8237,6 +8470,7 @@
     text: ["Text", "Typography"],
     dash: ["Dashboard background", "Backgrounds"],
     design: ["Cards", "Base colors"],
+    calendar: ["Calendar", "Base colors", "Text"],
   };
   const PROJECT_LINKS = {
     github: "https://github.com/jayjojayson/ha_style_hub",
@@ -8498,6 +8732,7 @@
             // Auch die Link-Listen bekommen das Auswahlfeld (1.5.4)
             this._renderLinkList("header");
             this._renderLinkList("favorites");
+            this._renderLinkList("hmenu");
             this._renderMenuEntries();
           }
         });
@@ -9810,6 +10045,15 @@
             ${side("card_radius_br", t.corner_br)}
             ${side("card_radius_bl", t.corner_bl)}
           </div>
+          ${this._check(`theme.${mode}.card_border_two`, t.card_border_two, t.card_border_two_hint)}
+          <div class="stack sub" data-show-when="theme.${mode}.card_border_two">
+            ${this._color(`theme.${mode}.card_border_color2`, t.card_border_color2, "", t.card_border_color2_ph)}
+            ${this._select(`theme.${mode}.card_border_two_sides`, t.card_border_two_sides, [
+              ["", t.card_border_two_br],
+              ["lr", t.card_border_two_lr],
+              ["b", t.card_border_two_b],
+            ])}
+          </div>
         </div>`;
     }
 
@@ -9841,6 +10085,61 @@
         }
       }
       return { rgb: rgb.map((c) => Math.round(c * 255)), alpha: Math.max(0, Math.min(1, isFinite(alpha) ? alpha : 1)) };
+    }
+
+    /**
+     * 1.6.1: Die Kalender-Karte im Vorschaubild - drei Wochen rund um heute,
+     * mit den Knoepfen der Karte. Jedes Teil fuehrt per Klick zu seinen
+     * Variablen (ctl wie bei den anderen Karten).
+     */
+    _themeCalendarCard(ctl) {
+      const t = this._t;
+      const lang = this._de ? "de" : "en";
+      const now = new Date();
+      const today = new Date(now.getFullYear(), now.getMonth(), now.getDate());
+      let title = "";
+      let days = [];
+      try {
+        title = today.toLocaleDateString(lang, { month: "long", year: "numeric" });
+        // Montag als erster Tag, wie in der Karte bei deutscher Einstellung
+        days = [0, 1, 2, 3, 4, 5, 6].map((i) => new Date(2024, 0, 1 + i).toLocaleDateString(lang, { weekday: "short" }).replace(".", ""));
+      } catch (err) {
+        title = `${today.getMonth() + 1}/${today.getFullYear()}`;
+        days = ["Mo", "Tu", "We", "Th", "Fr", "Sa", "Su"];
+      }
+      const start = new Date(today);
+      start.setDate(today.getDate() - ((today.getDay() + 6) % 7) - 7);
+      const cells = [];
+      for (let i = 0; i < 21; i += 1) {
+        const day = new Date(start);
+        day.setDate(start.getDate() + i);
+        const isToday = day.getTime() === today.getTime();
+        const other = day.getMonth() !== today.getMonth();
+        const event = i === 9 || i === 16 ? `<i class="cal-ev" title="${escapeHtml(t.ts_cal_event)}"></i>` : "";
+        const more = i === 4 || i === 12 ? `<small${ctl("v:secondary-text-color")}>${escapeHtml(t.ts_cal_more)}</small>` : "";
+        const number = isToday
+          ? `<b class="cal-now"${ctl("cal_day_today")}>${day.getDate()}</b>`
+          : `<b${ctl(other ? "v:disabled-text-color" : "v:primary-text-color")}${other ? " data-other" : ""}>${day.getDate()}</b>`;
+        cells.push(`<span class="cal-cell">${more}${number}${event}</span>`);
+      }
+      return `
+                <div class="pv-card ts-card ts-wide ts-cal" data-spot="calendar">
+                  <div class="pv-card-head ts-head-row"><span>${escapeHtml(t.ts_calendar)}</span><span class="ts-s">${escapeHtml(t.ts_calendar_sub)}</span></div>
+                  <div class="cal-top">
+                    <strong${ctl("v:primary-text-color")}>${escapeHtml(title)}</strong>
+                    <span class="cal-nav"${ctl("v:primary-text-color")}>&#8249;&nbsp;&nbsp;&#8250;</span>
+                  </div>
+                  <div class="cal-bar">
+                    <span class="cal-today"${ctl("cal_today_btn")}>${escapeHtml(t.ts_cal_today)}</span>
+                    <span class="cal-views">
+                      <i data-on${ctl("cal_view_on")}>&#9638;</i><i${ctl("cal_view_off")}>&#9776;</i><i${ctl("cal_view_off")}>&#9636;</i>
+                    </span>
+                  </div>
+                  <div class="cal-grid"${ctl("v:divider-color")}>
+                    ${days.map((day) => `<span class="cal-wd"${ctl("v:secondary-text-color")}>${escapeHtml(day)}</span>`).join("")}
+                    ${cells.join("")}
+                  </div>
+                </div>`;
     }
 
     /** 1.6.0: Bewegung des Dashboard-Hintergrunds in der Theme-Vorschau. */
@@ -10212,6 +10511,21 @@
           </div>
           <p class="hint">${escapeHtml(t.header_links_hint)}</p>
           <ul class="hlinks" id="header-links"></ul>`, { sec: ["header", "buttons"] }),
+        this._grp("header:menu", t.hsec_menu, `
+          ${this._check("header.menu", t.header_menu, t.header_menu_hint)}
+          <div data-show-when="header.menu">
+            <div class="stack">
+              ${this._field("header.menu_icon", t.header_menu_icon, "text", 'spellcheck="false" placeholder="mdi:menu"')}
+            </div>
+            <div class="card-head hlinks-head">
+              <h3>${escapeHtml(t.hmenu_entries)}</h3>
+              <span class="badge-ext" id="header-menu-count"></span>
+              <button class="icon-btn" id="add-header-menu-link"
+                title="${escapeHtml(t.hmenu_add)}">${glyph("mdi:plus", "+")}</button>
+            </div>
+            <p class="hint">${escapeHtml(t.hmenu_hint)}</p>
+            <ul class="hlinks" id="header-menu-links"></ul>
+          </div>`, { sec: ["header", "menu"] }),
         this._grp("header:frame", t.hsec_frame, `
           <div class="stack">
             ${this._color("header.border_color", t.header_border_color)}
@@ -10730,6 +11044,11 @@
           composed[target] = composedValue(values, parts);
         }
       });
+      // 1.6.1: zweifarbiger Rahmen
+      const twoTone = borderColorValue(values, values["ha-card-border-color"] || fallback["ha-card-border-color"]);
+      if (twoTone) {
+        composed["ha-card-border-color"] = twoTone;
+      }
       const dashboard = backgroundValue(values, true);
       if (dashboard) {
         composed["lovelace-background"] = dashboard;
@@ -11131,6 +11450,35 @@
           }
           actions.insertBefore(span, actions.firstChild);
         });
+      // 1.6.1: das ausklappbare Menue - ganz rechts. Ist die Gruppe "Menue"
+      // gewaehlt, zeigt das Vorschaubild es aufgeklappt.
+      box.querySelectorAll(".hpv-drop").forEach((one) => one.remove());
+      const menuLinks = cleanMenuLinks(head.menu_links);
+      if (head.menu === true) {
+        const menu = document.createElement("span");
+        menu.className = "hpv-own hpv-menu hpv-zone";
+        menu.dataset.zone = "menu";
+        menu.innerHTML = glyph(ICON_NAME.test(head.menu_icon || "") ? head.menu_icon : "mdi:menu", "&#9776;");
+        actions.appendChild(menu);
+        const drop = document.createElement("span");
+        drop.className = "hpv-drop";
+        drop.dataset.zone = "menu";
+        drop.innerHTML = menuLinks.length
+          ? menuLinks
+              .map((link) =>
+                link.group
+                  ? `<span class="hpv-dg"${link.color ? ` style="color:${escapeHtml(link.color)}"` : ""}>${
+                      link.icon ? glyph(link.icon, "") : ""
+                    }<span>${escapeHtml(link.name)}</span></span>`
+                  : `<span class="hpv-di">${glyph(link.icon || this._linkIcon(link), "&#8226;")
+                      .replace("<ha-icon ", `<ha-icon${link.color ? ` style="color:${escapeHtml(link.color)}"` : ""} `)}<span>${escapeHtml(
+                      link.name || (isExternalUrl(link.path) ? externalHost(link.path) : link.path)
+                    )}</span>${isExternalUrl(link.path) ? glyph(EXTERNAL_ICON, "").replace("<ha-icon ", '<ha-icon class="ext" ') : ""}</span>`
+              )
+              .join("")
+          : `<span class="hpv-dempty">${escapeHtml(this._t.hmenu_empty)}</span>`;
+        box.querySelector(".hpv-right").appendChild(drop);
+      }
       const icons = box.querySelectorAll(".hpv-icon, .hpv-actions");
       const reiter = box.querySelectorAll(".hpv-tab");
       // Maus hover ueber einem Reiter
@@ -11370,6 +11718,10 @@
      * "header" -> header.links, "favorites" -> settings.favorites.
      */
     _linkStore(kind) {
+      if (kind === "hmenu") {
+        // 1.6.1: die Eintraege des ausklappbaren Menues der Kopfzeile
+        return { section: this._config.header, key: "menu_links", list: "header-menu-links", empty: this._t.hmenu_empty };
+      }
       return kind === "favorites"
         ? { section: this._config.settings, key: "favorites", list: "favorite-links", empty: this._t.favorites_empty }
         : { section: this._config.header, key: "links", list: "header-links", empty: this._t.header_links_empty };
@@ -11400,7 +11752,7 @@
       list.innerHTML = links
         .map(
           (link, index) => link.entity ? this._sensorRow(link, index, links.length) : `
-          <li class="hlink" data-index="${index}">
+          <li class="hlink${link.group ? " hgroup" : ""}" data-index="${index}">
             <span class="row-icon">${
               customElements.get("ha-icon")
                 ? `<ha-icon icon="${escapeHtml(link.icon || this._linkIcon(link))}"${
@@ -11409,13 +11761,13 @@
                 : ""
             }</span>
             <span class="row-title">
-              <strong>${escapeHtml(link.entity ? t.header_link_sensor : t.link)}</strong>
-              <small>${escapeHtml(link.entity || link.path)}</small>
+              <strong>${escapeHtml(link.entity ? t.header_link_sensor : link.group ? t.add_heading_title : t.link)}</strong>
+              <small>${escapeHtml(link.entity || (link.group ? t.hmenu_group_sub : link.path))}</small>
             </span>
             <input type="text" data-hprop="name" value="${escapeHtml(link.name)}"
               maxlength="60" placeholder="${escapeHtml(link.entity ? this._entityName(link.entity) || t.name : t.name)}" title="${escapeHtml(t.name)}" />
             <input type="text" data-hprop="icon" value="${escapeHtml(link.icon)}"
-              spellcheck="false" placeholder="${escapeHtml(link.entity ? t.header_sensor_icon_auto : "mdi:link-variant")}" title="${escapeHtml(t.icon)}" />
+              spellcheck="false" placeholder="${escapeHtml(link.entity ? t.header_sensor_icon_auto : link.group ? t.hmenu_group_icon_ph : this._linkIcon(link))}" title="${escapeHtml(t.icon)}" />
             <span class="color-field" title="${escapeHtml(t.header_link_color)}">
               <input type="color" data-hcolor value="${escapeHtml(asHexColor(link.color))}" />
               <input type="text" data-hprop="color" value="${escapeHtml(link.color)}"
@@ -11899,15 +12251,17 @@
       const t = this._t;
       // Derselbe Dialog dient der Seitenleiste (Ueberschrift, Link, PopUp),
       // der Kopfzeile und den Favoriten der Einstellungsseite (nur Link).
-      const kind = target === "header" || target === "favorites" ? target : "sidebar";
+      // 1.6.1: das Menue der Kopfzeile ("hmenu") - Gruppe oder Link
+      const kind = target === "header" || target === "favorites" || target === "hmenu" ? target : "sidebar";
       const header = kind !== "sidebar";
       this._addTarget = kind;
-      root.getElementById("add-heading-part").hidden = header;
+      root.getElementById("add-heading-part").hidden = header && kind !== "hmenu";
+      root.getElementById("add-heading-hint").textContent = kind === "hmenu" ? t.hmenu_group_hint : t.add_heading_hint;
       root.getElementById("add-popup-part").hidden = header;
       root.getElementById("add-modal-title").textContent =
-        kind === "header" ? t.header_link_add : kind === "favorites" ? t.favorite_add : t.add_title;
+        kind === "header" ? t.header_link_add : kind === "favorites" ? t.favorite_add : kind === "hmenu" ? t.hmenu_add : t.add_title;
       root.getElementById("add-link-hint").textContent =
-        kind === "header" ? t.header_link_add_hint : kind === "favorites" ? t.favorite_add_hint : t.add_link_hint;
+        kind === "header" ? t.header_link_add_hint : kind === "favorites" ? t.favorite_add_hint : kind === "hmenu" ? t.hmenu_add_hint : t.add_link_hint;
       const store = header ? this._linkStore(kind) : null;
       const has = (path) =>
         store
@@ -11969,6 +12323,7 @@
       const chosen = root.getElementById("add-link-select").value;
       // 1.5.7: in der Seitenleiste darf es auch eine fremde Webseite sein;
       // Kopfzeile und Favoriten bleiben in Home Assistant.
+      // 1.6.1: das Menue der Kopfzeile nimmt ebenfalls Webadressen.
       const outside = this._addTarget !== "header" && this._addTarget !== "favorites";
       const typed = chosen ? "" : root.getElementById("add-link-path").value.trim();
       const path = chosen || this._addressOf(typed, outside);
@@ -11989,22 +12344,23 @@
         })
       );
       const fallback = isExternalUrl(path) ? externalHost(path) : path.split(/[?#]/)[0].split("/").filter(Boolean).pop() || path;
-      if (this._addTarget === "header" || this._addTarget === "favorites") {
+      if (this._addTarget === "header" || this._addTarget === "favorites" || this._addTarget === "hmenu") {
         const store = this._linkStore(this._addTarget);
         const links = store.section[store.key] || [];
         if (links.some((link) => link.path === path)) {
           this._addError(this._t.add_link_exists);
           return;
         }
-        if (links.length >= HEADER_LINKS_MAX) {
-          this._addError(this._t.header_links_full);
+        const menu = this._addTarget === "hmenu";
+        if (links.length >= (menu ? HEADER_MENU_LINKS_MAX : HEADER_LINKS_MAX)) {
+          this._addError(menu ? this._t.hmenu_full : this._t.header_links_full);
           return;
         }
         // Immer eine neue Liste: die der Vorgaben darf nie veraendert werden.
         const fresh = {
           path,
           name: known ? (this._de ? known[2] : known[3]) : fallback,
-          icon: known ? known[1] : LINK_ICON,
+          icon: known ? known[1] : isExternalUrl(path) && menu ? EXTERNAL_ICON : LINK_ICON,
           color: "",
         };
         store.section[store.key] = links.concat([
@@ -12840,8 +13196,10 @@
 
       // Link-Listen: Kopfzeile und Favoriten der Einstellungsseite
       on("add-header-link", "click", () => this._openAdd("header"));
+      on("add-header-menu-link", "click", () => this._openAdd("hmenu"));
       on("add-favorite", "click", () => this._openAdd("favorites"));
       this._wireLinkList("header");
+      this._wireLinkList("hmenu");
       this._wireLinkList("favorites");
       // Menuepunkte der Einstellungsseite
       on("menu-entries", "click", (event) => {
@@ -12906,6 +13264,10 @@
       // Dialog hinter dem Plus der Eintragsliste
       on("add-cancel", "click", () => this._closeAdd());
       on("add-heading-ok", "click", () => {
+        if (this._addTarget === "hmenu") {
+          this._addMenuGroup();
+          return;
+        }
         this._closeAdd();
         this._addHeading();
       });
@@ -13597,6 +13959,7 @@
       this._syncDashImage();
       this._renderLinkList("header");
       this._renderLinkList("favorites");
+      this._renderLinkList("hmenu");
       this._renderMenuEntries();
       this._renderSensorList();
       this._renderInspector();
@@ -13788,6 +14151,10 @@
         show_system: this._config.header.show_system === true,
         show_disk: this._config.header.show_disk === true,
         links: cleanHeaderLinks(this._config.header.links, true),
+        // 1.6.1: das Menue ist ebenfalls kein Aussehen
+        menu: this._config.header.menu === true,
+        menu_icon: this._config.header.menu_icon || DEFAULT_HEADER.menu_icon,
+        menu_links: cleanMenuLinks(this._config.header.menu_links),
       });
       this._fillInputs();
       this._applyConditionals();
@@ -13880,12 +14247,19 @@
       const neu = Object.assign({}, DEFAULT_HEADER, {
         show_restart: this._config.header.show_restart === true,
         links: cleanHeaderLinks(this._config.header.links, true),
+        menu: this._config.header.menu === true,
+        menu_icon: this._config.header.menu_icon || DEFAULT_HEADER.menu_icon,
+        menu_links: cleanMenuLinks(this._config.header.menu_links),
       });
       bekannt.forEach((key) => {
         const standard = DEFAULT_HEADER[key];
         const wert = roh[key];
         if (key === "links") {
           neu.links = cleanHeaderLinks(wert, true);
+        } else if (key === "menu_links") {
+          neu.menu_links = cleanMenuLinks(wert);
+        } else if (key === "menu_icon") {
+          neu.menu_icon = typeof wert === "string" && ICON_NAME.test(wert) ? wert : DEFAULT_HEADER.menu_icon;
         } else if (typeof standard === "boolean") {
           neu[key] = wert === true || wert === "true" || wert === 1;
         } else if (typeof standard === "number") {
@@ -14078,6 +14452,11 @@
             out[target] = composedValue(values, parts);
           }
         });
+        // 1.6.1: zweifarbiger Rahmen (wie theme.py)
+        const twoTone = borderColorValue(values, out["ha-card-border-color"]);
+        if (twoTone) {
+          out["ha-card-border-color"] = twoTone;
+        }
         const dashboard = backgroundValue(values, false);
         if (dashboard) {
           out["lovelace-background"] = dashboard;
@@ -14109,7 +14488,8 @@
           if (on) {
             list.forEach(([key, value]) => {
               if (!(key in out)) {
-                out[key] = value;
+                // 1.6.1: gueltig auch bei Rahmen pro Seite / zwei Farben
+                out[key] = key === "bubble-border" ? bubbleBorder(values) : value;
               }
             });
           }
@@ -14138,6 +14518,14 @@
       root.getElementById("theme-pick-row").hidden = true;
       this._themeCandidates = [];
       this._themeError("");
+      // 1.6.1: Wahl "Verweise behalten" merkt sich dieser Browser
+      let keep = false;
+      try {
+        keep = window.localStorage.getItem("ha-style-hub-keep-refs") === "1";
+      } catch (err) {
+        keep = false;
+      }
+      root.getElementById("theme-keep-refs").checked = keep;
       root.getElementById("theme-modal").hidden = false;
       root.getElementById("theme-text").focus();
     }
@@ -14294,6 +14682,15 @@
 
       // 1.6.0: Variablen ohne eigenes Feld (my-accent-color ...) kommen in
       // "Eigene Variablen"; in den Feldern werden sie aufgeloest.
+      // 1.6.1: ausser "Verweise behalten" ist angehakt - dann bleibt
+      // var(--my-...) im Feld stehen und folgt der eigenen Variable.
+      const keepBox = this.shadowRoot.getElementById("theme-keep-refs");
+      const keepRefs = !!(keepBox && keepBox.checked);
+      try {
+        window.localStorage.setItem("ha-style-hub-keep-refs", keepRefs ? "1" : "0");
+      } catch (err) {
+        /* ohne Speicher eben nur fuer dieses Mal */
+      }
       const own = [];
       const custom = { dark: [], light: [] };
 
@@ -14335,7 +14732,9 @@
             }
             return;
           }
-          value = resolveVars(value, lookup);
+          if (!keepRefs) {
+            value = resolveVars(value, lookup);
+          }
           if (taken.indexOf(key) < 0) {
             taken.push(key);
           }
@@ -14356,6 +14755,9 @@
      * und nicht als unverstaendliche Zeichenkette in einem Feld liegt.
      */
     _takeShorthand(mode, key, value) {
+      if (key === "ha-card-border-color") {
+        return this._takeTwoTone(mode, value);
+      }
       const composed = THEME_COMPOSED[key];
       if (!composed) {
         return false;
@@ -14376,6 +14778,47 @@
       fields.forEach((field, index) => {
         this._config.theme[mode][field] = numbers[index];
       });
+      return true;
+    }
+
+    /**
+     * 1.6.1: eine Rahmenfarbe aus vier Farben ("#a #b #b #a") wieder als
+     * Farbe 1, Farbe 2 und Aufteilung, wenn sie zu einer der Aufteilungen
+     * passt. Klammern (rgba(...), var(...)) werden nicht zerteilt.
+     */
+    _takeTwoTone(mode, value) {
+      const parts = [];
+      let depth = 0;
+      let word = "";
+      String(value).trim().split("").forEach((char) => {
+        if (char === "(") depth += 1;
+        if (char === ")") depth -= 1;
+        if (/\s/.test(char) && depth === 0) {
+          if (word) parts.push(word);
+          word = "";
+        } else {
+          word += char;
+        }
+      });
+      if (word) parts.push(word);
+      if (parts.length !== 4) {
+        return false;
+      }
+      const first = parts[0];
+      const second = parts.find((part) => part !== first);
+      if (!second) {
+        return false;
+      }
+      const pattern = parts.map((part) => (part === first ? 0 : part === second ? 1 : -1)).join();
+      const sides = Object.keys(CARD_BORDER_TWO_SIDES).find((name) => CARD_BORDER_TWO_SIDES[name].join() === pattern);
+      if (sides === undefined) {
+        return false;
+      }
+      const target = this._config.theme[mode];
+      target["ha-card-border-color"] = first;
+      target.card_border_two = true;
+      target.card_border_color2 = second;
+      target.card_border_two_sides = sides;
       return true;
     }
 
@@ -14809,7 +15252,12 @@
           extra: `<label class="field" id="theme-pick-row" hidden style="margin-bottom:14px">
               <span>${escapeHtml(t.theme_import_pick)}</span>
               <select id="theme-pick"></select>
-            </label>`,
+            </label>
+            <label class="check boxed">
+              <input type="checkbox" id="theme-keep-refs" />
+              <span>${escapeHtml(t.theme_keep_refs)}</span>
+            </label>
+            <small class="field-hint" style="display:block;margin-bottom:14px">${escapeHtml(t.theme_keep_refs_hint)}</small>`,
         })}
         ${this._importDialog({
           id: "header-modal", title: t.header_import_title, ext: ".json",
@@ -14840,7 +15288,7 @@
             <h2 id="add-modal-title">${escapeHtml(t.add_title)}</h2>
             <div id="add-heading-part">
               <h3 class="add-title add-sec-heading">${escapeHtml(t.add_heading_title)}</h3>
-              <p class="hint">${escapeHtml(t.add_heading_hint)}</p>
+              <p class="hint" id="add-heading-hint">${escapeHtml(t.add_heading_hint)}</p>
               <button class="flat" id="add-heading-ok">${escapeHtml(t.add_heading_button)}</button>
               <h3 class="add-title add-sec-link">${escapeHtml(t.add_link_title)}</h3>
             </div>
@@ -15642,7 +16090,8 @@ ${[
                   </div>
                   <div class="ts-legend">${legend}</div>
                 </div>
-                <div class="pv-card ts-card ts-full" data-spot="controls">
+                ${this._themeCalendarCard(ctl)}
+                <div class="pv-card ts-card ts-ctl" data-spot="controls">
                   <div class="pv-card-head ts-head-row"><span>${escapeHtml(t.ts_controls)}</span><span class="ts-s">${escapeHtml(t.ts_controls_sub)}</span></div>
                   <div class="tc-row">
                     <span class="tc-btn" data-v="primary-loud" data-ctl="btn_primary" title="${escapeHtml(t.ctl_btn_primary)}">${escapeHtml(t.save)}</span>
@@ -17076,6 +17525,7 @@ ${[
       const before = this._saved.settings || {};
       const extra = {
         "header:buttons": stableJson(this._config.header.links) !== stableJson(this._saved.header.links) ? 1 : 0,
+        "header:menu": stableJson(this._config.header.menu_links) !== stableJson(this._saved.header.menu_links) ? 1 : 0,
         "settings:menu-order": ["menu_order", "menu_hidden"].some((key) => stableJson(s[key]) !== stableJson(before[key])) ? 1 : 0,
       };
       root.querySelectorAll(".grp[data-grp]").forEach((grp) => {
@@ -17090,6 +17540,10 @@ ${[
       const links = root.getElementById("header-links-count");
       if (links) {
         links.textContent = t.links_of.replace("{n}", (this._config.header.links || []).length).replace("{max}", HEADER_LINKS_MAX);
+      }
+      const menuCount = root.getElementById("header-menu-count");
+      if (menuCount) {
+        menuCount.textContent = t.links_of.replace("{n}", (this._config.header.menu_links || []).length).replace("{max}", HEADER_MENU_LINKS_MAX);
       }
     }
 
@@ -17886,6 +18340,7 @@ ${[
         // Listen (Links, Favoriten, Menuepunkte) neu zeichnen
         this._renderLinkList("header");
         this._renderLinkList("favorites");
+        this._renderLinkList("hmenu");
         this._renderMenuEntries();
       }
       this._fillInputs();
@@ -18709,12 +19164,32 @@ ${[
 
     /** Das Icon eines Links ohne eigenes: Ketten-Symbol, beim Sensor das der Entitaet. */
     _linkIcon(link) {
+      if (link && link.group) {
+        return HEADER_MENU_GROUP_ICON;
+      }
+      if (link && !link.entity && isExternalUrl(link.path)) {
+        return EXTERNAL_ICON;
+      }
       if (!link || !link.entity) {
         return LINK_ICON;
       }
       const stateObj = this._hass && this._hass.states ? this._hass.states[link.entity] : null;
       const own = stateObj && stateObj.attributes ? stateObj.attributes.icon : "";
       return typeof own === "string" && ICON_NAME.test(own) ? own : SENSOR_ICON;
+    }
+
+    /** 1.6.1: eine Gruppe (Zwischentitel) ins Menue der Kopfzeile. */
+    _addMenuGroup() {
+      const store = this._linkStore("hmenu");
+      const links = store.section[store.key] || [];
+      if (links.length >= HEADER_MENU_LINKS_MAX) {
+        this._addError(this._t.hmenu_full);
+        return;
+      }
+      store.section[store.key] = links.concat([{ group: true, path: "", name: this._t.add_heading_title, icon: "", color: "" }]);
+      this._closeAdd();
+      this._renderLinkList("hmenu");
+      this._touch();
     }
 
     /** Den gewaehlten Sensor in die Kopfzeile. */

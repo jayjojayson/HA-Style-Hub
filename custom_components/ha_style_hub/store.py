@@ -24,6 +24,7 @@ from .const import (
     COUNT_ITEMS,
     MONITOR_SENSORS_MAX,
     HEADER_LINKS_MAX,
+    HEADER_MENU_LINKS_MAX,
     MENU_PATHS_MAX,
     DEFAULT_HEADING,
     DEFAULT_ITEM,
@@ -33,6 +34,7 @@ from .const import (
     HIDE_FOR_MAX,
     INFO_TEMPLATE_MAX,
     INFO_TYPES,
+    CARD_BORDER_TWO_SIDES,
     DASH_DIRECTIONS,
     DASH_IMAGE_SIZES,
     DASH_MOTION_SPEEDS,
@@ -185,6 +187,44 @@ def _clean_header_links(
         if len(links) >= limit:
             break
     return links
+
+
+def _clean_menu_links(raw: Any) -> list[dict[str, Any]]:
+    """Return the entries of the header's drop-down menu (1.6.1).
+
+    Links are checked like the links of a popup (web addresses allowed) and
+    keep their color. A group ({"group": True, name, icon, color}) is a
+    title between the links; it has no target. At most HEADER_MENU_LINKS_MAX
+    entries, each path once.
+    """
+    entries: list[dict[str, Any]] = []
+    if not isinstance(raw, list):
+        return entries
+    seen: set[str] = set()
+    for one in raw:
+        if len(entries) >= HEADER_MENU_LINKS_MAX:
+            break
+        if not isinstance(one, dict):
+            continue
+        if one.get("group") is True:
+            name = one.get("name")
+            icon = one.get("icon")
+            color = one.get("color")
+            entries.append(
+                {
+                    "group": True,
+                    "path": "",
+                    "name": name.strip()[:60] if isinstance(name, str) else "",
+                    "icon": icon if isinstance(icon, str) and _ICON_NAME.fullmatch(icon) else "",
+                    "color": color.strip()[:80] if isinstance(color, str) else "",
+                }
+            )
+            continue
+        clean = _clean_header_links([one], 1, external=True)
+        if clean and clean[0]["path"] not in seen:
+            seen.add(clean[0]["path"])
+            entries.append(clean[0])
+    return entries
 
 
 def _clean_popup_links(raw: Any) -> list[dict[str, str]]:
@@ -393,6 +433,13 @@ def _clean_background(values: dict[str, Any]) -> None:
     color = values.get("dash_color2")
     if isinstance(color, str) and any(char in color for char in ";{}<>\"'\\\n"):
         values.pop("dash_color2", None)
+    # 1.6.1: zweifarbiger Kartenrahmen - eine Farbe ohne Zeichen, die eine
+    # Deklaration beenden, und nur die bekannten Aufteilungen
+    color = values.get("card_border_color2")
+    if isinstance(color, str) and any(char in color for char in ";{}<>\"'\\\n"):
+        values.pop("card_border_color2", None)
+    if values.get("card_border_two_sides") not in CARD_BORDER_TWO_SIDES or not values.get("card_border_two_sides"):
+        values.pop("card_border_two_sides", None)
 
 
 def _merge_theme(data: Any) -> dict[str, Any]:
@@ -486,6 +533,12 @@ def normalize(data: Any) -> dict[str, Any]:
     config["header"]["links"] = _clean_header_links(
         config["header"].get("links"), entities=True
     )
+    # 1.6.1: ausklappbares Menue - Links wie in einem Popup (auch Webadressen)
+    config["header"]["menu"] = config["header"].get("menu") is True
+    menu_icon = config["header"].get("menu_icon")
+    if not isinstance(menu_icon, str) or not _ICON_NAME.fullmatch(menu_icon):
+        config["header"]["menu_icon"] = DEFAULT_HEADER["menu_icon"]
+    config["header"]["menu_links"] = _clean_menu_links(config["header"].get("menu_links"))
     config["settings"] = _merge_section(DEFAULT_SETTINGS, data.get("settings"))
     config["settings"]["favorites"] = _clean_favorites(
         config["settings"].get("favorites")

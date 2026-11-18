@@ -1,6 +1,6 @@
 /*
  * HA Style Hub - ha-style-hub.js
- * Version: 1.6.0
+ * Version: 1.6.1
  *
  * Runtime patcher for the Home Assistant sidebar (ha-sidebar).
  *
@@ -26,7 +26,7 @@
 (() => {
   "use strict";
 
-  const VERSION = "1.6.0";
+  const VERSION = "1.6.1";
   const TAG = "[HA Style Hub]";
 
   const EVENT_UPDATED = "ha_style_hub_updated";
@@ -306,6 +306,10 @@
     links: [],
     show_system: false,
     show_disk: false,
+    // 1.6.1: ausklappbares Menue ganz rechts in der Kopfzeile
+    menu: false,
+    menu_icon: "mdi:menu",
+    menu_links: [],
   };
 
   // Das Symbol-Element der Einstellungsseite von Home Assistant.
@@ -450,11 +454,51 @@
     });
     return links;
   };
+  /**
+   * Die Eintraege des ausklappbaren Menues der Kopfzeile (1.6.1): Links wie
+   * in einem PopUp (auch Webadressen) mit einer Farbe je Link, dazu Gruppen
+   * ({group: true, name, icon, color}) als Zwischentitel. Wie
+   * _clean_menu_links() in store.py.
+   */
+  const HEADER_MENU_LINKS_MAX = 24;
+  const cleanMenuLinks = (raw) => {
+    const list = Array.isArray(raw) ? raw : [];
+    const links = [];
+    const seen = new Set();
+    list.forEach((one) => {
+      if (!one || typeof one !== "object" || links.length >= HEADER_MENU_LINKS_MAX) {
+        return;
+      }
+      if (one.group === true) {
+        links.push({
+          group: true,
+          path: "",
+          name: typeof one.name === "string" ? one.name.trim().slice(0, 60) : "",
+          icon: typeof one.icon === "string" && /^[a-z0-9-]+:[a-z0-9-]+$/i.test(one.icon) ? one.icon : "",
+          color: typeof one.color === "string" ? one.color.trim().slice(0, 80) : "",
+        });
+        return;
+      }
+      const path = typeof one.path === "string" ? one.path : "";
+      const inside = LINK_PATH.test(path) && path !== "/" && path.length <= 200;
+      if ((!inside && !isExternalUrl(path)) || seen.has(path)) {
+        return;
+      }
+      seen.add(path);
+      links.push({
+        path,
+        name: typeof one.name === "string" ? one.name.trim().slice(0, 60) : "",
+        icon: typeof one.icon === "string" && /^[a-z0-9-]+:[a-z0-9-]+$/i.test(one.icon) ? one.icon : "",
+        color: typeof one.color === "string" ? one.color.trim().slice(0, 80) : "",
+      });
+    });
+    return links;
+  };
   const POPUP_TEXT = {
-    de: { label: "PopUp", close: "Schlie\u00dfen", empty: "Keine Links", noCard: "Keine Karte hinterlegt", cardError: "Die Karte konnte nicht angezeigt werden",
+    de: { label: "PopUp", close: "Schlie\u00dfen", empty: "Keine Links", menu: "Men\u00fc", noCard: "Keine Karte hinterlegt", cardError: "Die Karte konnte nicht angezeigt werden",
       openTab: "In neuem Tab \u00f6ffnen", noUrl: "Keine Webadresse hinterlegt",
       webNote: "Bleibt die Seite leer? Manche Webseiten erlauben keine Einbettung \u2013 dann oben \"In neuem Tab \u00f6ffnen\" w\u00e4hlen." },
-    en: { label: "Popup", close: "Close", empty: "No links", noCard: "No card configured", cardError: "The card could not be shown",
+    en: { label: "Popup", close: "Close", empty: "No links", menu: "Menu", noCard: "No card configured", cardError: "The card could not be shown",
       openTab: "Open in a new tab", noUrl: "No web address configured",
       webNote: "Page stays empty? Some websites do not allow being embedded - use \"Open in a new tab\" above." },
   };
@@ -698,6 +742,34 @@
     "@media (max-width: 600px) { .card { padding: 14px 14px 16px; } .grid { gap: 8px; }",
     "  .tile { flex-basis: calc((100% - (var(--cm, 2) - 1) * 8px) / var(--cm, 2)); min-height: 92px; } }",
     "@media (prefers-reduced-motion: reduce) { .scrim, .card { animation: none; } .tile { transition: none; } }",
+  ].join("\n");
+  // 1.6.1: das ausklappbare Menue der Kopfzeile - im eigenen Shadow Root am
+  // <body>, unter (oder ueber) dem Knopf, rechts buendig mit ihm.
+  const HEADER_MENU_CSS = [
+    ":host { position: fixed; z-index: 9998; font-family: var(--ha-font-family-body, Roboto, system-ui, sans-serif); }",
+    ".menu { box-sizing: border-box; min-width: 220px; max-width: min(340px, calc(100vw - 16px));",
+    "  max-height: min(70vh, 560px); overflow: auto; scrollbar-width: thin; padding: 6px;",
+    "  border-radius: var(--ha-card-border-radius, 12px); border: 1px solid var(--divider-color, rgba(0, 0, 0, .12));",
+    "  background: var(--ha-dialog-surface-background, var(--card-background-color, #fff)); color: var(--primary-text-color, #212121);",
+    "  box-shadow: 0 12px 32px rgba(0, 0, 0, .3); animation: sh-drop .14s ease; transform-origin: top right; }",
+    ":host([data-up]) .menu { transform-origin: bottom right; animation-name: sh-rise; }",
+    ".item { display: flex; align-items: center; gap: 12px; height: 44px; padding: 0 12px; border-radius: 8px;",
+    "  color: inherit; text-decoration: none; font-size: 14px; line-height: 1.2; cursor: pointer; }",
+    ".item:hover, .item:focus-visible { outline: none; background: color-mix(in srgb, var(--primary-text-color, #212121) 8%, transparent); }",
+    ".item.selected { color: var(--primary-color, #03a9f4); background: color-mix(in srgb, var(--primary-color, #03a9f4) 12%, transparent); }",
+    ".item ha-icon { flex: none; display: flex; --mdc-icon-size: 22px; color: var(--sidebar-icon-color, var(--secondary-text-color, #727272)); }",
+    ".item.selected ha-icon { color: var(--primary-color, #03a9f4); }",
+    ".item .n { flex: 1; min-width: 0; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }",
+    ".item ha-icon.ext { --mdc-icon-size: 16px; opacity: .6; }",
+    ".empty { padding: 10px 12px; font-size: 14px; opacity: .7; }",
+    ".group { display: flex; align-items: center; gap: 8px; padding: 10px 12px 4px; font-size: 12px; font-weight: 500;",
+    "  letter-spacing: .04em; text-transform: uppercase; color: var(--secondary-text-color, #727272); }",
+    ".group ha-icon { display: flex; --mdc-icon-size: 16px; }",
+    ".group .n { flex: 1; min-width: 0; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }",
+    ".group:not(:first-child) { margin-top: 4px; border-top: 1px solid var(--divider-color, rgba(0, 0, 0, .12)); padding-top: 12px; }",
+    "@keyframes sh-drop { from { opacity: 0; transform: translateY(-4px) scale(.98); } }",
+    "@keyframes sh-rise { from { opacity: 0; transform: translateY(4px) scale(.98); } }",
+    "@media (prefers-reduced-motion: reduce) { .menu { animation: none; } }",
   ].join("\n");
 
   const RESTART_TEXT = {
@@ -1415,6 +1487,13 @@
       advanced: section(DEFAULT_ADVANCED, data.advanced),
       header: Object.assign(section(DEFAULT_HEADER, data.header), {
         links: cleanHeaderLinks(isObject(data.header) ? data.header.links : null, true),
+        // 1.6.1: ausklappbares Menue
+        menu: isObject(data.header) && data.header.menu === true,
+        menu_icon:
+          isObject(data.header) && typeof data.header.menu_icon === "string" && ICON_NAME.test(data.header.menu_icon)
+            ? data.header.menu_icon
+            : DEFAULT_HEADER.menu_icon,
+        menu_links: cleanMenuLinks(isObject(data.header) ? data.header.menu_links : null),
       }),
       settings: Object.assign(section(DEFAULT_SETTINGS, data.settings), {
         menu_order: cleanPaths(isObject(data.settings) ? data.settings.menu_order : null),
@@ -3209,7 +3288,7 @@
     // stehen im DOM hinter den Knoepfen von Home Assistant (dort hat Lit
     // seine Marker) und kommen ueber "order" nach vorn. Groesse und Form wie
     // ein ha-icon-button; im Bearbeitungsmodus sind sie weg.
-    if (head.show_restart === true || (Array.isArray(head.links) && head.links.length)) {
+    if (head.show_restart === true || head.menu === true || (Array.isArray(head.links) && head.links.length)) {
       push(
         ":host > div.edit-mode .sh-header-button { display: none !important; }",
         `${scope} .sh-header-button {`,
@@ -7750,11 +7829,24 @@
             });
           }
         });
+        // 1.6.1: das ausklappbare Menue - ganz rechts, nur wenn es fuer
+        // diesen Benutzer etwas zu zeigen hat
+        if (head.menu === true && this.headerMenuLinks().some((link) => !link.group)) {
+          wanted.push({
+            id: "menu",
+            name: popupText(hass).menu,
+            icon: ICON_NAME.test(value(head.menu_icon)) ? value(head.menu_icon) : DEFAULT_HEADER.menu_icon,
+            color: "",
+          });
+        }
       }
 
       const ids = new Set(wanted.map((one) => one.id));
       root.querySelectorAll(".sh-header-button").forEach((node) => {
         if (!ids.has(node.dataset.shHeader) || node.parentElement !== box) {
+          if (node === this.menuButton) {
+            this.closeHeaderMenu();
+          }
           node.remove();
         }
       });
@@ -7792,16 +7884,23 @@
               }));
             } else if (one.id === "restart") {
               this.restart();
+            } else if (one.id === "menu") {
+              this.toggleHeaderMenu(node, event.detail === 0);
             } else {
               this.openLink(node.dataset.shPath, event.ctrlKey || event.metaKey || event.shiftKey);
             }
           });
           node.addEventListener("auxclick", (event) => {
-            if (event.button === 1 && one.id !== "restart" && !node.dataset.shEntity) {
+            if (event.button === 1 && one.id !== "restart" && one.id !== "menu" && !node.dataset.shEntity) {
               event.preventDefault();
               this.openLink(node.dataset.shPath, true);
             }
           });
+          if (one.id === "menu") {
+            node.classList.add("sh-header-menu");
+            node.setAttribute("aria-haspopup", "menu");
+            node.setAttribute("aria-expanded", "false");
+          }
           box.appendChild(node);
         }
         if (one.path && node.dataset.shPath !== one.path) {
@@ -7824,8 +7923,8 @@
           node.setAttribute("aria-label", one.name);
         }
         // Vor die Knoepfe von Home Assistant (order 0), in der Reihenfolge
-        // der Liste.
-        const order = String(index - wanted.length);
+        // der Liste. Das Menue (1.6.1) steht hinter allen, ganz rechts.
+        const order = one.id === "menu" ? "1000" : String(index - wanted.length);
         if (node.style.order !== order) {
           node.style.order = order;
         }
@@ -7857,6 +7956,201 @@
         this.applyHeaderSystem(root, box);
       }
       this.watchHeaderSensors();
+    }
+
+    /** Die Links des Menues der Kopfzeile, die dieser Benutzer sehen darf (1.6.1). */
+    headerMenuLinks() {
+      const head = this.config.header || DEFAULT_HEADER;
+      const hass = this.root && this.root.hass;
+      const admin = !!(hass && hass.user && hass.user.is_admin);
+      const visible = cleanMenuLinks(head.menu_links).filter(
+        (link) => link.group || isExternalUrl(link.path) || admin || !linkNeedsAdmin(link.path)
+      );
+      // Eine Gruppe ohne (sichtbare) Links darunter faellt weg.
+      return visible.filter(
+        (link, index) => !link.group || (visible[index + 1] && !visible[index + 1].group)
+      );
+    }
+
+    /** Das Menue der Kopfzeile auf- oder zuklappen (1.6.1). */
+    toggleHeaderMenu(button, keyboard) {
+      if (this.menuHost && this.menuButton === button) {
+        this.closeHeaderMenu();
+        return;
+      }
+      this.openHeaderMenu(button, keyboard);
+    }
+
+    /**
+     * Das ausklappbare Menue der Kopfzeile (1.6.1): eine Liste unter dem
+     * Knopf (steht die Kopfzeile unten, darueber), rechts buendig mit ihm.
+     * Ein Klick auf einen Link geht dorthin wie ein Link der Kopfzeile;
+     * Strg / Mittelklick oeffnet einen neuen Tab. Es schliesst sich bei einem
+     * Klick daneben, mit Esc, bei einem Seitenwechsel und wenn sich die
+     * Fenstergroesse aendert.
+     */
+    openHeaderMenu(button, keyboard) {
+      this.closeHeaderMenu();
+      if (!button || !button.isConnected) {
+        return;
+      }
+      const hass = this.root && this.root.hass;
+      const text = popupText(hass);
+      const links = this.headerMenuLinks();
+      const host = document.createElement("div");
+      host.className = "sh-menu-host";
+      const shadow = host.attachShadow({ mode: "open" });
+      const style = document.createElement("style");
+      style.textContent = HEADER_MENU_CSS;
+      const list = document.createElement("div");
+      list.className = "menu";
+      list.setAttribute("role", "menu");
+      list.setAttribute("aria-label", text.menu);
+      const here = window.location.pathname;
+      links.forEach((link) => {
+        if (link.group) {
+          // Zwischentitel - ohne Ziel
+          const group = document.createElement("div");
+          group.className = "group";
+          group.setAttribute("role", "presentation");
+          if (link.icon) {
+            const icon = document.createElement("ha-icon");
+            icon.setAttribute("icon", link.icon);
+            group.appendChild(icon);
+          }
+          const name = document.createElement("span");
+          name.className = "n";
+          name.textContent = link.name;
+          group.appendChild(name);
+          if (css(link.color)) {
+            group.style.setProperty("color", css(link.color));
+          }
+          list.appendChild(group);
+          return;
+        }
+        const external = isExternalUrl(link.path);
+        const item = document.createElement("a");
+        item.className = "item";
+        item.href = link.path;
+        item.dataset.path = link.path;
+        item.setAttribute("role", "menuitem");
+        if (external) {
+          item.target = "_blank";
+          item.rel = "noopener noreferrer";
+        } else {
+          const path = link.path.split(/[?#]/)[0];
+          if (here === path || here.indexOf(`${path}/`) === 0) {
+            item.classList.add("selected");
+          }
+        }
+        const icon = document.createElement("ha-icon");
+        icon.setAttribute("icon", link.icon || (external ? EXTERNAL_ICON : "mdi:link-variant"));
+        if (css(link.color)) {
+          icon.style.setProperty("color", css(link.color));
+        }
+        const name = document.createElement("span");
+        name.className = "n";
+        name.textContent = link.name || (external ? externalHost(link.path) : link.path);
+        item.append(icon, name);
+        if (external) {
+          const mark = document.createElement("ha-icon");
+          mark.className = "ext";
+          mark.setAttribute("icon", EXTERNAL_ICON);
+          item.appendChild(mark);
+        }
+        item.addEventListener("click", (event) => {
+          event.preventDefault();
+          this.closeHeaderMenu();
+          this.openLink(link.path, event.ctrlKey || event.metaKey || event.shiftKey);
+        });
+        item.addEventListener("auxclick", (event) => {
+          if (event.button === 1) {
+            event.preventDefault();
+            this.closeHeaderMenu();
+            this.openLink(link.path, true);
+          }
+        });
+        list.appendChild(item);
+      });
+      if (!links.length) {
+        const empty = document.createElement("div");
+        empty.className = "empty";
+        empty.textContent = text.empty;
+        list.appendChild(empty);
+      }
+      shadow.append(style, list);
+      // Lage: rechts buendig mit dem Knopf; liegt er in der unteren Haelfte
+      // (Kopfzeile unten), klappt das Menue nach oben auf.
+      const rect = button.getBoundingClientRect();
+      const up = rect.top + rect.height / 2 > window.innerHeight / 2;
+      host.style.right = `${Math.max(8, Math.round(window.innerWidth - rect.right))}px`;
+      if (up) {
+        host.setAttribute("data-up", "");
+        host.style.bottom = `${Math.max(8, Math.round(window.innerHeight - rect.top + 6))}px`;
+      } else {
+        host.style.top = `${Math.max(8, Math.round(rect.bottom + 6))}px`;
+      }
+      document.body.appendChild(host);
+      this.menuHost = host;
+      this.menuButton = button;
+      button.setAttribute("aria-expanded", "true");
+
+      const items = () => [...list.querySelectorAll(".item")];
+      this.menuOutside = (event) => {
+        const path = event.composedPath ? event.composedPath() : [];
+        if (path.indexOf(host) < 0 && path.indexOf(button) < 0) {
+          this.closeHeaderMenu();
+        }
+      };
+      this.menuKeys = (event) => {
+        if (event.key === "Escape") {
+          event.preventDefault();
+          event.stopPropagation();
+          this.closeHeaderMenu();
+          button.focus();
+          return;
+        }
+        if (event.key === "ArrowDown" || event.key === "ArrowUp") {
+          const all = items();
+          if (!all.length) {
+            return;
+          }
+          event.preventDefault();
+          const now = all.indexOf(shadow.activeElement);
+          const next = event.key === "ArrowDown" ? now + 1 : now - 1;
+          all[(next + all.length) % all.length].focus();
+        }
+      };
+      this.menuClose = () => this.closeHeaderMenu();
+      document.addEventListener("pointerdown", this.menuOutside, true);
+      document.addEventListener("keydown", this.menuKeys, true);
+      window.addEventListener("location-changed", this.menuClose);
+      window.addEventListener("popstate", this.menuClose);
+      window.addEventListener("resize", this.menuClose);
+      if (keyboard && items().length) {
+        items()[0].focus();
+      }
+    }
+
+    closeHeaderMenu() {
+      if (this.menuHost) {
+        this.menuHost.remove();
+      }
+      if (this.menuButton) {
+        this.menuButton.setAttribute("aria-expanded", "false");
+      }
+      if (this.menuOutside) {
+        document.removeEventListener("pointerdown", this.menuOutside, true);
+        document.removeEventListener("keydown", this.menuKeys, true);
+        window.removeEventListener("location-changed", this.menuClose);
+        window.removeEventListener("popstate", this.menuClose);
+        window.removeEventListener("resize", this.menuClose);
+      }
+      this.menuHost = null;
+      this.menuButton = null;
+      this.menuOutside = null;
+      this.menuKeys = null;
+      this.menuClose = null;
     }
 
     /**
